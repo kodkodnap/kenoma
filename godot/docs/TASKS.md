@@ -1,4 +1,4 @@
-# Tareas — Ruido de Fondo
+# Tareas — Kenoma
 
 > Hoja de ruta viva. Un hito solo se marca **hecho** cuando pasa el smoke, se puede probar jugando y la
 > documentación está al día. El usuario revisa el backlog (`IDEAS.md`) después de cada hito.

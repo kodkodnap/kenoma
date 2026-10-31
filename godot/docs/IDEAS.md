@@ -1,4 +1,4 @@
-# Backlog de ideas — Ruido de Fondo
+# Backlog de ideas — Kenoma
 
 > Toda idea nueva se anota aquí antes de implementarla. Estados: `pendiente`, `en curso`, `hecho`,
 > `descartado`. Si una idea contradice el diseño o el original, se avisa y se propone la integración.
@@ -11,7 +11,7 @@
 | I-002 | 2026-10-30 | Catálogo exhaustivo del original por sistemas, con prioridad T1–T4 | hecho | `docs/ORIGINAL_FEATURES.md`. |
 | I-003 | 2026-10-30 | 15 hitos nuevos, del proyecto base al pulido | en curso | `docs/TASKS.md`; hito 0 cerrado. |
 | I-004 | 2026-10-30 | Nombres del original centralizados en `data/` para renombrarlos sin tocar código | pendiente | Se aplica desde el hito 2. |
-| I-005 | 2026-10-30 | Nombre definitivo del juego | pendiente | Provisional “Ruido de Fondo”; decidir antes del hito 12. |
+| I-005 | 2026-10-30 | Nombre definitivo del juego | hecho | **Kenoma**, elegido el 2026-10-31; repo `kodkodnap/kenoma`. |
 | I-006 | 2026-10-30 | Estilo visual low-poly original, coherente y barato | pendiente | Decidir paleta y silueta en el hito 3; modelos en el 12. |
 | I-007 | 2026-10-30 | Tutorial opcional y saltable | pendiente | No viola “sin guiar de la mano”; se decide en hito 9. |
 | I-008 | 2026-10-30 | Accesibilidad: subtítulos, FOV, sensibilidad, reducir sustos | pendiente | Hito 15; no recortar. |

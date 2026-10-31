@@ -1,4 +1,4 @@
-# Assets — Ruido de Fondo
+# Assets — Kenoma
 
 > Todo el arte es original. No se importan modelos, texturas, audio ni animaciones del juego de
 > referencia. La estética se define aquí y se aplica a todos los modelos generados o comprados con

@@ -1,6 +1,6 @@
-# Diseño — Ruido de Fondo
+# Diseño — Kenoma
 
-> Título provisional. El nombre definitivo se decide antes del hito 12 y se centraliza en `data/`.
+> Nombre definitivo: **Kenoma**. Repo: <https://github.com/kodkodnap/kenoma>.
 >
 > **Referencia de fidelidad:** *Voices of the Void* (VotV). Es una **inspiración muy cercana**, no un
 > clon: se toman los sistemas, la escala, el ritmo y la sensación, con variaciones propias en contenido,
@@ -277,7 +277,7 @@ Detalle y criterios de aceptación en [`TASKS.md`](TASKS.md).
 
 | Tema | Opciones | Recomendación |
 |---|---|---|
-| Nombre definitivo | “Ruido de Fondo” / otro | Decidir antes del hito 12; mantener provisional |
+| Nombre definitivo | **Kenoma** | Decidido el 2026-10-31; repo `kodkodnap/kenoma` |
 | Renderer | Forward+ / Mobile | Forward+ para interiores y luces; revisar en hardware mínimo |
 | Estilo visual | Low-poly limpio / low-poly sucio | Low-poly sucio coherente con la base |
 | Tutorial | Sin tutorial / tutorial opcional | Tutorial opcional de 10 min, saltable |

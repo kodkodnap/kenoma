@@ -1,6 +1,8 @@
-# AGENTS — Ruido de Fondo
+# AGENTS — Kenoma
 
 > Proyecto Godot 4 dentro de `godot/`. El juego web ESTATICA de la raíz es otro proyecto y **no se toca**.
+>
+> **Nombre:** Kenoma. **Repo:** <https://github.com/kodkodnap/kenoma>.
 >
 > Este archivo es la memoria de sesión. Leer al empezar, en este orden:
 > `docs/ORIGINAL_FEATURES.md` → `docs/DESIGN.md` → `docs/ARCHITECTURE.md` → `docs/TASKS.md` →

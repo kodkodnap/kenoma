@@ -1,4 +1,4 @@
-# Ruido de Fondo
+# Kenoma
 
 Juego de terror y simulación en primera persona inspirado en los **sistemas** de *Voices of the Void*.
 Eres un radioastrónomo aislado en una base alpina: encuentras señales, las descargas, las procesas,

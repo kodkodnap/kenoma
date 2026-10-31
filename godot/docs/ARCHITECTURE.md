@@ -1,4 +1,4 @@
-# Arquitectura — Ruido de Fondo
+# Arquitectura — Kenoma
 
 > Documento vivo. Explica cómo se conectan los sistemas, no cómo se juega. El diseño está en
 > [`DESIGN.md`](DESIGN.md); el catálogo del original, en [`ORIGINAL_FEATURES.md`](ORIGINAL_FEATURES.md).
