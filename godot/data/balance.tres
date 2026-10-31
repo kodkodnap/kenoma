@@ -4,8 +4,18 @@
 
 [resource]
 script = ExtResource("1_balance")
-walk_speed = 3.2
-sprint_speed = 5.6
+walk_speed = 4.0
+sprint_speed = 8.0
+crouch_speed = 1.5
+jump_velocity = 4.5
 ground_acceleration = 40.0
 air_acceleration = 8.0
+stand_height = 1.8
+crouch_height = 1.2
+head_height = 1.62
+crouch_head_height = 1.0
+stamina_max = 100.0
+stamina_drain_per_second = 12.0
+stamina_regen_per_second = 10.0
+stamina_sprint_min = 15.0
 flashlight_drain_per_second = 0.006

@@ -4,8 +4,8 @@ Juego de terror y simulación en primera persona inspirado en los **sistemas** d
 Eres un radioastrónomo aislado en una base alpina: encuentras señales, las descargas, las procesas,
 localizas satélites y mantienes la energía. Todo el arte, el código, los textos y el audio son originales.
 
-> **Estado:** hito 0 cerrado (investigación y documentación). El hito 1 rehace el jugador con las
-> velocidades y la stamina del original.
+> **Estado:** hito 0 (documentación) y hito 1 (jugador, stamina y agacharse) cerrados. Siguiente:
+> hito 2, framework de interacción e inventario.
 >
 > El juego web ESTATICA de la raíz es un proyecto aparte; este vive en `godot/`.
 
@@ -28,13 +28,15 @@ localizas satélites y mantienes la energía. Todo el arte, el código, los text
 | Mover | WASD |
 | Correr | Shift |
 | Saltar | Space |
+| Agacharse | Ctrl |
 | Mirar | Ratón |
 | Interactuar / mantener | E o clic izquierdo |
 | Linterna | F |
 | Overlay de rendimiento | F3 |
 | Liberar ratón | Escape |
 
-El hito 1 añade agacharse, stamina y las velocidades 4/8/1,5 m/s.
+El HUD muestra stamina y batería de la linterna. Correr consume stamina y por debajo de 15 no se
+puede esprintar. La linterna es la del prototipo: se conserva, con batería y toggle.
 
 ## Verificación
 
@@ -45,8 +47,8 @@ GODOT="C:/Users/ibane/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stabl
 "$GODOT" --headless --path godot --script res://tests/smoke.gd
 ```
 
-El smoke comprueba arranque, jugador, cámara, linterna, colisión, overlay y las mecánicas del prototipo.
-Cada hito añade sus pruebas.
+El smoke comprueba arranque, jugador, cámara, linterna, colisión, overlay y las mecánicas del prototipo,
+incluidas las 51 comprobaciones del hito 1. Cada hito añade sus pruebas.
 
 ## Documentación
 

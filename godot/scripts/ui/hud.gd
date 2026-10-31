@@ -4,12 +4,14 @@ extends CanvasLayer
 
 var machine: TestMachine
 var grid: PowerGrid
+var player: Player
 
 @onready var crosshair: ColorRect = $Crosshair
 @onready var prompt: Label = $Prompt
 @onready var hold_bar: Control = $HoldBar
 @onready var hold_fill: ColorRect = $HoldBar/Fill
 @onready var status: Label = $Status
+@onready var vitals: Label = $Vitals
 
 var _target: Interactable
 var _status_timer: float = 0.0
@@ -34,6 +36,7 @@ func set_hold_progress(ratio: float) -> void:
 
 
 func _process(delta: float) -> void:
+	_refresh_vitals()
 	if _target != null:
 		_refresh_prompt()
 
@@ -48,6 +51,16 @@ func _process(delta: float) -> void:
 	if grid != null:
 		text += "\nRed %.0f / %.0f W" % [grid.total_draw(), grid.capacity_w]
 	status.text = text
+
+
+func _refresh_vitals() -> void:
+	if player == null:
+		return
+	var stamina_pct := roundi(clampf(player.stamina / player.balance.stamina_max, 0.0, 1.0) * 100.0)
+	var battery_pct := roundi(clampf(player.battery, 0.0, 1.0) * 100.0)
+	var text := "Stamina %d%%\nLinterna %d%%" % [stamina_pct, battery_pct]
+	if vitals.text != text:
+		vitals.text = text
 
 
 func _refresh_prompt() -> void:

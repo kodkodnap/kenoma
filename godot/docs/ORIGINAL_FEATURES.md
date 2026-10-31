@@ -532,8 +532,9 @@ F3 y una escena de debug con FPS, draw calls, primitivas, memoria y nodos.
 
 ## 19. Decisiones de fidelidad
 
-1. **Sistemas y cifras primero.** Se replican reglas, ritmo, escala y dificultad; no se copian textos,
-   modelos, sonidos ni interfaces pixel a pixel.
+1. **Sistemas y cifras primero, con variaciones.** Se toman reglas, ritmo, escala y dificultad como
+   inspiración muy cercana; no se copian textos, modelos, sonidos ni interfaces pixel a pixel. El juego
+   debe parecerse mucho, no ser el mismo juego.
 2. **Nombres centralizados.** Los nombres del original se usan como referencia, pero viven en `data/`
    y se pueden cambiar sin tocar código.
 3. **Contenido original.** Señales, lore, personajes, eventos y textos se escribirán desde cero.
@@ -541,6 +542,8 @@ F3 y una escena de debug con FPS, draw calls, primitivas, memoria y nodos.
 5. **Mapa ~1,4 km.** Se confirma y ajusta en el hito 7; la base debe sentirse lejos de los platos.
 6. **Sin pantallas de carga.** Viaje a pie o ATV; el dron y los eventos no bloquean el mundo.
 7. **Rendimiento desde el día 1.** Cada hito se mide; no se acumula deuda técnica.
+8. **Reutilizar lo que cumple.** Un prototipo que ya funciona se conserva y se ajusta; no se rehace solo
+   por imitar el original. La linterna actual es el primer caso.
 
 ---
 

@@ -83,7 +83,7 @@ Data (Resources)
 
 | Clase | Responsabilidad | Estado |
 |---|---|---|
-| `GameBalance` | Valores globales: velocidades, día, stamina, energía, dificultad. | prototipo |
+| `GameBalance` | Valores globales: velocidades, día, stamina, energía, dificultad. | hecho (hito 1) |
 | `GameState` | Estado serializable de la partida. | pendiente |
 | `GameClock` | Día, hora, velocidad, dormir, eventos de medianoche/06:00. | pendiente |
 | `SignalDef` | Recurso de señal: tipo, calidad, nivel, precio, audio, imagen, evento. | pendiente |
@@ -100,9 +100,9 @@ Data (Resources)
 
 | Clase | Responsabilidad | Estado |
 |---|---|---|
-| `Player` | Movimiento, cámara, linterna, raycast, interacción. | prototipo |
-| `PlayerStats` | Hambre, stamina, salud, sueño, paranoia, sangrado. | pendiente |
-| `Flashlight` | Batería, recarga, haces, parpadeo. | prototipo |
+| `Player` | Movimiento, cámara, linterna, raycast, interacción, stamina y agacharse. | hecho (hito 1) |
+| `PlayerStats` | Hambre, stamina, salud, sueño, paranoia, sangrado. | pendiente (hito 9; por ahora `Player` expone `stamina` y `battery`) |
+| `Flashlight` | Batería, recarga, haces, parpadeo. | hecho (hito 1: toggle y drenaje; recarga en hito 11) |
 | `InteractionRay` | Foco, hold, prompts. | prototipo |
 
 ### 4.3 Interacción y máquinas
@@ -135,7 +135,7 @@ Data (Resources)
 | `EntityDef` | Datos de entidad. | pendiente |
 | `Entity` | IA base y estados. | pendiente |
 | `EntityDirector` | Spawns por evento, hora, stat o radar. | pendiente |
-| `Hud` | Stats, reloj, tarea, mensajes, foco. | prototipo |
+| `Hud` | Vitales (stamina/linterna), foco, hold, estado de máquina; reloj en hito 6. | hecho (hito 1) |
 | `ComputerScreen` | SubViewport y UI de terminal. | pendiente |
 | `PerfOverlay` | FPS, draw calls, primitivas, memoria. | hecho |
 
@@ -274,12 +274,12 @@ Cada hito añade sus comprobaciones al smoke antes de implementar (TDD).
 | Sistema | Estado | Nota |
 |---|---|---|
 | Proyecto Godot | hecho | 4.7.2, Forward+, 1280×720 |
-| Jugador | prototipo | 3,2/5,6 m/s; se rehace a 4/8/1,5 con stamina |
-| Linterna | prototipo | Batería básica; falta recarga y sonido |
+| Jugador | hecho | 4/8/1,5 m/s; stamina, agacharse, salto y colisión; 51 checks |
+| Linterna | hecho | Toggle F y drenaje de batería; recarga en hito 11 |
 | Interactable | prototipo | Área, prompt, hold; falta agarre |
 | Machine / TestMachine | prototipo | OFF/ON/OVERHEATED/NO_POWER; se reutiliza la base |
 | PowerGrid | prototipo | 1.500 W todo-o-nada; se sustituye por transformadores/breakers |
-| HUD | prototipo | Foco, hold, estado, carga |
+| HUD | hecho | Stamina, batería, foco, hold, estado y carga |
 | PerfOverlay | hecho | F3 |
 | Señales, servidores, eventos, entidades, guardado | pendiente | Hitos 5–15 |
 

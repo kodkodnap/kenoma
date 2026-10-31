@@ -2,9 +2,10 @@
 
 > Título provisional. El nombre definitivo se decide antes del hito 12 y se centraliza en `data/`.
 >
-> **Referencia de fidelidad:** *Voices of the Void* (VotV). Se replican sus **sistemas, reglas, escala,
-> ritmo y sensación**, no sus assets, código, textos, audio ni interfaces. El catálogo completo está en
-> [`ORIGINAL_FEATURES.md`](ORIGINAL_FEATURES.md).
+> **Referencia de fidelidad:** *Voices of the Void* (VotV). Es una **inspiración muy cercana**, no un
+> clon: se toman los sistemas, la escala, el ritmo y la sensación, con variaciones propias en contenido,
+> nombres, reglas y soluciones. No se copian assets, código, textos, audio ni interfaces. El catálogo
+> completo está en [`ORIGINAL_FEATURES.md`](ORIGINAL_FEATURES.md).
 >
 > Estado: **hito 0 cerrado** (investigación y documentación). El hito 1 rehace el prototipo de jugador
 > con las velocidades y la stamina del original.
@@ -34,8 +35,10 @@ consecuencias. La tensión nace de la logística, el silencio y la sospecha, no 
 **Nombres:** se usan los del original solo como referencia de diseño. Todos viven en `data/` para poder
 renombrarlos sin tocar código. Los textos definitivos serán originales.
 
-**Alcance:** réplica de sistemas y sensación. No es un clon 1:1 de contenido; es un juego propio con la
-misma estructura y dificultad.
+**Alcance:** inspiración muy cercana con variaciones. No es un clon 1:1 de contenido: se conserva la
+estructura y la dificultad, pero se cambian nombres, textos, señales, entidades, eventos y detalles de
+implementación. Si un prototipo existente ya cumple una función, se conserva y se ajusta en vez de
+rehacerlo por reflejo.
 
 ## 3. Pilares
 
@@ -179,7 +182,7 @@ señales, tareas, flags, decisiones y semilla. Nunca guarda el árbol de escena.
 | Mirar | Ratón | Sensibilidad configurable |
 | Interactuar | E / clic izquierdo | Raycast 2,4 m; mantener para acciones largas |
 | Agarrar / soltar | E / clic derecho | Objetos físicos; rueda para distancia |
-| Linterna | F | Batería limitada; recargable |
+| Linterna | F | Batería limitada; la recarga llega con los ítems del hito 11. |
 | Inventario | Tab | Rejilla/volumen |
 | Panel / terminal | E | SubViewport; Escape cierra |
 | Debug | F3 | FPS, draw calls, primitivas, memoria |
@@ -238,7 +241,7 @@ vive fuera de las escenas, en `scripts/core/`, y se prueba sin render.
 | # | Hito | Estado |
 |---|---|---|
 | 0 | Investigación, catálogo y documentación | **cerrado** |
-| 1 | Proyecto base: jugador 4/8/1,5 m/s, stamina, linterna, debug | siguiente |
+| 1 | Proyecto base: jugador 4/8/1,5 m/s, stamina, linterna, debug | **cerrado** |
 | 2 | Framework Interactable/Grabbable/Machine/Panel/Item/Entity/Event + inventario | pendiente |
 | 3 | Alpha Root Base en placeholders | pendiente |
 | 4 | Energía: transformadores, breaker, apagones | pendiente |
@@ -265,7 +268,8 @@ Detalle y criterios de aceptación en [`TASKS.md`](TASKS.md).
 5. Nada de assets, código, textos ni audio del original.
 6. Modo Normal como referencia de balance.
 7. Sin pantallas de carga; mapa continuo de ~1,4 km.
-8. El prototipo del hito 1 anterior se rehace: no se defiende.
+8. El prototipo del hito 1 anterior se ajusta, no se rehace por reflejo: la linterna actual se conserva
+   porque ya cumple; el movimiento y la stamina sí se rehacen.
 9. La primera versión del mapa usa placeholders; los modelos llegan en el hito 12.
 10. El guardado se implementa al final, pero el estado se diseña serializable desde el hito 2.
 

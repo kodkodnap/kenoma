@@ -11,7 +11,7 @@
 | # | Hito | Estado | Verificación |
 |---:|---|---|---|
 | 0 | Investigación, catálogo y documentación | **hecho** | Docs revisados y commit |
-| 1 | Proyecto base y jugador | **siguiente** | Smoke + prueba jugable |
+| 1 | Proyecto base y jugador | **hecho** | Smoke (51 checks) + captura Forward+ |
 | 2 | Framework de interacción e inventario | pendiente | Smoke |
 | 3 | Alpha Root Base en placeholders | pendiente | Smoke + recorrido |
 | 4 | Energía | pendiente | Smoke + apagón jugable |
@@ -48,11 +48,13 @@
 - [x] El catálogo cubre todos los sistemas del prompt.
 - [x] Los 15 hitos están definidos con criterios de aceptación.
 - [x] No se ha implementado código de juego nuevo.
-- [ ] Commit del hito 0.
+- [x] Commit del hito 0.
 
 ---
 
 ## Hito 1 — Proyecto base y jugador
+
+**Estado: hecho (2026-10-30).**
 
 **Objetivo:** un jugador en primera persona que se mueva como el original y tenga stamina, linterna,
 cámara y debug. Sin máquinas todavía.
@@ -62,23 +64,23 @@ cámara y debug. Sin máquinas todavía.
 - `Player` con velocidades **4 m/s andando, 8 m/s corriendo, 1,5 m/s agachado**.
 - Sprint con stamina; agotado no se corre.
 - Cámara con mirada limitada, cabeza estable, FOV configurable.
-- Linterna con batería, recarga y parpadeo cuando queda poca.
+- Linterna existente: se conserva; ya tiene batería y toggle. Se añade lectura en HUD.
 - Salto, gravedad, colisión de cápsula.
 - `GameBalance` actualizado; valores en `data/balance.tres`.
-- `PlayerStats` mínimo: stamina y batería.
-- HUD mínimo: stamina, batería, reloj y prompt.
+- Vitales mínimos en `Player`: stamina y batería (`PlayerStats` se separa en el hito 9).
+- HUD mínimo: stamina, batería y prompt; el reloj llega con `GameClock` en el hito 6.
 - Escena de debug con FPS, draw calls, primitivas, memoria y nodos.
 - Eliminar o archivar la `TestMachine` del prototipo anterior si estorba.
 
 ### Criterio de aceptación
 
-- [ ] Se recorren 100 m andando, corriendo y agachado y las velocidades son las correctas.
-- [ ] La stamina baja al correr, se recupera al parar y bloquea el sprint por debajo de 15.
-- [ ] La linterna ilumina, se apaga con F y se queda sin batería.
-- [ ] El jugador no atraviesa paredes ni cae del mundo.
-- [ ] F3 muestra el overlay y los valores son reales.
-- [ ] `--headless --import` limpio.
-- [ ] Smoke completo en verde.
+- [x] Velocidades medidas: andar ~4 m/s, correr ~8 m/s y agachado ~1,5 m/s (smoke).
+- [x] La stamina baja al correr, se recupera al parar y bloquea el sprint por debajo de 15.
+- [x] La linterna ilumina, se apaga con F y se apaga al quedarse sin batería.
+- [x] El jugador no atraviesa la pared ni cae del suelo del prototipo.
+- [x] F3 muestra el overlay y los valores son reales.
+- [x] `--headless --import` limpio.
+- [x] Smoke completo en verde (51 comprobaciones).
 
 ### Prueba manual
 
@@ -87,6 +89,14 @@ cámara y debug. Sin máquinas todavía.
 3. Correr hasta agotar stamina y comprobar el bloqueo.
 4. Apagar la linterna y esperar el drenaje.
 5. Mirar al techo/suelo y comprobar el clamp.
+
+### Notas de implementación
+
+- `stamina` y `battery` viven en `Player` por ahora; `PlayerStats` se separa en el hito 9.
+- El reloj del HUD se pospone al hito 6, cuando exista `GameClock`; no se inventa un reloj falso.
+- `TestMachine` se conserva para la prueba de integración del hito 2.
+- Pendiente: comprobar techo al levantarse; se añadirá con los conductos del hito 3.
+- Captura Forward+ verificada: HUD `Stamina 100% / Linterna 100%`, linterna y sala visibles.
 
 ---
 

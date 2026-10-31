@@ -8,11 +8,12 @@
 
 ## Prompt vigente (2026-10-30)
 
-El usuario sustituyó la visión inicial por una **réplica fiel de los sistemas de *Voices of the Void***:
-mismos sistemas, mecánicas, contenido, escala y sensación, **sin assets, código, texturas, audio, textos
-ni nombres de archivo del original**. Los nombres pueden coincidir, pero deben vivir en `data/` para
-poder renombrarlos. La fuente de verdad es <https://voicesofthevoid.wiki.gg>, resumida en
-`docs/ORIGINAL_FEATURES.md`.
+El usuario aclaró que la referencia es una **inspiración muy cercana**, no un clon literal: mismos
+pilares, sistemas, escala y sensación, con variaciones propias en contenido, nombres, reglas y soluciones.
+No se copian assets, código, texturas, audio, textos ni nombres de archivo del original. Si un prototipo
+ya cumple (por ejemplo la linterna), se conserva y se ajusta. Los nombres pueden coincidir, pero deben
+vivir en `data/` para poder renombrarlos. La fuente de verdad es <https://voicesofthevoid.wiki.gg>,
+resumida en `docs/ORIGINAL_FEATURES.md`.
 
 ### Reglas del prompt
 
@@ -64,8 +65,10 @@ poder renombrarlos. La fuente de verdad es <https://voicesofthevoid.wiki.gg>, re
 ## Estado actual
 
 - **Hito 0 cerrado:** catálogo, diseño, arquitectura, tareas, ideas, assets y README.
-- Existe un prototipo heredado del hito 1 anterior: jugador a 3,2/5,6 m/s, `TestMachine`, `PowerGrid`
-  todo-o-nada. **No es el diseño final**; el hito 1 nuevo lo rehace con 4/8/1,5 m/s y stamina.
+- **Hito 1 cerrado:** jugador a 4/8/1,5 m/s, stamina, agacharse, salto, HUD de vitales y captura
+  Forward+. La linterna del prototipo se conserva. Smoke con 51 comprobaciones.
+- `TestMachine` y `PowerGrid` todo-o-nada siguen como prototipo para el hito 2; el hito 4 los sustituye
+  por transformadores y breakers.
 - El juego web ESTATICA de la raíz sigue sin trackear y no debe modificarse.
 - Repositorio: `C:\Users\ibane\Documents\proyecto_personal\estatica`; proyecto Godot en `godot/`.
 

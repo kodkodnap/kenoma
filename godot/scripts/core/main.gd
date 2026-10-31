@@ -10,6 +10,7 @@ extends Node3D
 func _ready() -> void:
 	hud.machine = machine
 	hud.grid = grid
+	hud.player = player
 	grid.register(machine.consumer)
 	player.focus_changed.connect(hud.set_focus)
 	player.hold_changed.connect(hud.set_hold_progress)

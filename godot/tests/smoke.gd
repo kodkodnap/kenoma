@@ -41,6 +41,96 @@ func _run() -> void:
 	_check(main.get_node_or_null("PerfOverlay") != null, "overlay de rendimiento presente", failures)
 	_check(machine.definition != null, "definición de máquina cargada", failures)
 
+	# Hito 1: contrato de movimiento, stamina y linterna.
+	var balance := player.balance
+	_check(is_equal_approx(_number(balance, "walk_speed", 0.0), 4.0), "balance: andar 4 m/s", failures)
+	_check(is_equal_approx(_number(balance, "sprint_speed", 0.0), 8.0), "balance: correr 8 m/s", failures)
+	_check(is_equal_approx(_number(balance, "crouch_speed", 0.0), 1.5), "balance: agachado 1.5 m/s", failures)
+	_check(player.get("stamina") != null, "jugador expone stamina", failures)
+	_check(player.get("crouched") != null, "jugador expone estado agachado", failures)
+	_check(player.get("battery") != null, "jugador expone batería de linterna", failures)
+	_check(hud.get("vitals") is Label, "HUD tiene panel de vitales", failures)
+
+	# Hito 1: movimiento, stamina, agacharse y salto.
+	var walk_speed := await _measure_speed(player, "")
+	_check(walk_speed > 3.7 and walk_speed < 4.3, "andar a ~4 m/s", failures)
+
+	var stamina_before := player.stamina
+	var sprint_speed := await _measure_speed(player, "sprint")
+	_check(sprint_speed > 7.5, "correr a ~8 m/s", failures)
+	_check(player.stamina < stamina_before, "correr consume stamina", failures)
+
+	player.stamina = 10.0
+	var tired_speed := await _measure_speed(player, "sprint")
+	_check(tired_speed < 5.0, "stamina baja bloquea correr", failures)
+
+	player.stamina = 40.0
+	_reset_player(player, Vector3(0.0, 0.05, 0.0))
+	for i in 30:
+		await physics_frame
+	_check(player.stamina > 40.0, "stamina se recupera al parar", failures)
+
+	player.stamina = 100.0
+	_reset_player(player, Vector3(0.0, 0.05, 0.0))
+	Input.action_press("crouch")
+	for i in 3:
+		await physics_frame
+	var collision := player.get_node("Collision") as CollisionShape3D
+	_check(player.crouched, "agacharse activa el estado", failures)
+	_check(player.head.position.y < 1.3, "agacharse baja la cámara", failures)
+	_check((collision.shape as CapsuleShape3D).height < 1.5, "agacharse reduce la cápsula", failures)
+	Input.action_release("crouch")
+	for i in 3:
+		await physics_frame
+	_check(not player.crouched, "soltar agacharse se pone de pie", failures)
+
+	var crouch_speed := await _measure_speed(player, "crouch")
+	_check(crouch_speed < 2.2, "agachado a ~1.5 m/s", failures)
+
+	_reset_player(player, Vector3(0.0, 0.05, 0.0))
+	for i in 5:
+		await physics_frame
+	var jump_start := player.global_position.y
+	Input.action_press("jump")
+	await physics_frame
+	Input.action_release("jump")
+	for i in 5:
+		await physics_frame
+	_check(player.global_position.y > jump_start + 0.04, "el jugador salta", failures)
+
+	_reset_player(player, Vector3(18.5, 0.05, 6.0))
+	Input.action_press("move_right")
+	for i in 40:
+		await physics_frame
+	Input.action_release("move_right")
+	_check(player.global_position.x < 19.8, "el jugador no atraviesa la pared", failures)
+
+	player.stamina = 42.0
+	hud._refresh_vitals()
+	_check(hud.vitals.text.contains("42"), "HUD muestra la stamina", failures)
+	_check(hud.vitals.text.contains("Linterna"), "HUD muestra la linterna", failures)
+	player.stamina = 100.0
+
+	# La linterna es la del prototipo: se conserva y se comprueba que sigue funcionando.
+	var light := player.flashlight
+	var light_was_on := light.visible
+	var toggle := InputEventKey.new()
+	toggle.physical_keycode = KEY_F
+	toggle.pressed = true
+	player._unhandled_input(toggle)
+	_check(light.visible != light_was_on, "F enciende y apaga la linterna", failures)
+	player._unhandled_input(toggle)
+	player.battery = 0.001
+	light.visible = true
+	player._process(1.0)
+	_check(player.battery == 0.0 and not light.visible, "la linterna se apaga sin batería", failures)
+	player.battery = 1.0
+	light.visible = true
+
+	_reset_player(player, Vector3(0.0, 0.05, 6.0))
+	for i in 2:
+		await physics_frame
+
 	var start := player.global_position
 	Input.action_press("move_forward")
 	for i in 30:
@@ -128,6 +218,37 @@ func _run() -> void:
 	_finish(failures)
 
 
+func _measure_speed(player: Player, action: String) -> float:
+	_reset_player(player, Vector3(0.0, 0.05, 0.0))
+	for i in 2:
+		await physics_frame
+	Input.action_press("move_forward")
+	if action != "":
+		Input.action_press(action)
+	for i in 24:
+		await physics_frame
+	var speed := Vector2(player.velocity.x, player.velocity.z).length()
+	Input.action_release("move_forward")
+	if action != "":
+		Input.action_release(action)
+	for i in 2:
+		await physics_frame
+	return speed
+
+
+func _reset_player(player: Player, position: Vector3) -> void:
+	_release_actions()
+	player.global_position = position
+	player.velocity = Vector3.ZERO
+	player.rotation = Vector3.ZERO
+	player.head.rotation = Vector3.ZERO
+
+
+func _release_actions() -> void:
+	for action in ["move_forward", "move_back", "move_left", "move_right", "sprint", "crouch", "jump", "interact"]:
+		Input.action_release(action)
+
+
 func _stand_and_aim(player: Player, target: Node3D, distance: float) -> void:
 	var target_pos := target.global_position
 	player.global_position = Vector3(target_pos.x, 0.05, target_pos.z + distance)
@@ -152,3 +273,10 @@ func _check(condition: bool, label: String, failures: Array[String]) -> void:
 		print("OK  " + label)
 	else:
 		failures.append(label)
+
+
+func _number(object: Object, property: StringName, fallback: float) -> float:
+	var value: Variant = object.get(property)
+	if value == null:
+		return fallback
+	return float(value)
