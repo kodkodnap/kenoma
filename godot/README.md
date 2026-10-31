@@ -1,48 +1,80 @@
 # Ruido de Fondo
 
-Juego de terror y simulación en primera persona: radioastrónomo aislado en una base en el bosque. Proyecto original de aprendizaje en **Godot 4.7.2** (Forward+, GDScript tipado).
+Juego de terror y simulación en primera persona inspirado en los **sistemas** de *Voices of the Void*.
+Eres un radioastrónomo aislado en una base alpina: encuentras señales, las descargas, las procesas,
+localizas satélites y mantienes la energía. Todo el arte, el código, los textos y el audio son originales.
 
-Estado actual: **hito 1** — jugador en primera persona, linterna, interacción física y máquina de prueba con energía, calor y estados.
+> **Estado:** hito 0 cerrado (investigación y documentación). El hito 1 rehace el jugador con las
+> velocidades y la stamina del original.
+>
+> El juego web ESTATICA de la raíz es un proyecto aparte; este vive en `godot/`.
+
+## Requisitos
+
+- Godot **4.7.2 stable** (Forward+).
+- Windows, Linux o macOS con Vulkan.
+- Para el smoke, el binario de consola de Godot.
 
 ## Ejecutar
 
-Desde esta carpeta (`godot/`):
+1. Abrir `godot/project.godot` con Godot 4.7.2.
+2. Ejecutar `scenes/main.tscn` con F6 o el proyecto con F5.
+3. El ratón se captura al iniciar; `Escape` lo libera y un clic lo recupera.
 
-```bash
-# Godot en PATH
-godot --path .
-
-# Instalación portátil de este equipo
-& "C:\Users\ibane\Downloads\Godot_v4.7.2-stable_win64.exe\Godot_v4.7.2-stable_win64.exe" --path .
-```
-
-También puedes abrir `project.godot` desde el gestor de proyectos y pulsar **F5**.
-
-## Controles
+## Controles actuales (prototipo)
 
 | Acción | Tecla |
 |---|---|
 | Mover | WASD |
 | Correr | Shift |
+| Saltar | Space |
 | Mirar | Ratón |
-| Interactuar | `E` o clic izquierdo (mantener si el prompt lo pide) |
+| Interactuar / mantener | E o clic izquierdo |
 | Linterna | F |
-| Métricas de rendimiento | F3 |
-| Liberar el ratón | Esc (clic para recapturar) |
+| Overlay de rendimiento | F3 |
+| Liberar ratón | Escape |
+
+El hito 1 añade agacharse, stamina y las velocidades 4/8/1,5 m/s.
 
 ## Verificación
 
 ```bash
-godot --headless --path godot --import
-godot --headless --path godot --script res://tests/smoke.gd
+GODOT="C:/Users/ibane/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"
+
+"$GODOT" --headless --path godot --import
+"$GODOT" --headless --path godot --script res://tests/smoke.gd
 ```
 
-El smoke comprueba que la escena carga, el jugador se mueve de verdad, la cámara y la linterna existen, el suelo tiene colisión y la máquina responde a foco, mantener, sobrecalentamiento, reinicio, perilla, corte de energía y sobrecarga.
+El smoke comprueba arranque, jugador, cámara, linterna, colisión, overlay y las mecánicas del prototipo.
+Cada hito añade sus pruebas.
 
 ## Documentación
 
-- `docs/DESIGN.md` — visión, pilares y decisiones.
-- `docs/ARCHITECTURE.md` — sistemas, clases y rendimiento.
-- `docs/TASKS.md` — hitos y estado.
-- `docs/IDEAS.md` — backlog de ideas.
-- `docs/ASSETS.md` — estilo, presupuestos y registro de modelos.
+| Documento | Contenido |
+|---|---|
+| [`docs/ORIGINAL_FEATURES.md`](docs/ORIGINAL_FEATURES.md) | Catálogo del original por sistemas y prioridades. |
+| [`docs/DESIGN.md`](docs/DESIGN.md) | Visión, decisiones, alcance, dificultad y arte. |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Clases, capas, señales, datos y rendimiento. |
+| [`docs/TASKS.md`](docs/TASKS.md) | Los 15 hitos y criterios de aceptación. |
+| [`docs/IDEAS.md`](docs/IDEAS.md) | Backlog de ideas. |
+| [`docs/ASSETS.md`](docs/ASSETS.md) | Pipeline y registro de assets. |
+
+## Estructura
+
+```
+godot/
+  scenes/       escenas jugables
+  scripts/      lógica y controladores
+  data/         Resources de contenido y balance
+  assets/       modelos, audio y texturas
+  docs/         diseño y catálogo
+  tests/        smoke
+```
+
+## Roadmap
+
+Hito 0: documentación. Hito 1: jugador. Hito 2: interacción e inventario. Hito 3: base. Hito 4:
+energía. Hito 5: señales. Hito 6: ciclo diario. Hito 7: mapa. Hito 8: servidores. Hito 9: stats.
+Hito 10: entidades. Hitos 11–14: Tier 2–4. Hito 15: guardado, menús y pulido.
+
+Detalle en [`docs/TASKS.md`](docs/TASKS.md).

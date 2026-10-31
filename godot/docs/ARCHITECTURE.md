@@ -1,93 +1,294 @@
-# Arquitectura
+# Arquitectura — Ruido de Fondo
 
-## Capas
+> Documento vivo. Explica cómo se conectan los sistemas, no cómo se juega. El diseño está en
+> [`DESIGN.md`](DESIGN.md); el catálogo del original, en [`ORIGINAL_FEATURES.md`](ORIGINAL_FEATURES.md).
 
-| Capa | Contenido | Regla |
+## 1. Principios
+
+1. **Lógica fuera de escenas.** `scripts/core/` no conoce nodos, cámaras ni UI; se prueba con `smoke.gd`.
+2. **Datos fuera de scripts.** Máquinas, señales, ítems, entidades, eventos y balance son Resources.
+3. **Señales, no referencias cruzadas.** Un sistema emite; otro escucha. Quitar un sistema no debe romper
+   el resto.
+4. **Una responsabilidad por clase.** Nada de scripts de 1.000 líneas.
+5. **Estado serializable.** El guardado reconstruye desde datos, nunca desde el árbol de escena.
+6. **Presupuesto medido.** Cada hito actualiza `perf_overlay` y la escena de debug.
+
+## 2. Estructura de carpetas
+
+```
+godot/
+  project.godot
+  scenes/
+    main.tscn
+    player/player.tscn
+    world/                  # nivel, base, bosque, POIs
+    machines/               # máquinas y paneles
+    ui/                     # HUD, pantallas, SubViewports
+    entities/               # entidades y spawners
+    debug/                  # overlay y escena de rendimiento
+  scripts/
+    core/                   # lógica pura: balance, estado, energía, señales, eventos
+    player/                 # movimiento, cámara, interacción, stats
+    interaction/            # Interactable, Grabbable, Container
+    machines/               # Machine, paneles, servidores, transformadores
+    ui/                     # HUD y pantallas
+    world/                  # level, puertas, spawns
+    entities/               # IA base y comportamientos
+    audio/                  # buses y síntesis
+    debug/                  # overlay
+  data/
+    balance.tres
+    signals/                # SignalDef
+    machines/               # MachineDef
+    items/                  # ItemDef
+    entities/               # EntityDef
+    events/                 # EventDef
+    store/                  # StoreItemDef, UpgradeDef
+    locations/              # LocationDef
+  assets/
+    models/                 # GLB
+    audio/                  # OGG/WAV originales
+    textures/               # PNG generados o propios
+  docs/
+    ORIGINAL_FEATURES.md
+    DESIGN.md
+    ARCHITECTURE.md
+    TASKS.md
+    IDEAS.md
+    ASSETS.md
+  tests/
+    smoke.gd
+```
+
+## 3. Capas y dependencias
+
+```
+UI / escenas
+   ↓ señales
+Player / World / Machines / Entities
+   ↓ llamadas puras
+Core (GameState, SignalSystem, PowerSystem, EventDirector, Economy, SaveSystem)
+   ↑
+Data (Resources)
+```
+
+- `core` no importa `scenes/` ni `ui/`.
+- `ui` no modifica el estado directamente; llama a la API del sistema y se refresca por señales.
+- `world` y `machines` leen `data/` y escriben en `GameState` a través de sus sistemas.
+- `player` solo conoce interacción, movimiento y stats; no conoce la economía.
+
+## 4. Clases objetivo
+
+### 4.1 Núcleo
+
+| Clase | Responsabilidad | Estado |
 |---|---|---|
-| `scripts/core` | Lógica de dominio: balance, energía, estado, señales, economía | Sin dependencias de escenas concretas. Testeable headless. |
-| `data` | Resources `.tres`: balance, definiciones de máquinas, señales, amenazas | Todo valor ajustable vive aquí. |
-| `scenes/world` | Nivel, terreno, vegetación, iluminación | Sin lógica de juego. |
-| `scenes/machines` + `scripts/machines` | Máquinas y su operación física | Heredan de una clase base con estados. |
-| `scripts/player` | Movimiento, cámara, linterna, interacción | Solo entrada y presentación. |
-| `scenes/ui` | HUD, pantallas diegéticas | SubViewport para pantallas de computadora. |
-| `scripts/audio` | Ambiente y efectos | Sin archivos hasta tener assets propios. |
+| `GameBalance` | Valores globales: velocidades, día, stamina, energía, dificultad. | prototipo |
+| `GameState` | Estado serializable de la partida. | pendiente |
+| `GameClock` | Día, hora, velocidad, dormir, eventos de medianoche/06:00. | pendiente |
+| `SignalDef` | Recurso de señal: tipo, calidad, nivel, precio, audio, imagen, evento. | pendiente |
+| `SignalSystem` | Cadena Coordinates → Download → Playback → Processing → Drive. | pendiente |
+| `PowerSystem` | Transformadores, breakers, consumo, estabilidad, apagón. | prototipo |
+| `ServerSystem` | 54 servidores, estados, reparación, mejoras, hashcodes. | pendiente |
+| `Economy` | Puntos, tienda, ventas, multas, bonus semanal. | pendiente |
+| `EventDirector` | Eventos por día, peso, cooldown y flags. | pendiente |
+| `SaveSystem` | Serialización versionada y migraciones. | pendiente |
+| `DailyTask` | Tarea del día: señales, hashcodes, cintas, recompensa. | pendiente |
+| `Inventory` | Volumen, contenedores, equipo, apilar. | pendiente |
 
-## Clases previstas
+### 4.2 Jugador
 
-| Clase | Base | Responsabilidad |
+| Clase | Responsabilidad | Estado |
 |---|---|---|
-| `GameBalance` | `Resource` | Todos los parámetros de balance. **Implementada.** |
-| `Player` | `CharacterBody3D` | Movimiento, mirada, linterna, raycast de foco y mantener. **Implementada.** |
-| `Interactable` | `Area3D` | Foco por raycast, prompt, `hold_time`, señal `activated`. **Implementada.** |
-| `PowerConsumer` | `Node` | Carga de una máquina, `draw_w` y `powered` con señales. **Implementada.** |
-| `PowerGrid` | `Node` | Capacidad, registro de consumidores y corte todo-o-nada. **Implementada.** |
-| `MachineDef` | `Resource` | Nombre, calor, reinicio, consumo y modos de una máquina. **Implementada.** |
-| `Machine` | `Node3D` | Estados `OFF/ON/OVERHEATED/NO_POWER`, calor y modo. **Implementada.** |
-| `TestMachine` | `Machine` | Presentación y controles de la máquina de prueba. **Implementada.** |
-| `Hud` | `CanvasLayer` | Mira, prompt, progreso de mantener y estado de la máquina. **Implementada.** |
-| `SignalSource` | `Resource` | Definición de señal: banda, cifrado, fuerza, origen. **Pendiente (hito 4).** |
+| `Player` | Movimiento, cámara, linterna, raycast, interacción. | prototipo |
+| `PlayerStats` | Hambre, stamina, salud, sueño, paranoia, sangrado. | pendiente |
+| `Flashlight` | Batería, recarga, haces, parpadeo. | prototipo |
+| `InteractionRay` | Foco, hold, prompts. | prototipo |
 
-Las clases se añaden cuando un hito las necesita; no antes.
+### 4.3 Interacción y máquinas
 
-## Comunicación
+| Clase | Responsabilidad | Estado |
+|---|---|---|
+| `Interactable` | Área con prompt, hold, enabled, foco. | prototipo |
+| `Grabbable` | Objeto físico agarrable, lanzable, colocable. | pendiente |
+| `Container` | Inventario de contenedor. | pendiente |
+| `MachineDef` | Datos de máquina: nombre, estados, calor, consumo. | prototipo |
+| `Machine` | Estados OFF/ON/OVERHEATED/NO_POWER, calor, modo. | prototipo |
+| `PowerConsumer` | Consumo y estado de energía. | prototipo |
+| `Panel` | Base de paneles con SubViewport y controles. | pendiente |
+| `Knob` / `Button` / `Switch` / `Lever` | Controles físicos reutilizables. | pendiente |
+| `Transformer` | Estabilidad, daño, reinicio. | pendiente |
+| `BreakerPanel` | Cinco breakers y redistribución. | pendiente |
+| `Server` | Estado, reparación, mejoras. | pendiente |
+| `SatelliteDish` | Precisión, calibración, consola, hashcode. | pendiente |
+| `RadarTower` | Fusibles, salud, ping. | pendiente |
+| `MainComputer` | Nueve pestañas. | pendiente |
+| `SignalStation` | Cuatro paneles y módulos. | pendiente |
 
-- `Interactable.activated` → subclase de `Machine`; `focus_changed` y `hold_changed` → `Hud`.
-- `PowerConsumer.power_changed/draw_changed` ↔ `PowerGrid`; la máquina escucha `power_changed`.
-- `Machine.state_changed/heat_changed/mode_changed` → presentación y HUD.
-- Un único estado de partida (`GameState`) cuando exista guardado; los sistemas lo leen, no lo duplican.
-- Sin referencias cruzadas entre máquinas: se comunican por señales o por la red de energía.
+### 4.4 Mundo, entidades y UI
 
-## Capas de colisión
+| Clase | Responsabilidad | Estado |
+|---|---|---|
+| `Level` | Geometría, zonas, spawns, POIs. | prototipo |
+| `Door` | Puertas, cerraduras, breaker de Utilities. | pendiente |
+| `WeatherSystem` | Lluvia, niebla, tormenta, nieve, rayos. | pendiente |
+| `EntityDef` | Datos de entidad. | pendiente |
+| `Entity` | IA base y estados. | pendiente |
+| `EntityDirector` | Spawns por evento, hora, stat o radar. | pendiente |
+| `Hud` | Stats, reloj, tarea, mensajes, foco. | prototipo |
+| `ComputerScreen` | SubViewport y UI de terminal. | pendiente |
+| `PerfOverlay` | FPS, draw calls, primitivas, memoria. | hecho |
 
-| Capa | Uso |
+## 5. Señales principales
+
+| Emisor | Señal | Consumidor |
+|---|---|---|
+| `Player` | `focus_changed(interactable)` | HUD |
+| `Player` | `hold_changed(progress)` | HUD |
+| `Interactable` | `activated(source)` | Máquina / puerta / panel |
+| `Machine` | `state_changed(state)` | HUD, panel, audio |
+| `Machine` | `heat_changed(value)` | Panel, audio |
+| `PowerSystem` | `power_changed(on)` | Máquinas, luces, puertas |
+| `PowerSystem` | `stability_changed(value)` | HUD, transformador |
+| `GameClock` | `day_changed(day)` | Tareas, eventos, guardado |
+| `GameClock` | `hour_changed(hour)` | Luces, eventos, dron |
+| `SignalSystem` | `signal_found(def)` | Database, tareas |
+| `SignalSystem` | `download_completed(def)` | DB, eventos |
+| `ServerSystem` | `server_state_changed(id, state)` | Panel, HUD |
+| `EventDirector` | `event_started(id)` | UI, audio, mundo |
+| `EventDirector` | `event_finished(id)` | UI, guardado |
+| `Inventory` | `changed()` | HUD, paneles |
+| `Economy` | `points_changed(value)` | HUD, tienda |
+
+Regla: una señal no transporta nodos si se puede transportar un id o un dato serializable.
+
+## 6. Datos
+
+### 6.1 `GameBalance`
+
+Valores globales, todos exportados:
+
+- Movimiento: `walk_speed 4.0`, `sprint_speed 8.0`, `crouch_speed 1.5`, aceleración, gravedad, salto.
+- Stamina: drenaje, recuperación, coste de escalar, umbral 15, máximo al dormir 80.
+- Hambre: drenaje, umbrales 20/15/0, putrefacción, tolerancia.
+- Salud: daño, sangrado, regeneración, cáncer.
+- Linterna: drenaje, recarga, energía.
+- Tiempo: duración del día por dificultad, horas de correo/dron.
+- Energía: capacidad, estabilidad, consumo por componente, tiempo de reinicio.
+- Dificultad: multiplicadores de tarea, minijuegos y eventos.
+
+### 6.2 Recursos
+
+| Recurso | Campos mínimos |
 |---|---|
-| 1 | Mundo, jugador y cuerpos sólidos |
-| 2 | `Interactable` (áreas de control) |
+| `SignalDef` | id, nombre, tipo, calidad, nivel, precio_base, audio, imagen, evento, flags |
+| `MachineDef` | id, nombre, estados, calor, consumo, modos, piezas |
+| `ItemDef` | id, nombre, categoría, precio, volumen, modelo, flags, receta |
+| `EntityDef` | id, nombre, categoría, IA, velocidad, daño, spawn, radar, miedo |
+| `EventDef` | id, nombre, condiciones, peso, cooldown, duración, acciones |
+| `StoreItemDef` | id, precio, categoría, stock, desbloqueo |
+| `UpgradeDef` | id, categoría, niveles, precio, efecto |
+| `LocationDef` | id, posición, radio, POI, spawns, música/ambiente |
 
-El jugador colisiona con la capa 1; su raycast de interacción usa solo la capa 2. Así los cuerpos de las máquinas no tapan los controles.
+### 6.3 Guardado
 
-## Datos
+`GameState` contiene:
 
-- `data/balance.tres` es la única fuente de valores de balance.
-- `data/test_machine.tres` define la máquina de prueba (calor, reinicio, consumo y nombres de modo).
-- Las definiciones de máquinas y señales son Resources con `@export`; las escenas solo presentan.
-- Nada de constantes de gameplay dentro de `_process` o `_physics_process`.
+```
+version, seed, mode, difficulty, day, hour, minutes
+player: {position, rotation, stats, inventory, flashlight}
+base: {power, breakers, transformers, servers, doors, machines}
+signals: {discovered, downloaded, processed, sold, database}
+tasks: {daily, completed, reward, deadline}
+economy: {points, purchases, upgrades}
+events: {flags, active, cooldowns}
+decisions: {id: option}
+```
 
-## Añadir una máquina
+- `SAVE_VERSION` se sube con cambios incompatibles.
+- `deserialize` rellena defaults; nunca falla por un campo ausente.
+- No se guardan nodos, texturas ni referencias a escena.
 
-1. Crear un `MachineDef` en `data/` con calor, consumo y modos.
-2. Crear una escena cuya raíz use una subclase de `Machine`; añadir `Body` sólido y un `Area3D` con `Interactable` por control.
-3. Conectar `activated` a métodos de la subclase; no meter lógica en el HUD.
-4. Registrar `consumer` en la `PowerGrid` desde `main.gd`.
-5. Añadir sus comprobaciones al smoke antes de considerarla terminada.
+## 7. Capas de colisión
 
-## Pantallas de computadora
+| Capa | Nombre | Uso |
+|---:|---|---|
+| 1 | world | Suelo, paredes, props estáticos |
+| 2 | interactable | Áreas de interacción |
+| 3 | item | Objetos agarrables |
+| 4 | player | Cápsula del jugador |
+| 5 | entity | Entidades |
+| 6 | vehicle | ATV |
+| 7 | trigger | Zonas de evento, POIs |
+| 8 | camera_block | Oclusión de cámaras |
 
-`SubViewport` con su propia UI 2D, textura aplicada a la pantalla del modelo. La lógica de la máquina vive fuera del viewport; el viewport solo presenta estado y emite acciones.
+El raycast de interacción usa la máscara 2; el de agarre, 3; el de disparo/uso, 1|2|3|5.
 
-## Rendimiento
+## 8. UI y SubViewports
+
+- Cada pantalla de computadora es una escena con `SubViewport` y su propio `Control`.
+- La textura del `SubViewport` se aplica a la pantalla 3D; el jugador puede acercarse y hacer clic.
+- La UI no pausa el mundo; el jugador sigue expuesto a eventos.
+- El HUD solo presenta: no calcula reglas.
+- Las pantallas se refrescan por señales, no cada frame.
+
+## 9. Rendimiento
 
 | Presupuesto | Límite |
 |---|---|
-| Props pequeños | < 2k tris |
-| Props medianos | < 8k tris |
-| Máquinas principales | < 15k tris |
-| Draw calls visibles | objetivo < 250 |
-| FPS | 60 en hardware modesto |
+| Draw calls | < 250 |
+| Triángulos visibles | < 150k |
+| Props pequeños | < 2k |
+| Props medianos | < 8k |
+| Máquinas | < 15k |
+| Luces con sombra | ≤ 4 |
+| Cuerpos físicos activos | ≤ 64 |
 
-Medidas: `F3` muestra FPS, draw calls, primitivas, memoria y nodos. Se mide al cerrar cada hito.
+Técnicas: MultiMesh para árboles/arbustos, LOD, occlusion culling, LightmapGI, luces horneadas,
+`VisibleOnScreenNotifier3D`, carga por distancia, pooling de partículas y objetos.
 
-Técnicas previstas: LOD, occlusion culling, MultiMesh para vegetación, LightmapGI en interiores, pocas luces dinámicas con sombra, cuerpos dormidos y pooling.
-
-## Guardado
-
-Se implementa en el hito 7. Estado serializable en Resources/JSON con versión; nunca se guarda el árbol de escena.
-
-## Verificación
+## 10. Verificación
 
 ```bash
-godot --headless --path godot --import
-godot --headless --path godot --script res://tests/smoke.gd
+GODOT="C:/Users/ibane/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stable_win64_console.exe"
+"$GODOT" --headless --path godot --import
+"$GODOT" --headless --path godot --script res://tests/smoke.gd
 ```
 
-El smoke comprueba carga de escena, jugador, cámara, linterna, movimiento real con `Input.action_press`, colisión del suelo, overlay, raycast de foco, mantener E, sobrecalentamiento, reinicio bloqueado/desbloqueado, perilla, corte de energía y sobrecarga de la red.
+El smoke debe cubrir, como mínimo:
+
+- Arranque de `main.tscn` y ausencia de errores de runtime.
+- Jugador, cámara, linterna, movimiento y stamina.
+- Interacción, hold, foco y prompts.
+- Máquina: encendido, sobrecalentamiento, reinicio, modos.
+- Energía: consumo, apagón, breaker.
+- Señal: coordenadas, descarga, procesado, venta.
+- Tarea diaria, dron y guardado.
+- Entidades y eventos críticos.
+- Presupuesto de escena.
+
+Cada hito añade sus comprobaciones al smoke antes de implementar (TDD).
+
+## 11. Estado actual del código
+
+| Sistema | Estado | Nota |
+|---|---|---|
+| Proyecto Godot | hecho | 4.7.2, Forward+, 1280×720 |
+| Jugador | prototipo | 3,2/5,6 m/s; se rehace a 4/8/1,5 con stamina |
+| Linterna | prototipo | Batería básica; falta recarga y sonido |
+| Interactable | prototipo | Área, prompt, hold; falta agarre |
+| Machine / TestMachine | prototipo | OFF/ON/OVERHEATED/NO_POWER; se reutiliza la base |
+| PowerGrid | prototipo | 1.500 W todo-o-nada; se sustituye por transformadores/breakers |
+| HUD | prototipo | Foco, hold, estado, carga |
+| PerfOverlay | hecho | F3 |
+| Señales, servidores, eventos, entidades, guardado | pendiente | Hitos 5–15 |
+
+## 12. Cómo añadir un sistema
+
+1. Define su recurso en `data/` y su clase pura en `scripts/core/`.
+2. Escribe la prueba en `tests/smoke.gd` y védla fallar.
+3. Implementa la lógica mínima.
+4. Conecta la escena por señales; no metas reglas en el nodo.
+5. Añade la comprobación de rendimiento si crea geometría o luces.
+6. Actualiza `DESIGN.md`, `ARCHITECTURE.md`, `TASKS.md` y `ASSETS.md` si aplica.
+7. Commit pequeño.
