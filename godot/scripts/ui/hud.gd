@@ -4,7 +4,14 @@ extends CanvasLayer
 
 var machine: TestMachine
 var grid: PowerGrid
-var player: Player
+var player: Player:
+	set(value):
+		if player == value:
+			return
+		player = value
+		if player != null:
+			player.inventory.changed.connect(_refresh_inventory)
+		_refresh_inventory()
 
 @onready var crosshair: ColorRect = $Crosshair
 @onready var prompt: Label = $Prompt
@@ -12,6 +19,7 @@ var player: Player
 @onready var hold_fill: ColorRect = $HoldBar/Fill
 @onready var status: Label = $Status
 @onready var vitals: Label = $Vitals
+@onready var inventory_label: Label = $Inventory
 
 var _target: Interactable
 var _status_timer: float = 0.0
@@ -61,6 +69,16 @@ func _refresh_vitals() -> void:
 	var text := "Stamina %d%%\nLinterna %d%%" % [stamina_pct, battery_pct]
 	if vitals.text != text:
 		vitals.text = text
+
+
+func _refresh_inventory() -> void:
+	if player == null or inventory_label == null:
+		return
+	inventory_label.text = "Mochila %d · %.1f/%.1f m³" % [
+		player.inventory.items.size(),
+		player.inventory.total_volume(),
+		player.inventory.capacity,
+	]
 
 
 func _refresh_prompt() -> void:

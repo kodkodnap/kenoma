@@ -11,6 +11,7 @@ const DEFAULT_BALANCE: GameBalance = preload("res://data/balance.tres")
 @export var mouse_sensitivity: float = 0.0022
 @export var interact_range: float = 2.4
 @export var interact_mask: int = 2
+@export var hold_distance: float = 1.3
 
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
@@ -18,6 +19,8 @@ const DEFAULT_BALANCE: GameBalance = preload("res://data/balance.tres")
 @onready var collision: CollisionShape3D = $Collision
 
 var current_interactable: Interactable = null
+var held: Grabbable = null
+var inventory: Inventory
 var stamina: float = 100.0
 var crouched: bool = false
 var battery: float = 1.0
@@ -27,9 +30,13 @@ var _gravity: float = float(ProjectSettings.get_setting("physics/3d/default_grav
 var _hold_target: Interactable = null
 var _hold_elapsed: float = 0.0
 var _capsule: CapsuleShape3D
+var _rotating_held: bool = false
+var _interact_lock: float = 0.0
 
 
 func _ready() -> void:
+	add_to_group("player")
+	inventory = Inventory.new(balance.inventory_capacity)
 	_capsule = collision.shape.duplicate() as CapsuleShape3D
 	collision.shape = _capsule
 	_apply_stance()
@@ -38,6 +45,20 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if held != null:
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
+			_rotating_held = event.pressed
+			return
+		if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			_interact_lock = 0.25
+			drop_held(8.0)
+			return
+		if event is InputEventMouseMotion and _rotating_held:
+			rotate_held(event.relative)
+			return
+		if event.is_action_pressed("drop"):
+			drop_held(0.0)
+			return
 	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 		_pitch = clampf(_pitch - event.relative.y * mouse_sensitivity, -1.45, 1.45)
@@ -80,8 +101,15 @@ func _physics_process(delta: float) -> void:
 	velocity.z = move_toward(velocity.z, direction.z * speed, acceleration * delta)
 	move_and_slide()
 
+	if held != null:
+		_update_held()
+		_clear_focus()
+		return
+
+	_interact_lock = maxf(0.0, _interact_lock - delta)
 	_update_focus()
-	_update_interaction(delta)
+	if _interact_lock <= 0.0:
+		_update_interaction(delta)
 
 
 func _set_crouched(value: bool) -> void:
@@ -97,6 +125,51 @@ func _apply_stance() -> void:
 	_capsule.height = height
 	collision.position.y = height * 0.5
 	head.position.y = balance.crouch_head_height if crouched else balance.head_height
+
+
+func grab(grabbable: Grabbable) -> void:
+	if grabbable == null or held != null:
+		return
+	held = grabbable
+	held.grab(self)
+	_clear_focus()
+
+
+func toggle_grab(grabbable: Grabbable) -> void:
+	if held == grabbable:
+		drop_held(0.0)
+	elif held == null:
+		grab(grabbable)
+
+
+func drop_held(throw_force: float = 0.0) -> void:
+	if held == null:
+		return
+	held.release(-camera.global_basis.z * throw_force)
+	held = null
+	_rotating_held = false
+
+
+func rotate_held(relative: Vector2) -> void:
+	if held == null:
+		return
+	held.rotate_object_local(Vector3.UP, -relative.x * 0.01)
+	held.rotate_object_local(Vector3.RIGHT, -relative.y * 0.01)
+
+
+func _update_held() -> void:
+	# shortcut: el objeto sostenido no comprueba paredes; añadir con la base del hito 3.
+	held.global_position = camera.global_position - camera.global_basis.z * hold_distance
+
+
+func _clear_focus() -> void:
+	if current_interactable == null and _hold_target == null:
+		return
+	if current_interactable != null:
+		current_interactable.set_focused(false)
+	current_interactable = null
+	focus_changed.emit(null)
+	_cancel_hold()
 
 
 func _process(delta: float) -> void:

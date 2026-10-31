@@ -66,9 +66,12 @@ resumida en `docs/ORIGINAL_FEATURES.md`.
 
 - **Hito 0 cerrado:** catálogo, diseño, arquitectura, tareas, ideas, assets y README.
 - **Hito 1 cerrado:** jugador a 4/8/1,5 m/s, stamina, agacharse, salto, HUD de vitales y captura
-  Forward+. La linterna del prototipo se conserva. Smoke con 51 comprobaciones.
-- `TestMachine` y `PowerGrid` todo-o-nada siguen como prototipo para el hito 2; el hito 4 los sustituye
-  por transformadores y breakers.
+  Forward+. La linterna del prototipo se conserva.
+- **Hito 2 cerrado:** `Grabbable`, `Inventory`/`ItemContainer`, `ItemDef`, `ScreenPanel` con
+  SubViewport, bases `Entity`/`EntityDef` y `EventDef`/`EventDirector`, HUD de mochila y panel de
+  prueba con Tab. Smoke con 85 comprobaciones.
+- `TestMachine` y `PowerGrid` todo-o-nada siguen como prototipo; el hito 4 los sustituye por
+  transformadores y breakers.
 - El juego web ESTATICA de la raíz sigue sin trackear y no debe modificarse.
 - Repositorio: `C:\Users\ibane\Documents\proyecto_personal\estatica`; proyecto Godot en `godot/`.
 

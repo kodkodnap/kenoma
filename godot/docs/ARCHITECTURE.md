@@ -91,10 +91,10 @@ Data (Resources)
 | `PowerSystem` | Transformadores, breakers, consumo, estabilidad, apagón. | prototipo |
 | `ServerSystem` | 54 servidores, estados, reparación, mejoras, hashcodes. | pendiente |
 | `Economy` | Puntos, tienda, ventas, multas, bonus semanal. | pendiente |
-| `EventDirector` | Eventos por día, peso, cooldown y flags. | pendiente |
+| `EventDirector` | Eventos por día, peso, cooldown y flags. | base hecha (hito 2) |
 | `SaveSystem` | Serialización versionada y migraciones. | pendiente |
 | `DailyTask` | Tarea del día: señales, hashcodes, cintas, recompensa. | pendiente |
-| `Inventory` | Volumen, contenedores, equipo, apilar. | pendiente |
+| `Inventory` | Volumen, contenedores, equipo, apilar. | hecho (hito 2) |
 
 ### 4.2 Jugador
 
@@ -109,14 +109,14 @@ Data (Resources)
 
 | Clase | Responsabilidad | Estado |
 |---|---|---|
-| `Interactable` | Área con prompt, hold, enabled, foco. | prototipo |
-| `Grabbable` | Objeto físico agarrable, lanzable, colocable. | pendiente |
-| `Container` | Inventario de contenedor. | pendiente |
+| `Interactable` | Área con prompt, hold, enabled, foco. | hecho (hito 2) |
+| `Grabbable` | Objeto físico agarrable, lanzable, colocable. | hecho (hito 2) |
+| `ItemContainer` | Inventario de contenedor. | hecho (hito 2) |
 | `MachineDef` | Datos de máquina: nombre, estados, calor, consumo. | prototipo |
 | `Machine` | Estados OFF/ON/OVERHEATED/NO_POWER, calor, modo. | prototipo |
 | `PowerConsumer` | Consumo y estado de energía. | prototipo |
-| `Panel` | Base de paneles con SubViewport y controles. | pendiente |
-| `Knob` / `Button` / `Switch` / `Lever` | Controles físicos reutilizables. | pendiente |
+| `ScreenPanel` | Base de paneles con SubViewport y controles. | hecho (hito 2) |
+| `Knob` / `Button` / `Switch` / `Lever` | Controles físicos reutilizables. | prototipo en `TestMachine` |
 | `Transformer` | Estabilidad, daño, reinicio. | pendiente |
 | `BreakerPanel` | Cinco breakers y redistribución. | pendiente |
 | `Server` | Estado, reparación, mejoras. | pendiente |
@@ -132,8 +132,8 @@ Data (Resources)
 | `Level` | Geometría, zonas, spawns, POIs. | prototipo |
 | `Door` | Puertas, cerraduras, breaker de Utilities. | pendiente |
 | `WeatherSystem` | Lluvia, niebla, tormenta, nieve, rayos. | pendiente |
-| `EntityDef` | Datos de entidad. | pendiente |
-| `Entity` | IA base y estados. | pendiente |
+| `EntityDef` | Datos de entidad. | hecho (hito 2) |
+| `Entity` | Base activar/desactivar; IA en hito 10. | hecho (hito 2) |
 | `EntityDirector` | Spawns por evento, hora, stat o radar. | pendiente |
 | `Hud` | Vitales (stamina/linterna), foco, hold, estado de máquina; reloj en hito 6. | hecho (hito 1) |
 | `ComputerScreen` | SubViewport y UI de terminal. | pendiente |
@@ -274,14 +274,19 @@ Cada hito añade sus comprobaciones al smoke antes de implementar (TDD).
 | Sistema | Estado | Nota |
 |---|---|---|
 | Proyecto Godot | hecho | 4.7.2, Forward+, 1280×720 |
-| Jugador | hecho | 4/8/1,5 m/s; stamina, agacharse, salto y colisión; 51 checks |
+| Jugador | hecho | 4/8/1,5 m/s; stamina, agacharse, salto, colisión y agarre; 85 checks |
 | Linterna | hecho | Toggle F y drenaje de batería; recarga en hito 11 |
-| Interactable | prototipo | Área, prompt, hold; falta agarre |
+| Interactable | hecho | Área, prompt, hold, foco; capa 2 |
+| Grabbable | hecho | Física, rotación, soltar y lanzar; capa 3 |
+| Inventory / ItemContainer | hecho | Volumen, rechazo, contenedor |
+| ItemDef | hecho | `data/items/test_item.tres` |
 | Machine / TestMachine | prototipo | OFF/ON/OVERHEATED/NO_POWER; se reutiliza la base |
+| ScreenPanel | hecho | Overlay con SubViewport; pantallas 3D en hito 5 |
+| Entity / EventDirector | base | Sin IA ni eventos reales; hitos 10/13 |
 | PowerGrid | prototipo | 1.500 W todo-o-nada; se sustituye por transformadores/breakers |
-| HUD | hecho | Stamina, batería, foco, hold, estado y carga |
+| HUD | hecho | Stamina, batería, foco, hold, inventario, estado y carga |
 | PerfOverlay | hecho | F3 |
-| Señales, servidores, eventos, entidades, guardado | pendiente | Hitos 5–15 |
+| Señales, servidores, guardado | pendiente | Hitos 5–15 |
 
 ## 12. Cómo añadir un sistema
 

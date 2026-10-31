@@ -7,8 +7,8 @@
 > nombres, reglas y soluciones. No se copian assets, código, textos, audio ni interfaces. El catálogo
 > completo está en [`ORIGINAL_FEATURES.md`](ORIGINAL_FEATURES.md).
 >
-> Estado: **hito 0 cerrado** (investigación y documentación). El hito 1 rehace el prototipo de jugador
-> con las velocidades y la stamina del original.
+> Estado: **hitos 0–2 cerrados** (documentación, jugador e interacción/inventario). El hito 3 construye
+> la Alpha Root Base con placeholders.
 
 ## 1. Visión
 
@@ -242,7 +242,7 @@ vive fuera de las escenas, en `scripts/core/`, y se prueba sin render.
 |---|---|---|
 | 0 | Investigación, catálogo y documentación | **cerrado** |
 | 1 | Proyecto base: jugador 4/8/1,5 m/s, stamina, linterna, debug | **cerrado** |
-| 2 | Framework Interactable/Grabbable/Machine/Panel/Item/Entity/Event + inventario | pendiente |
+| 2 | Framework Interactable/Grabbable/Machine/Panel/Item/Entity/Event + inventario | **cerrado** |
 | 3 | Alpha Root Base en placeholders | pendiente |
 | 4 | Energía: transformadores, breaker, apagones | pendiente |
 | 5 | Estación de señales completa | pendiente |

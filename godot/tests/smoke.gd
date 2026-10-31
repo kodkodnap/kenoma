@@ -24,11 +24,17 @@ func _run() -> void:
 	var machine := main.get_node_or_null("TestMachine") as TestMachine
 	var grid := main.get_node_or_null("PowerGrid") as PowerGrid
 	var hud := main.get_node_or_null("HUD") as Hud
+	var test_item := main.get_node_or_null("TestItem") as Grabbable
+	var test_panel := main.get_node_or_null("TestPanel") as ScreenPanel
+	var director := main.get_node_or_null("EventDirector") as EventDirector
 
 	_check(player != null, "Player es CharacterBody3D", failures)
 	_check(machine != null, "TestMachine presente", failures)
 	_check(grid != null, "PowerGrid presente", failures)
 	_check(hud != null, "HUD presente", failures)
+	_check(test_item != null, "item de prueba presente", failures)
+	_check(test_panel != null, "panel de prueba presente", failures)
+	_check(director != null, "EventDirector presente", failures)
 
 	if player == null or machine == null or grid == null or hud == null:
 		_finish(failures)
@@ -215,6 +221,112 @@ func _run() -> void:
 	await physics_frame
 	_check(machine.state == Machine.State.OFF, "la red se recupera al bajar la carga", failures)
 
+	# Hito 2: ítems, inventario y contenedores por volumen.
+	var item_def := load("res://data/items/test_item.tres") as ItemDef
+	_check(item_def != null and item_def.volume > 0.0, "ItemDef de prueba cargado", failures)
+	_check(is_equal_approx(_number(balance, "inventory_capacity", 0.0), 24.0),
+		"balance: capacidad de inventario 24", failures)
+
+	var bag := Inventory.new(6.0)
+	_check(bag.add(item_def), "el inventario acepta un ítem que cabe", failures)
+	_check(not bag.add(item_def), "el inventario rechaza un ítem que no cabe", failures)
+	_check(bag.items.size() == 1 and is_equal_approx(bag.total_volume(), item_def.volume),
+		"el inventario conserva solo el ítem aceptado", failures)
+
+	var container := ItemContainer.new()
+	container.capacity = 4.0
+	main.add_child(container)
+	await process_frame
+	_check(container.inventory != null, "Container crea su inventario", failures)
+	_check(container.add_item(item_def), "Container acepta el ítem que cabe", failures)
+	_check(not container.add_item(item_def), "Container rechaza el ítem que no cabe", failures)
+	_check(container.remove_item(item_def) and container.inventory.items.is_empty(),
+		"Container permite sacar el ítem", failures)
+
+	# Hito 2: agarrar, rotar, soltar y lanzar.
+	_check(test_item.item == item_def, "el ítem de prueba referencia su ItemDef", failures)
+	_reset_player(player, Vector3(0.0, 0.05, 0.0))
+	_stand_and_aim(player, test_item.interactable, 1.2)
+	for i in 3:
+		await physics_frame
+	_check(player.current_interactable == test_item.interactable,
+		"raycast enfoca el ítem agarrable", failures)
+	Input.action_press("interact")
+	await physics_frame
+	Input.action_release("interact")
+	await physics_frame
+	_check(player.held == test_item and test_item.freeze, "E agarra el ítem", failures)
+
+	var rotation_before := test_item.rotation
+	var right_press := InputEventMouseButton.new()
+	right_press.button_index = MOUSE_BUTTON_RIGHT
+	right_press.pressed = true
+	player._unhandled_input(right_press)
+	var motion := InputEventMouseMotion.new()
+	motion.relative = Vector2(120.0, 0.0)
+	player._unhandled_input(motion)
+	var right_release := InputEventMouseButton.new()
+	right_release.button_index = MOUSE_BUTTON_RIGHT
+	right_release.pressed = false
+	player._unhandled_input(right_release)
+	_check(test_item.rotation != rotation_before, "el ítem agarrado rota con el ratón", failures)
+
+	player.drop_held(0.0)
+	await physics_frame
+	_check(player.held == null and not test_item.freeze, "soltar devuelve el ítem a la física", failures)
+
+	player.grab(test_item)
+	await physics_frame
+	player.drop_held(8.0)
+	await physics_frame
+	_check(test_item.linear_velocity.length() > 2.0, "lanzar aplica impulso", failures)
+
+	# Hito 2: panel con SubViewport, sin pausar el mundo.
+	_check(test_panel.viewport is SubViewport, "el panel usa SubViewport", failures)
+	_check(not test_panel.is_open, "el panel empieza cerrado", failures)
+	test_panel.open()
+	_check(test_panel.is_open and test_panel.visible, "el panel se abre", failures)
+	_check(not paused, "abrir el panel no pausa el mundo", failures)
+	test_panel.test_button.emit_signal("pressed")
+	_check(test_panel.test_count == 1, "el panel opera su botón", failures)
+	test_panel.close()
+	_check(not test_panel.is_open and not test_panel.visible, "el panel se cierra", failures)
+
+	# Hito 2: HUD de inventario.
+	_check(hud.inventory_label is Label, "HUD tiene inventario", failures)
+	player.inventory.add(item_def)
+	await process_frame
+	_check(hud.inventory_label.text.contains("4.0"), "el HUD muestra el volumen del inventario", failures)
+	player.inventory.clear()
+	await process_frame
+	_check(hud.inventory_label.text.contains("0"), "el HUD se vacía con el inventario", failures)
+
+	# Hito 2: bases de entidad y eventos, sin IA.
+	var entity_def := EntityDef.new()
+	entity_def.id = &"test_entity"
+	entity_def.display_name = "Entidad de prueba"
+	entity_def.max_health = 10.0
+	var entity := Entity.new()
+	main.add_child(entity)
+	entity.setup(entity_def)
+	_check(entity.definition == entity_def, "Entity recibe su EntityDef", failures)
+	entity.activate()
+	_check(entity.active, "Entity se activa", failures)
+	entity.deactivate()
+	_check(not entity.active, "Entity se desactiva", failures)
+	entity.queue_free()
+
+	var event_def := EventDef.new()
+	event_def.id = &"test_event"
+	event_def.display_name = "Evento de prueba"
+	event_def.duration = 1.0
+	director.events.append(event_def)
+	_check(director.trigger(&"test_event"), "EventDirector inicia un evento", failures)
+	_check(director.active_event == event_def, "EventDirector guarda el evento activo", failures)
+	_check(not director.trigger(&"test_event"), "EventDirector no solapa eventos", failures)
+	director.finish_current()
+	_check(director.active_event == null, "EventDirector cierra el evento", failures)
+
 	_finish(failures)
 
 
@@ -245,7 +357,8 @@ func _reset_player(player: Player, position: Vector3) -> void:
 
 
 func _release_actions() -> void:
-	for action in ["move_forward", "move_back", "move_left", "move_right", "sprint", "crouch", "jump", "interact"]:
+	for action in ["move_forward", "move_back", "move_left", "move_right", "sprint", "crouch",
+			"jump", "interact", "drop", "toggle_test_panel"]:
 		Input.action_release(action)
 
 
@@ -260,7 +373,7 @@ func _stand_and_aim(player: Player, target: Node3D, distance: float) -> void:
 
 func _finish(failures: Array[String]) -> void:
 	if failures.is_empty():
-		print("SMOKE OK: hitos 0 y 1")
+		print("SMOKE OK: hitos 0, 1 y 2")
 		quit(0)
 	else:
 		for failure in failures:

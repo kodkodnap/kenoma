@@ -1,0 +1,32 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/interaction/grabbable.gd" id="1_grabbable"]
+[ext_resource type="Resource" path="res://data/items/test_item.tres" id="2_item"]
+[ext_resource type="Script" path="res://scripts/interaction/interactable.gd" id="3_interactable"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_item"]
+size = Vector3(0.4, 0.4, 0.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape_item"]
+size = Vector3(0.4, 0.4, 0.4)
+
+[sub_resource type="BoxShape3D" id="BoxShape_area"]
+size = Vector3(0.5, 0.5, 0.5)
+
+[node name="TestItem" type="RigidBody3D"]
+mass = 2.0
+script = ExtResource("1_grabbable")
+item = ExtResource("2_item")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_item")
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape_item")
+
+[node name="Interactable" type="Area3D" parent="."]
+script = ExtResource("3_interactable")
+prompt = "Coger caja"
+
+[node name="Collision" type="CollisionShape3D" parent="Interactable"]
+shape = SubResource("BoxShape_area")

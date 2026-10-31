@@ -23,3 +23,6 @@ extends Resource
 @export_group("Linterna")
 ## Fracción de batería consumida por segundo (0.006 ≈ 2 min 45 s de luz).
 @export var flashlight_drain_per_second: float = 0.006
+
+@export_group("Inventario")
+@export var inventory_capacity: float = 24.0

@@ -102,15 +102,17 @@ cámara y debug. Sin máquinas todavía.
 
 ## Hito 2 — Framework de interacción e inventario
 
+**Estado: hecho (2026-10-30).**
+
 **Objetivo:** una base reutilizable para todo lo que se toca, se agarra o se opera.
 
 ### Entregables
 
 - `Interactable` con prompt, hold, enabled, foco y señales.
 - `Grabbable` con física, rotación, distancia y suelta.
-- `Container` e `Inventory` por volumen.
+- `ItemContainer` e `Inventory` por volumen.
 - `Machine`/`MachineDef` con estados y controles físicos: botón, interruptor, perilla, palanca.
-- `Panel` base con `SubViewport`.
+- `ScreenPanel` base con `SubViewport` (el nombre `Panel` choca con el Control nativo).
 - `ItemDef` y un ítem de prueba.
 - `EntityDef`/`Entity` base vacía, sin IA todavía.
 - `EventDef`/`EventDirector` base, sin eventos.
@@ -119,12 +121,28 @@ cámara y debug. Sin máquinas todavía.
 
 ### Criterio de aceptación
 
-- [ ] Se puede apuntar, mantener E y activar un control.
-- [ ] Se puede coger, rotar, soltar y lanzar un objeto.
-- [ ] El inventario rechaza un ítem si no cabe.
-- [ ] Un panel se abre, se opera y se cierra sin pausar el mundo.
-- [ ] La máquina de prueba enciende, se calienta, se apaga y se reinicia.
-- [ ] Smoke en verde con las nuevas comprobaciones.
+- [x] Se puede apuntar, mantener E y activar un control.
+- [x] Se puede coger, rotar, soltar y lanzar un objeto.
+- [x] El inventario rechaza un ítem si no cabe.
+- [x] Un panel se abre, se opera y se cierra sin pausar el mundo.
+- [x] La máquina de prueba enciende, se calienta, se apaga y se reinicia.
+- [x] Smoke en verde con las nuevas comprobaciones (85).
+
+### Prueba manual
+
+1. Ejecutar `godot/` con Forward+.
+2. Apuntar a la caja de prueba, pulsar E para cogerla, mover el ratón con el botón derecho para rotarla.
+3. Pulsar clic izquierdo para lanzarla o G para soltarla.
+4. Pulsar Tab para abrir el panel de prueba, pulsar `Probar` y `Cerrar`.
+5. Comprobar el HUD `Mochila` y la máquina de prueba.
+
+### Notas de implementación
+
+- `Grabbable` está congelado mientras se sostiene; no comprueba paredes al mover el objeto (shortcut para el hito 3).
+- `E` coge; clic izquierdo lanza; `G` suelta; botón derecho + ratón rota.
+- El panel de prueba es un overlay con `SubViewport`; las pantallas 3D de las máquinas llegan en el hito 5.
+- Los controles físicos siguen embebidos en `TestMachine`; se extraerán a clases reutilizables cuando haya una segunda máquina.
+- `Hud` conecta `Inventory.changed` para refrescar la mochila, sin recalcular reglas.
 
 ---
 

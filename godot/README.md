@@ -4,8 +4,8 @@ Juego de terror y simulación en primera persona inspirado en los **sistemas** d
 Eres un radioastrónomo aislado en una base alpina: encuentras señales, las descargas, las procesas,
 localizas satélites y mantienes la energía. Todo el arte, el código, los textos y el audio son originales.
 
-> **Estado:** hito 0 (documentación) y hito 1 (jugador, stamina y agacharse) cerrados. Siguiente:
-> hito 2, framework de interacción e inventario.
+> **Estado:** hitos 0–2 cerrados: documentación, jugador y framework de interacción, ítems,
+> inventario, panel y bases de entidad/evento. Siguiente: hito 3, Alpha Root Base en placeholders.
 >
 > El juego web ESTATICA de la raíz es un proyecto aparte; este vive en `godot/`.
 
@@ -31,12 +31,18 @@ localizas satélites y mantienes la energía. Todo el arte, el código, los text
 | Agacharse | Ctrl |
 | Mirar | Ratón |
 | Interactuar / mantener | E o clic izquierdo |
+| Coger / soltar objeto | E / G |
+| Rotar objeto sostenido | Botón derecho + ratón |
+| Lanzar objeto | Clic izquierdo sosteniéndolo |
 | Linterna | F |
+| Panel de prueba | Tab |
 | Overlay de rendimiento | F3 |
 | Liberar ratón | Escape |
 
-El HUD muestra stamina y batería de la linterna. Correr consume stamina y por debajo de 15 no se
-puede esprintar. La linterna es la del prototipo: se conserva, con batería y toggle.
+El HUD muestra stamina, batería de la linterna y el volumen de la mochila. Correr consume stamina y
+por debajo de 15 no se puede esprintar. La linterna es la del prototipo: se conserva, con batería y
+toggle. La caja de prueba está delante del spawn; el panel de prueba es un overlay con `SubViewport`
+y no pausa el mundo.
 
 ## Verificación
 
@@ -47,8 +53,9 @@ GODOT="C:/Users/ibane/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stabl
 "$GODOT" --headless --path godot --script res://tests/smoke.gd
 ```
 
-El smoke comprueba arranque, jugador, cámara, linterna, colisión, overlay y las mecánicas del prototipo,
-incluidas las 51 comprobaciones del hito 1. Cada hito añade sus pruebas.
+El smoke comprueba arranque, jugador, cámara, linterna, colisión, overlay, la máquina de prueba,
+inventario por volumen, agarre/rotación/tiro, panel con `SubViewport`, bases de entidad/evento y las
+85 comprobaciones acumuladas. Cada hito añade sus pruebas.
 
 ## Documentación
 
@@ -75,8 +82,8 @@ godot/
 
 ## Roadmap
 
-Hito 0: documentación. Hito 1: jugador. Hito 2: interacción e inventario. Hito 3: base. Hito 4:
-energía. Hito 5: señales. Hito 6: ciclo diario. Hito 7: mapa. Hito 8: servidores. Hito 9: stats.
-Hito 10: entidades. Hitos 11–14: Tier 2–4. Hito 15: guardado, menús y pulido.
+Hitos 0–2: documentación, jugador e interacción/inventario. Hito 3: base. Hito 4: energía. Hito 5:
+señales. Hito 6: ciclo diario. Hito 7: mapa. Hito 8: servidores. Hito 9: stats. Hito 10: entidades.
+Hitos 11–14: Tier 2–4. Hito 15: guardado, menús y pulido.
 
 Detalle en [`docs/TASKS.md`](docs/TASKS.md).
