@@ -27,6 +27,7 @@ func _run() -> void:
 	var test_item := main.get_node_or_null("TestItem") as Grabbable
 	var test_panel := main.get_node_or_null("TestPanel") as ScreenPanel
 	var director := main.get_node_or_null("EventDirector") as EventDirector
+	var base := main.get_node_or_null("Base")
 
 	_check(player != null, "Player es CharacterBody3D", failures)
 	_check(machine != null, "TestMachine presente", failures)
@@ -43,7 +44,9 @@ func _run() -> void:
 	_check(player.balance != null, "balance.tres cargado", failures)
 	_check(player.get_node_or_null("Head/Camera3D") is Camera3D, "cámara en Head", failures)
 	_check(player.flashlight is SpotLight3D and player.flashlight.light_energy > 0.0, "linterna encendida", failures)
-	_check(main.get_node_or_null("Level/Floor/Collision") is CollisionShape3D, "suelo con colisión", failures)
+	var base_collision := base.get_node_or_null("Collision") as StaticBody3D if base != null else null
+	_check(base_collision != null and base_collision.get_child_count() > 0,
+		"suelo con colisión", failures)
 	_check(main.get_node_or_null("PerfOverlay") != null, "overlay de rendimiento presente", failures)
 	_check(machine.definition != null, "definición de máquina cargada", failures)
 
@@ -104,12 +107,12 @@ func _run() -> void:
 		await physics_frame
 	_check(player.global_position.y > jump_start + 0.04, "el jugador salta", failures)
 
-	_reset_player(player, Vector3(18.5, 0.05, 6.0))
+	_reset_player(player, Vector3(25.0, 0.05, 6.0))
 	Input.action_press("move_right")
 	for i in 40:
 		await physics_frame
 	Input.action_release("move_right")
-	_check(player.global_position.x < 19.8, "el jugador no atraviesa la pared", failures)
+	_check(player.global_position.x < 26.2, "el jugador no atraviesa la pared", failures)
 
 	player.stamina = 42.0
 	hud._refresh_vitals()
@@ -327,20 +330,121 @@ func _run() -> void:
 	director.finish_current()
 	_check(director.active_event == null, "EventDirector cierra el evento", failures)
 
+	# Hito 3: Alpha Root Base, zonas, props, recorrido y presupuesto.
+	_check(base != null, "Base de Alpha Root presente", failures)
+	if base != null:
+		var zones_variant: Variant = base.get("zones")
+		var zones: Dictionary = zones_variant if zones_variant is Dictionary else {}
+		var required_zones := [
+			&"entrance", &"reception", &"utility", &"lobby", &"loading", &"garage",
+			&"break_room", &"signal", &"server_room", &"stairwell",
+			&"basement_hall", &"breaker", &"crematory", &"lockers", &"transformer",
+			&"basement_storage", &"upper_hall", &"dorm", &"bath", &"storage",
+			&"balcony", &"roof_access", &"roof",
+		]
+		var missing: Array[String] = []
+		var unlit: Array[String] = []
+		for id in required_zones:
+			var marker := zones.get(id) as Node3D
+			if marker == null:
+				missing.append(String(id))
+			elif marker.get_node_or_null("Light") == null:
+				unlit.append(String(id))
+		_check(missing.is_empty(), "zonas requeridas presentes " + str(missing), failures)
+		_check(unlit.is_empty(), "todas las zonas tienen luz " + str(unlit), failures)
+		_check(int(base.get("room_count")) >= 20, "la base tiene al menos 20 habitaciones", failures)
+
+		_check(get_nodes_in_group("server_placeholder").size() == 30,
+			"30 servidores placeholder", failures)
+		_check(get_nodes_in_group("signal_panel").size() == 4,
+			"4 paneles de la estación de señales", failures)
+		_check(get_nodes_in_group("transformer").size() == 3,
+			"3 transformadores exteriores", failures)
+		_check(get_nodes_in_group("satellite_dish").size() == 24,
+			"24 platos de satélite", failures)
+		_check(get_nodes_in_group("coordinate_radar").size() == 3,
+			"3 radares de coordenadas", failures)
+		_check(get_nodes_in_group("wind_turbine").size() == 4,
+			"4 turbinas eólicas", failures)
+		_check(get_nodes_in_group("radio_tower").size() == 1,
+			"torre de radio presente", failures)
+		_check(get_nodes_in_group("breaker").size() == 1, "breaker presente", failures)
+		_check(get_nodes_in_group("crematory").size() == 1, "crematorio presente", failures)
+		_check(get_nodes_in_group("lockers").size() == 1, "taquillas presentes", failures)
+
+		var breaker := base.get_node_or_null("Breaker") as Node3D
+		_check(breaker != null and breaker.global_position.y < -3.0,
+			"el breaker está en el sótano", failures)
+		var stairs_up := base.get_node_or_null("StairsUp") as StaticBody3D
+		var stairs_down := base.get_node_or_null("StairsDown") as StaticBody3D
+		_check(stairs_up != null and stairs_up.get_node_or_null("Collision") is CollisionShape3D,
+			"rampa superior con colisión", failures)
+		_check(stairs_down != null and stairs_down.get_node_or_null("Collision") is CollisionShape3D,
+			"rampa del sótano con colisión", failures)
+		_check(base.get_node_or_null("RoofRamp") is StaticBody3D,
+			"rampa al tejado presente", failures)
+
+		# Recorrido real: pasillo y entrada a Signal Processing.
+		_reset_player(player, Vector3(0.0, 0.05, 0.0))
+		for i in 2:
+			await physics_frame
+		Input.action_press("move_forward")
+		for i in 70:
+			await physics_frame
+		Input.action_release("move_forward")
+		_check(player.global_position.z < -3.0,
+			"se entra al Signal Processing desde el pasillo", failures)
+
+		_reset_player(player, Vector3(-24.0, 0.05, 0.0))
+		for i in 2:
+			await physics_frame
+		Input.action_press("move_right")
+		for i in 70:
+			await physics_frame
+		Input.action_release("move_right")
+		_check(player.global_position.x > -20.0, "el pasillo central es recorrible", failures)
+
+		# Rampas: subir a la planta superior y bajar al sótano.
+		_reset_player(player, Vector3(25.0, 0.05, -1.0))
+		for i in 2:
+			await physics_frame
+		Input.action_press("move_right")
+		for i in 140:
+			await physics_frame
+		Input.action_release("move_right")
+		_check(player.global_position.y > 3.0,
+			"la rampa sube a la planta superior (y=%.2f)" % player.global_position.y, failures)
+
+		_reset_player(player, Vector3(25.0, 0.05, 1.0))
+		for i in 2:
+			await physics_frame
+		Input.action_press("move_right")
+		for i in 140:
+			await physics_frame
+		Input.action_release("move_right")
+		_check(player.global_position.y < -3.0,
+			"la rampa baja al sótano (y=%.2f)" % player.global_position.y, failures)
+
+		var budget := _count_budget(main)
+		_check(int(budget.get("triangles", 0)) < 150000,
+			"presupuesto: menos de 150k triángulos (%d)" % int(budget.get("triangles", 0)), failures)
+		_check(int(budget.get("draws", 0)) < 250,
+			"presupuesto: menos de 250 draw calls (%d)" % int(budget.get("draws", 0)), failures)
+
 	_finish(failures)
 
 
 func _measure_speed(player: Player, action: String) -> float:
-	_reset_player(player, Vector3(0.0, 0.05, 0.0))
+	_reset_player(player, Vector3(-24.0, 0.05, 0.0))
 	for i in 2:
 		await physics_frame
-	Input.action_press("move_forward")
+	Input.action_press("move_right")
 	if action != "":
 		Input.action_press(action)
 	for i in 24:
 		await physics_frame
 	var speed := Vector2(player.velocity.x, player.velocity.z).length()
-	Input.action_release("move_forward")
+	Input.action_release("move_right")
 	if action != "":
 		Input.action_release(action)
 	for i in 2:
@@ -373,7 +477,7 @@ func _stand_and_aim(player: Player, target: Node3D, distance: float) -> void:
 
 func _finish(failures: Array[String]) -> void:
 	if failures.is_empty():
-		print("SMOKE OK: hitos 0, 1 y 2")
+		print("SMOKE OK: hitos 0, 1, 2 y 3")
 		quit(0)
 	else:
 		for failure in failures:
@@ -393,3 +497,26 @@ func _number(object: Object, property: StringName, fallback: float) -> float:
 	if value == null:
 		return fallback
 	return float(value)
+
+
+func _count_budget(root_node: Node) -> Dictionary:
+	var triangles := 0
+	var draws := 0
+	for node in root_node.find_children("*", "", true, false):
+		if node is MultiMeshInstance3D:
+			var multimesh := (node as MultiMeshInstance3D).multimesh
+			if multimesh != null and multimesh.mesh != null:
+				triangles += _mesh_triangles(multimesh.mesh) * multimesh.instance_count
+				draws += 1
+		elif node is MeshInstance3D:
+			var mesh := (node as MeshInstance3D).mesh
+			if mesh != null:
+				triangles += _mesh_triangles(mesh)
+				draws += 1
+		elif node is Label3D:
+			draws += 1
+	return {"triangles": triangles, "draws": draws}
+
+
+func _mesh_triangles(mesh: Mesh) -> int:
+	return mesh.get_faces().size() / 3

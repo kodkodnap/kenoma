@@ -4,8 +4,9 @@ Juego de terror y simulación en primera persona inspirado en los **sistemas** d
 Eres un radioastrónomo aislado en una base alpina: encuentras señales, las descargas, las procesas,
 localizas satélites y mantienes la energía. Todo el arte, el código, los textos y el audio son originales.
 
-> **Estado:** hitos 0–2 cerrados: documentación, jugador y framework de interacción, ítems,
-> inventario, panel y bases de entidad/evento. Siguiente: hito 3, Alpha Root Base en placeholders.
+> **Estado:** hitos 0–3 cerrados: documentación, jugador, framework de interacción e inventario, y
+> Alpha Root Base completa en placeholders (22 salas, 30 servidores, sótano, plantas y exteriores).
+> Siguiente: hito 4, energía con transformadores y breaker.
 >
 > El juego web ESTATICA de la raíz es un proyecto aparte; este vive en `godot/`.
 
@@ -41,8 +42,8 @@ localizas satélites y mantienes la energía. Todo el arte, el código, los text
 
 El HUD muestra stamina, batería de la linterna y el volumen de la mochila. Correr consume stamina y
 por debajo de 15 no se puede esprintar. La linterna es la del prototipo: se conserva, con batería y
-toggle. La caja de prueba está delante del spawn; el panel de prueba es un overlay con `SubViewport`
-y no pausa el mundo.
+toggle. El spawn está en el lobby; la máquina de prueba está en el utility closet, a la derecha del
+pasillo, y el panel de prueba es un overlay con `SubViewport` que no pausa el mundo.
 
 ## Verificación
 
@@ -54,8 +55,9 @@ GODOT="C:/Users/ibane/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stabl
 ```
 
 El smoke comprueba arranque, jugador, cámara, linterna, colisión, overlay, la máquina de prueba,
-inventario por volumen, agarre/rotación/tiro, panel con `SubViewport`, bases de entidad/evento y las
-85 comprobaciones acumuladas. Cada hito añade sus pruebas.
+inventario por volumen, agarre/rotación/tiro, panel con `SubViewport`, bases de entidad/evento, la
+Alpha Root Base (zonas con luz, 30 servidores, 4 paneles, props, rampas, recorridos y presupuesto) y
+las 89 comprobaciones acumuladas. Cada hito añade sus pruebas.
 
 ## Documentación
 

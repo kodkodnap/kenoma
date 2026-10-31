@@ -130,6 +130,8 @@ Data (Resources)
 | Clase | Responsabilidad | Estado |
 |---|---|---|
 | `Level` | Geometría, zonas, spawns, POIs. | prototipo |
+| `BaseLayout` | Plano puro de Alpha Root Base: 22 salas, puertas, plataformas, sin escena. | hecho (hito 3) |
+| `BaseBuilder` | Construye la base: MultiMesh por material, colisiones en un `StaticBody3D`, luces y props. | hecho (hito 3) |
 | `Door` | Puertas, cerraduras, breaker de Utilities. | pendiente |
 | `WeatherSystem` | Lluvia, niebla, tormenta, nieve, rayos. | pendiente |
 | `EntityDef` | Datos de entidad. | hecho (hito 2) |
@@ -247,6 +249,8 @@ El raycast de interacción usa la máscara 2; el de agarre, 3; el de disparo/uso
 Técnicas: MultiMesh para árboles/arbustos, LOD, occlusion culling, LightmapGI, luces horneadas,
 `VisibleOnScreenNotifier3D`, carga por distancia, pooling de partículas y objetos.
 
+Medido (hito 3): 11.7k triángulos / 78 draw calls con la Alpha Root Base completa.
+
 ## 10. Verificación
 
 ```bash
@@ -283,7 +287,8 @@ Cada hito añade sus comprobaciones al smoke antes de implementar (TDD).
 | Machine / TestMachine | prototipo | OFF/ON/OVERHEATED/NO_POWER; se reutiliza la base |
 | ScreenPanel | hecho | Overlay con SubViewport; pantallas 3D en hito 5 |
 | Entity / EventDirector | base | Sin IA ni eventos reales; hitos 10/13 |
-| PowerGrid | prototipo | 1.500 W todo-o-nada; se sustituye por transformadores/breakers |
+| PowerGrid | prototipo | 1.500 W todo-o-nada; se sustituye por transformadores/breakers (hito 4) |
+| Alpha Root Base | hecho | 22 salas + props; 11.7k tris / 78 draws; recorridos y rampas verificados |
 | HUD | hecho | Stamina, batería, foco, hold, inventario, estado y carga |
 | PerfOverlay | hecho | F3 |
 | Señales, servidores, guardado | pendiente | Hitos 5–15 |

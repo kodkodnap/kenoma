@@ -37,7 +37,7 @@ resumida en `docs/ORIGINAL_FEATURES.md`.
 0. Investigación, catálogo y documentación. **Hecho.**
 1. Proyecto base: jugador 4/8/1,5 m/s, stamina, linterna, debug.
 2. Framework Interactable/Grabbable/Machine/Panel/Item/Entity/Event + inventario.
-3. Alpha Root Base en placeholders: señales, 30 servidores, sótano, garaje, cocina.
+3. Alpha Root Base en placeholders: señales, 30 servidores, sótano, garaje, cocina. **Hecho.**
 4. Energía: 3 transformadores, breaker, apagones.
 5. Estación de señales completa: 4 paneles, discos, caja, base de datos.
 6. Ciclo diario, email, dron, cintas, puntos, tienda, mejoras.
@@ -72,6 +72,11 @@ resumida en `docs/ORIGINAL_FEATURES.md`.
 - **Hito 2 cerrado:** `Grabbable`, `Inventory`/`ItemContainer`, `ItemDef`, `ScreenPanel` con
   SubViewport, bases `Entity`/`EntityDef` y `EventDef`/`EventDirector`, HUD de mochila y panel de
   prueba con Tab. Smoke con 85 comprobaciones.
+- **Hito 3 cerrado:** Alpha Root Base recorrible en placeholders. `BaseLayout` (22 salas +
+  plataformas) y `BaseBuilder` (geometría por `MultiMesh`, colisiones, luces y props). 30 servidores,
+  4 paneles, 24 platos, 3 transformadores, 3 radares, 4 turbinas y torre; sótano con breaker,
+  crematorio y taquillas; two ramps (subida/bajada) y techo. Smoke 89 checks; capturas Forward+ de 8
+  puntos. Presupuesto 11.7k triángulos / 78 draw calls.
 - `TestMachine` y `PowerGrid` todo-o-nada siguen como prototipo; el hito 4 los sustituye por
   transformadores y breakers.
 - El juego web ESTATICA de la raíz sigue sin trackear y no debe modificarse.

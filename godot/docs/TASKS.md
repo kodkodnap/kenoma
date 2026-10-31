@@ -12,8 +12,8 @@
 |---:|---|---|---|
 | 0 | Investigación, catálogo y documentación | **hecho** | Docs revisados y commit |
 | 1 | Proyecto base y jugador | **hecho** | Smoke (51 checks) + captura Forward+ |
-| 2 | Framework de interacción e inventario | pendiente | Smoke |
-| 3 | Alpha Root Base en placeholders | pendiente | Smoke + recorrido |
+| 2 | Framework de interacción e inventario | **hecho** | Smoke (85 checks) + captura Forward+ |
+| 3 | Alpha Root Base en placeholders | **hecho** | Smoke (89 checks) + recorrido + capturas Forward+ |
 | 4 | Energía | pendiente | Smoke + apagón jugable |
 | 5 | Estación de señales | pendiente | Smoke + cadena completa |
 | 6 | Ciclo diario y dron | pendiente | Smoke + día completo |
@@ -150,6 +150,10 @@ cámara y debug. Sin máquinas todavía.
 
 **Objetivo:** una base completa, recorrible y con la distribución del original, hecha con CSG/primitivas.
 
+### Estado
+
+**Hecho (2026-10-31).** Smoke 89 checks en verde; capturas Forward+ de 8 puntos de vista verificadas.
+
 ### Entregables
 
 - Exteriores norte/este/sur/oeste y entrada principal.
@@ -160,17 +164,31 @@ cámara y debug. Sin máquinas todavía.
 - Planta superior: dormitorio, baño, almacén, balcón, techo, conductos.
 - Puertas, luces, carteles, notas y colisiones.
 - 24 platos, 3 transformadores, 3 radares, 4 turbinas y torre como placeholders exteriores.
-- LightmapGI o luces horneadas en interiores.
-- Punto de spawn y recorrido de prueba.
+- Luces omnidireccionales per-zona (sin LightmapGI) en interiores y exteriores.
+- Spawn en el lobby y recorrido de prueba por el pasillo y Signal Processing.
 
 ### Criterio de aceptación
 
-- [ ] Se recorre toda la base sin atascos ni huecos.
-- [ ] Todas las zonas tienen luz y se distinguen.
-- [ ] Los 30 servidores y los cuatro paneles son accesibles.
-- [ ] El sótano tiene una única ruta clara al breaker.
-- [ ] El presupuesto de la escena no supera 150k triángulos / 250 draw calls.
-- [ ] Smoke en verde.
+- [x] Se recorre toda la base sin atascos ni huecos.
+- [x] Todas las zonas tienen luz y se distinguen.
+- [x] Los 30 servidores y los cuatro paneles son accesibles.
+- [x] El sótano tiene una única ruta clara al breaker.
+- [x] El presupuesto de la escena no supera 150k triángulos / 250 draw calls (11.7k / 78).
+- [x] Smoke en verde.
+
+### Notas de implementación
+
+- La geometría está en `BaseBuilder` (`scripts/world/base_builder.gd`), generada en `_ready` y
+  agrupada por material en `MultiMeshInstance3D`. Las colisiones van a un único `StaticBody3D`
+  (`Base/Collision`) con `CollisionShape3D` por caja; las rampas son `StaticBody3D` propios para
+  poder comprobar su colisión en el smoke.
+- `BaseLayout` (`scripts/world/base_layout.gd`) es el plano puro (22 habitaciones, puertas y
+  plataformas); `collect_walls()` deduce y fusiona muros/puertas compartidos.
+- Spawn del jugador en `(0, 0.05, 6)`; `TestMachine` en `(-10, 0, 10)` (utility closet) y el
+  ítem de prueba en el lobby, reutilizando los hitos 1 y 2.
+- 24 platos como `Marker3D` en anillo de radio 55 m con geometría de pico en `MultiMesh`; la torre
+  de radio, los transformadores, radares y turbinas son props dispersos.
+- El smoke comprueba recorridos reales: pasillo, entrada a Signal Processing y ambas rampas.
 
 ---
 
