@@ -1,7 +1,11 @@
-[gd_scene load_steps=15 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/debug/perf_overlay.tscn" id="2_overlay"]
+[ext_resource type="Script" path="res://scripts/core/main.gd" id="3_main"]
+[ext_resource type="PackedScene" path="res://scenes/machines/test_machine.tscn" id="4_machine"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]
+[ext_resource type="Script" path="res://scripts/core/power_grid.gd" id="6_grid"]
 
 [sub_resource type="Environment" id="Env_night"]
 background_mode = 1
@@ -51,6 +55,7 @@ size = Vector3(1, 1, 1)
 size = Vector3(1, 1, 1)
 
 [node name="Main" type="Node3D"]
+script = ExtResource("3_main")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Env_night")
@@ -143,7 +148,16 @@ material_override = SubResource("Mat_crate")
 [node name="Collision" type="CollisionShape3D" parent="Level/CrateC"]
 shape = SubResource("Shape_crate")
 
+[node name="PowerGrid" type="Node" parent="."]
+script = ExtResource("6_grid")
+capacity_w = 1500.0
+
+[node name="TestMachine" parent="." instance=ExtResource("4_machine")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
+
 [node name="Player" parent="." instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 6)
 
 [node name="PerfOverlay" parent="." instance=ExtResource("2_overlay")]
+
+[node name="HUD" parent="." instance=ExtResource("5_hud")]

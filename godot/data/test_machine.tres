@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MachineDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/machines/machine_def.gd" id="1_def"]
+
+[resource]
+script = ExtResource("1_def")
+display_name = "Receptor de prueba"
+max_heat = 100.0
+restart_heat = 30.0
+cool_per_second = 8.0
+heat_per_second = PackedFloat32Array(5, 9, 14)
+power_draw_w = PackedFloat32Array(400, 800, 1400)
+mode_names = PackedStringArray("BAJA", "MEDIA", "ALTA")

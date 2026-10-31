@@ -32,6 +32,10 @@ Eres un radioastrónomo aislado en una base en medio de un bosque. Trabajas en c
 | 2026-10-30 | Proyecto en `godot/` dentro del repo | El repo ya contiene el juego web ESTÁTICA (Three.js) con su propio `scripts/`; mezclarlos rompería ambos. Es reversible. |
 | 2026-10-30 | Datos en Resources (`.tres`) | Cambiar balance y definiciones sin tocar código. |
 | 2026-10-30 | Nada de assets del original | Requisito legal y de aprendizaje. |
+| 2026-10-30 | Interacción por raycast de cámara contra `Area3D` (capa 2), E o clic; `hold_time` para acciones largas | Permite varias partes móviles por máquina sin un script de interacción por objeto. |
+| 2026-10-30 | Red de energía todo-o-nada por capacidad | Primera versión legible: si la carga supera la capacidad, se corta toda la red. Prioridades y sectores llegan con la base. |
+| 2026-10-30 | Máquina base con estados `OFF/ON/OVERHEATED/NO_POWER` | El sobrecalentamiento es el primer fallo con consecuencia; `broken` se pospone. |
+| 2026-10-30 | El consumo de una máquina es el de su modo, incluso apagada | Consumo de reposo simplificado; se revisará al construir la energía de la base. |
 
 ## Estructura
 
@@ -49,6 +53,16 @@ godot/
 
 Todos viven en `data/balance.tres` (`GameBalance`). Los scripts leen de ahí; no se codifican velocidades, consumos ni duraciones.
 
+## Interacción y máquinas (hito 1)
+
+- Alcance de 2,4 m desde la cámara; solo la capa 2. La mira pasa a ámbar con foco y a rojo si el control está bloqueado.
+- `E` o clic izquierdo. Si `hold_time > 0`, hay que mantener; soltar o cambiar de foco cancela el progreso.
+- `Interactable` solo emite `activated`; no conoce la máquina. Cada parte móvil es un `Area3D` independiente.
+- `Machine` concentra energía, calor, modo y estado; las subclases solo presentan y traducen controles a llamadas.
+- Estados: `OFF`, `ON`, `OVERHEATED`, `NO_POWER`. Al 100% de calor pasa a `OVERHEATED`; no se puede reiniciar hasta bajar del 30%. Sin energía pasa a `NO_POWER` y al volver queda `OFF` (no se auto-enciende).
+- La perilla cambia entre BAJA/MEDIA/ALTA; cada modo define calor y consumo en el `.tres`.
+- La red de prueba tiene 1500 W y corta toda la carga si se excede la capacidad.
+
 ## Protocolo de ideas
 
 - Cada idea nueva se anota en `docs/IDEAS.md` con fecha, descripción y estado.
@@ -57,7 +71,9 @@ Todos viven en `data/balance.tres` (`GameBalance`). Los scripts leen de ahí; no
 
 ## Estado
 
-Hito 0 completado: estructura, jugador en primera persona (WASD, sprint, mirada con ratón, linterna con batería), sala de pruebas y overlay de rendimiento (F3). Ver `TASKS.md`.
+Hito 0 completado: estructura, jugador en primera persona (WASD, sprint, mirada con ratón, linterna con batería), sala de pruebas y overlay de rendimiento (F3).
+
+Hito 1 completado: interacción por raycast, HUD de foco/progreso, máquina de prueba con interruptor (mantener 1,2 s), botón de reinicio, perilla de ganancia, estados, sobrecalentamiento y red de energía mínima. Ver `TASKS.md`.
 
 ## Decisiones abiertas
 

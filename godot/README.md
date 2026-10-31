@@ -2,7 +2,7 @@
 
 Juego de terror y simulación en primera persona: radioastrónomo aislado en una base en el bosque. Proyecto original de aprendizaje en **Godot 4.7.2** (Forward+, GDScript tipado).
 
-Estado actual: **hito 0** — estructura, jugador en primera persona con linterna y sala de pruebas.
+Estado actual: **hito 1** — jugador en primera persona, linterna, interacción física y máquina de prueba con energía, calor y estados.
 
 ## Ejecutar
 
@@ -25,6 +25,7 @@ También puedes abrir `project.godot` desde el gestor de proyectos y pulsar **F5
 | Mover | WASD |
 | Correr | Shift |
 | Mirar | Ratón |
+| Interactuar | `E` o clic izquierdo (mantener si el prompt lo pide) |
 | Linterna | F |
 | Métricas de rendimiento | F3 |
 | Liberar el ratón | Esc (clic para recapturar) |
@@ -36,7 +37,7 @@ godot --headless --path godot --import
 godot --headless --path godot --script res://tests/smoke.gd
 ```
 
-El smoke comprueba que la escena carga, el jugador se mueve de verdad, la cámara y la linterna existen y el suelo tiene colisión.
+El smoke comprueba que la escena carga, el jugador se mueve de verdad, la cámara y la linterna existen, el suelo tiene colisión y la máquina responde a foco, mantener, sobrecalentamiento, reinicio, perilla, corte de energía y sobrecarga.
 
 ## Documentación
 

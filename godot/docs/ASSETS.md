@@ -30,6 +30,9 @@ Low-poly estilizado, original, coherente en todo el juego: formas simples, palet
 | Paredes | primitiva `BoxMesh` | 12 | Placeholder | provisional |
 | Cajas | primitiva `BoxMesh` | 12 | Placeholder | provisional |
 | Jugador | cápsula + cámara | — | Placeholder | provisional |
+| Máquina de prueba | primitivas `BoxMesh`/`CylinderMesh`/`SphereMesh` | < 500 | Placeholder del hito 1 | provisional |
+
+Sin modelos generados todavía. El reemplazo por GLB empieza en el hito 6; hasta entonces se mantienen los placeholders jugables.
 
 ## Pipeline
 

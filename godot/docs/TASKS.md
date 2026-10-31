@@ -23,18 +23,38 @@ godot --headless --path godot --script res://tests/smoke.gd
 
 Resultado esperado: `SMOKE OK: hito 0` y código de salida 0.
 
-## Hito 1 — Interacción y máquina de prueba (siguiente)
+## Hito 1 — Interacción y máquina de prueba ✅ (2026-10-30)
 
-- [ ] `Interactable` con raycast desde la cámara y foco visible.
-- [ ] Verbo `E` con mantener para acciones largas.
-- [ ] Máquina de prueba: botón, interruptor y perilla con estados.
-- [ ] `PowerConsumer` mínimo y señal de energía.
-- [ ] Sonido/feedback de accionamiento (aunque sea sintetizado).
-- [ ] Smoke: enfocar, accionar y comprobar cambio de estado.
+- [x] `Interactable` con raycast desde la cámara y foco visible.
+- [x] Verbo `E`/clic con mantener para acciones largas y barra de progreso.
+- [x] `MachineDef` en `.tres` y `Machine` base con estados.
+- [x] Máquina de prueba: interruptor, botón de reinicio y perilla de ganancia.
+- [x] `PowerConsumer` y `PowerGrid` mínima con corte por capacidad.
+- [x] HUD de foco, prompt, progreso y estado (calor, modo, carga).
+- [x] Feedback visual: lámpara de estado, palanca, pulsación y giro de perilla.
+- [x] Smoke: enfocar, mantener, sobrecalentar, reiniciar, cambiar modo, cortar energía y sobrecargar la red.
+
+**Cómo probar:** abre `godot/project.godot` y pulsa F5. Camina hasta la máquina y mira uno de sus controles.
+
+- **Interruptor (izquierda):** mantén `E` 1,2 s para encender o apagar. La palanca y la lámpara responden.
+- **Perilla (derecha):** `E` cicla BAJA → MEDIA → ALTA. Cada modo calienta y consume más.
+- **Sobrecalentamiento:** en MEDIA/ALTA la máquina se apaga al 100% de calor. Espera a que baje del 30% y pulsa el botón central para reiniciar.
+- **Energía:** `PowerGrid` tiene 1500 W; si la carga la supera, corta toda la red. Al volver, la máquina queda apagada.
+- **HUD:** arriba a la derecha se ven estado, calor, modo y carga de la red.
+
+**Verificación automática:**
+
+```bash
+godot --headless --path godot --import
+godot --headless --path godot --script res://tests/smoke.gd
+```
+
+Resultado esperado: `SMOKE OK: hitos 0 y 1` y código de salida 0.
 
 ## Hito 2 — Base principal en placeholders
 
 - [ ] Interiores, puertas, energía, ciclo día/noche, iluminación y ambiente.
+- [ ] Audio ambiental y clics de máquina sintetizados.
 
 ## Hito 3 — Terreno y bosque
 
@@ -59,3 +79,4 @@ Resultado esperado: `SMOKE OK: hito 0` y código de salida 0.
 ## Registro
 
 - 2026-10-30 — Hito 0 completado. Smoke en verde con Godot 4.7.2. Siguiente: interacción.
+- 2026-10-30 — Hito 1 completado. Interacción, máquina de prueba y red mínima; smoke en verde. Siguiente: base principal.

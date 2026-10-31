@@ -1,0 +1,185 @@
+[gd_scene load_steps=22 format=3]
+
+[ext_resource type="Script" path="res://scripts/machines/test_machine.gd" id="1_machine"]
+[ext_resource type="Resource" path="res://data/test_machine.tres" id="2_def"]
+[ext_resource type="Script" path="res://scripts/interaction/interactable.gd" id="3_interactable"]
+[ext_resource type="Script" path="res://scripts/core/power_consumer.gd" id="4_consumer"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_body"]
+albedo_color = Color(0.16, 0.19, 0.17, 1)
+metallic = 0.35
+roughness = 0.6
+
+[sub_resource type="BoxMesh" id="Mesh_body"]
+size = Vector3(1.6, 1.4, 0.6)
+
+[sub_resource type="BoxShape3D" id="Shape_body"]
+size = Vector3(1.6, 1.4, 0.6)
+
+[sub_resource type="StandardMaterial3D" id="Mat_panel"]
+albedo_color = Color(0.28, 0.3, 0.28, 1)
+metallic = 0.2
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="Mesh_panel"]
+size = Vector3(1.44, 1.0, 0.04)
+
+[sub_resource type="StandardMaterial3D" id="Mat_lever"]
+albedo_color = Color(0.75, 0.16, 0.1, 1)
+roughness = 0.45
+
+[sub_resource type="BoxMesh" id="Mesh_lever"]
+size = Vector3(0.07, 0.32, 0.07)
+
+[sub_resource type="BoxShape3D" id="Shape_switch"]
+size = Vector3(0.3, 0.42, 0.3)
+
+[sub_resource type="StandardMaterial3D" id="Mat_button"]
+albedo_color = Color(0.85, 0.6, 0.12, 1)
+roughness = 0.4
+
+[sub_resource type="CylinderMesh" id="Mesh_button"]
+top_radius = 0.085
+bottom_radius = 0.095
+height = 0.07
+radial_segments = 16
+
+[sub_resource type="BoxShape3D" id="Shape_button"]
+size = Vector3(0.26, 0.26, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="Mat_knob"]
+albedo_color = Color(0.72, 0.73, 0.7, 1)
+metallic = 0.3
+roughness = 0.5
+
+[sub_resource type="CylinderMesh" id="Mesh_knob"]
+top_radius = 0.11
+bottom_radius = 0.12
+height = 0.08
+radial_segments = 16
+
+[sub_resource type="BoxMesh" id="Mesh_marker"]
+size = Vector3(0.018, 0.08, 0.018)
+
+[sub_resource type="BoxShape3D" id="Shape_knob"]
+size = Vector3(0.32, 0.32, 0.28)
+
+[sub_resource type="StandardMaterial3D" id="Mat_lamp"]
+albedo_color = Color(0.15, 0.16, 0.15, 1)
+emission_enabled = true
+emission = Color(0.2, 1, 0.4, 1)
+emission_energy_multiplier = 0.0
+
+[sub_resource type="SphereMesh" id="Mesh_lamp"]
+radius = 0.055
+height = 0.11
+radial_segments = 12
+rings = 6
+
+[node name="TestMachine" type="Node3D"]
+script = ExtResource("1_machine")
+definition = ExtResource("2_def")
+
+[node name="Consumer" type="Node" parent="."]
+script = ExtResource("4_consumer")
+draw_w = 400.0
+
+[node name="Body" type="StaticBody3D" parent="."]
+position = Vector3(0, 0.7, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Body"]
+mesh = SubResource("Mesh_body")
+material_override = SubResource("Mat_body")
+
+[node name="Collision" type="CollisionShape3D" parent="Body"]
+shape = SubResource("Shape_body")
+
+[node name="Panel" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.85, 0.32)
+mesh = SubResource("Mesh_panel")
+material_override = SubResource("Mat_panel")
+
+[node name="Switch" type="Area3D" parent="."]
+position = Vector3(-0.5, 0.95, 0.38)
+script = ExtResource("3_interactable")
+prompt = "Encender"
+hold_time = 1.2
+
+[node name="Collision" type="CollisionShape3D" parent="Switch"]
+shape = SubResource("Shape_switch")
+
+[node name="Pivot" type="Node3D" parent="Switch"]
+rotation = Vector3(0.55, 0, 0)
+
+[node name="Lever" type="MeshInstance3D" parent="Switch/Pivot"]
+position = Vector3(0, 0.16, 0)
+mesh = SubResource("Mesh_lever")
+material_override = SubResource("Mat_lever")
+
+[node name="Button" type="Area3D" parent="."]
+position = Vector3(0, 0.95, 0.38)
+script = ExtResource("3_interactable")
+prompt = "Reiniciar"
+
+[node name="Collision" type="CollisionShape3D" parent="Button"]
+shape = SubResource("Shape_button")
+
+[node name="Mesh" type="MeshInstance3D" parent="Button"]
+position = Vector3(0, 0, 0.04)
+rotation = Vector3(1.5708, 0, 0)
+mesh = SubResource("Mesh_button")
+material_override = SubResource("Mat_button")
+
+[node name="Knob" type="Area3D" parent="."]
+position = Vector3(0.5, 0.95, 0.38)
+script = ExtResource("3_interactable")
+prompt = "Ganancia BAJA"
+
+[node name="Collision" type="CollisionShape3D" parent="Knob"]
+shape = SubResource("Shape_knob")
+
+[node name="Pivot" type="Node3D" parent="Knob"]
+rotation = Vector3(0, 0, -0.6)
+
+[node name="Mesh" type="MeshInstance3D" parent="Knob/Pivot"]
+position = Vector3(0, 0, 0.04)
+rotation = Vector3(1.5708, 0, 0)
+mesh = SubResource("Mesh_knob")
+material_override = SubResource("Mat_knob")
+
+[node name="Marker" type="MeshInstance3D" parent="Knob/Pivot"]
+position = Vector3(0, 0.065, 0.085)
+mesh = SubResource("Mesh_marker")
+material_override = SubResource("Mat_lever")
+
+[node name="StatusLamp" type="MeshInstance3D" parent="."]
+position = Vector3(0, 1.28, 0.35)
+mesh = SubResource("Mesh_lamp")
+material_override = SubResource("Mat_lamp")
+
+[node name="LabelPower" type="Label3D" parent="."]
+position = Vector3(-0.5, 1.28, 0.36)
+pixel_size = 0.0015
+modulate = Color(0.8, 0.87, 0.92, 1)
+text = "ENERGÍA"
+font_size = 32
+outline_size = 6
+outline_modulate = Color(0.02, 0.03, 0.04, 0.9)
+
+[node name="LabelReset" type="Label3D" parent="."]
+position = Vector3(0, 1.14, 0.36)
+pixel_size = 0.0015
+modulate = Color(0.8, 0.87, 0.92, 1)
+text = "REINICIO"
+font_size = 32
+outline_size = 6
+outline_modulate = Color(0.02, 0.03, 0.04, 0.9)
+
+[node name="LabelGain" type="Label3D" parent="."]
+position = Vector3(0.5, 1.14, 0.36)
+pixel_size = 0.0015
+modulate = Color(0.8, 0.87, 0.92, 1)
+text = "GANANCIA"
+font_size = 32
+outline_size = 6
+outline_modulate = Color(0.02, 0.03, 0.04, 0.9)

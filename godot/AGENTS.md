@@ -17,6 +17,14 @@ Leer, en este orden: `docs/DESIGN.md`, `docs/ARCHITECTURE.md`, `docs/TASKS.md`, 
 - Hitos pequeños: terminar, probar, medir y documentar antes de seguir.
 - Cada idea nueva va a `docs/IDEAS.md`; cada decisión a `docs/DESIGN.md`.
 
+## Sistemas del hito 1
+
+- Los `Interactable` son `Area3D` en la capa 2; el jugador lanza un raycast con máscara 2. Cada parte móvil tiene su propia área.
+- `Machine` es la base; calor, consumo y modos viven en un `MachineDef` `.tres`. No metas esos valores en la escena.
+- La red es todo-o-nada: registra el `consumer` desde `main.gd`; si la carga supera `capacity_w`, se corta entera.
+- Para una máquina nueva: crea el `.tres`, una escena con `Body` y áreas, una subclase de `Machine`, regístrala en `main.gd` y añádela al smoke.
+- El HUD solo presenta: no decide estados ni reproduce la lógica de la máquina.
+
 ## Verificación obligatoria
 
 ```bash
