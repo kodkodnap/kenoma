@@ -1,5 +1,5 @@
 extends SceneTree
-## Smoke test de los hitos 0 y 1:
+## Smoke test de los hitos 0–6:
 ## godot --headless --path . --script res://tests/smoke.gd
 
 func _initialize() -> void:
@@ -22,7 +22,11 @@ func _run() -> void:
 
 	var player := main.get_node_or_null("Player") as Player
 	var machine := main.get_node_or_null("TestMachine") as TestMachine
-	var grid := main.get_node_or_null("PowerGrid") as PowerGrid
+	var power := main.get("power") as PowerSystem
+	var signals := main.get("signals") as SignalSystem
+	var console := main.get_node_or_null("SignalConsole") as SignalConsole
+	var cycle := main.get("cycle") as DailyCycle
+	var cycle_console := main.get_node_or_null("CycleConsole") as CycleConsole
 	var hud := main.get_node_or_null("HUD") as Hud
 	var test_item := main.get_node_or_null("TestItem") as Grabbable
 	var test_panel := main.get_node_or_null("TestPanel") as ScreenPanel
@@ -31,13 +35,13 @@ func _run() -> void:
 
 	_check(player != null, "Player es CharacterBody3D", failures)
 	_check(machine != null, "TestMachine presente", failures)
-	_check(grid != null, "PowerGrid presente", failures)
+	_check(power != null, "PowerSystem presente", failures)
 	_check(hud != null, "HUD presente", failures)
 	_check(test_item != null, "item de prueba presente", failures)
 	_check(test_panel != null, "panel de prueba presente", failures)
 	_check(director != null, "EventDirector presente", failures)
 
-	if player == null or machine == null or grid == null or hud == null:
+	if player == null or machine == null or power == null or hud == null:
 		_finish(failures)
 		return
 
@@ -201,28 +205,16 @@ func _run() -> void:
 	await physics_frame
 	_check(machine.mode != mode_before, "la perilla cambia de modo", failures)
 
-	# Energía: el corte apaga y no se rearma solo.
+	# Hito 4: el circuito de Calculations alimenta la máquina de prueba.
 	machine.toggle_power()
 	_check(machine.state == Machine.State.ON, "la máquina enciende de nuevo", failures)
-	grid.powered = false
+	power.set_circuit_enabled(PowerSystem.Circuit.CALCULATIONS, false)
 	await physics_frame
-	_check(machine.state == Machine.State.NO_POWER, "el corte de energía apaga la máquina", failures)
-	grid.powered = true
+	_check(machine.state == Machine.State.NO_POWER,
+		"apagar Calculations deja la máquina sin energía", failures)
+	power.set_circuit_enabled(PowerSystem.Circuit.CALCULATIONS, true)
 	await physics_frame
-	_check(machine.state == Machine.State.OFF, "al volver la energía queda apagada", failures)
-
-	# Capacidad: una carga extra por encima del límite corta la red entera.
-	machine.cycle_mode()
-	machine.toggle_power()
-	var extra := PowerConsumer.new()
-	extra.draw_w = 200.0
-	grid.add_child(extra)
-	grid.register(extra)
-	await physics_frame
-	_check(machine.state == Machine.State.NO_POWER, "la red corta por sobrecarga", failures)
-	extra.draw_w = 0.0
-	await physics_frame
-	_check(machine.state == Machine.State.OFF, "la red se recupera al bajar la carga", failures)
+	_check(machine.state == Machine.State.OFF, "al volver el circuito la máquina queda apagada", failures)
 
 	# Hito 2: ítems, inventario y contenedores por volumen.
 	var item_def := load("res://data/items/test_item.tres") as ItemDef
@@ -431,7 +423,380 @@ func _run() -> void:
 		_check(int(budget.get("draws", 0)) < 250,
 			"presupuesto: menos de 250 draw calls (%d)" % int(budget.get("draws", 0)), failures)
 
+	# Hito 4: energía, transformadores, breakers y apagón.
+	_check(hud.power_label is Label, "HUD tiene panel de red", failures)
+	hud._refresh_power()
+	_check(hud.power_label.text.contains("Estabilidad"), "el HUD muestra la estabilidad", failures)
+	_check(is_equal_approx(balance.transformer_capacity_w, 1200.0),
+		"balance: 1200 W por transformador", failures)
+	_check(balance.transformer_count == 3, "balance: 3 transformadores", failures)
+	_check(balance.power_circuit_draws.size() == PowerSystem.CIRCUIT_COUNT,
+		"balance: una carga por circuito", failures)
+
+	# Núcleo puro: capacidad, eficiencia y circuitos.
+	var plant := PowerSystem.new()
+	plant.setup(balance)
+	_check(plant.transformer_count() == 3, "PowerSystem crea 3 transformadores", failures)
+	_check(plant.circuit_count() == 5, "PowerSystem tiene 5 circuitos", failures)
+	_check(plant.efficiency() >= 0.999, "la red arranca sin sobrecarga", failures)
+	_check(plant.is_circuit_powered(PowerSystem.Circuit.DOWNLOADING),
+		"los circuitos arrancan con energía", failures)
+
+	# Un transformador dañado baja la capacidad y frena los circuitos.
+	plant.damage_transformer(0)
+	_check(plant.capacity_w() < plant.demand_w(), "un trafo dañado deja la red corta", failures)
+	_check(plant.efficiency() < 0.999, "la sobrecarga baja la eficiencia", failures)
+	var slow_speed := plant.circuit_speed(PowerSystem.Circuit.DOWNLOADING)
+	_check(slow_speed < 0.999, "la sobrecarga frena los circuitos", failures)
+
+	# Apagar Calculations libera energía y acelera el resto.
+	plant.set_circuit_enabled(PowerSystem.Circuit.CALCULATIONS, false)
+	_check(plant.efficiency() >= 0.999, "apagar Calculations libera energía", failures)
+	_check(plant.circuit_speed(PowerSystem.Circuit.DOWNLOADING) > slow_speed,
+		"los circuitos restantes se aceleran", failures)
+	_check(not plant.is_circuit_powered(PowerSystem.Circuit.CALCULATIONS),
+		"el circuito apagado no recibe energía", failures)
+
+	# La sobrecarga sostenida quema un transformador y corta la base.
+	plant.set_circuit_enabled(PowerSystem.Circuit.CALCULATIONS, true)
+	var stability_before := plant.stability()
+	for i in 10:
+		plant.tick(1.0)
+	_check(plant.stability() < stability_before, "la sobrecarga gasta estabilidad", failures)
+	var guard := 0
+	while not plant.is_blackout() and guard < 4000:
+		plant.tick(1.0)
+		guard += 1
+	_check(plant.is_blackout(), "estabilidad 0 corta toda la base", failures)
+	_check(plant.damaged_transformers() >= 1, "el transformador quemado queda dañado", failures)
+	_check(not plant.is_circuit_powered(PowerSystem.Circuit.UTILITIES),
+		"en apagón ningún circuito recibe energía", failures)
+
+	# El daño bloquea el rearme; después, dos pulsaciones.
+	_check(not plant.press_restart() and plant.is_blackout(),
+		"un transformador dañado bloquea el rearme", failures)
+	_check(plant.warning().contains("dañado"), "el aviso nombra el transformador dañado", failures)
+	plant.repair_all()
+	_check(not plant.press_restart(), "la primera pulsación solo arma", failures)
+	_check(plant.is_restart_armed(), "el breaker queda armado", failures)
+	_check(plant.press_restart() and not plant.is_blackout(),
+		"la segunda pulsación rearma la red", failures)
+	_check(plant.is_circuit_powered(PowerSystem.Circuit.DOWNLOADING),
+		"los circuitos vuelven tras el rearme", failures)
+
+	# Control remoto: 30 s y mejora hasta 1 s.
+	var remote := PowerSystem.new()
+	remote.setup(balance)
+	remote.trigger_blackout()
+	_check(is_equal_approx(remote.remote_seconds(), 30.0),
+		"el control remoto tarda 30 s", failures)
+	_check(remote.start_remote_restart(), "el control remoto arranca en apagón", failures)
+	remote.tick(29.0)
+	_check(remote.is_blackout(), "a los 29 s sigue el apagón", failures)
+	remote.tick(1.1)
+	_check(not remote.is_blackout(), "a los 30 s el control remoto rearma", failures)
+	remote.upgrade_remote()
+	_check(remote.remote_seconds() < 30.0 and remote.remote_seconds() >= 1.0,
+		"la mejora reduce el tiempo del control remoto", failures)
+	for i in 10:
+		remote.upgrade_remote()
+	_check(is_equal_approx(remote.remote_seconds(), 1.0),
+		"el control remoto llega a 1 s", failures)
+
+	# Consumidores: una carga registrada obedece al circuito.
+	var consumer := PowerConsumer.new()
+	consumer.draw_w = 100.0
+	remote.register_consumer(consumer, PowerSystem.Circuit.UTILITIES)
+	_check(consumer.powered, "el consumidor recibe energía del circuito", failures)
+	remote.trigger_blackout()
+	_check(not consumer.powered, "el apagón deja al consumidor sin energía", failures)
+	remote.press_restart()
+	remote.press_restart()
+	_check(consumer.powered, "el rearme devuelve la energía al consumidor", failures)
+	consumer.free()
+
+	# Escena: breaker, transformadores, luces y rearme con el botón rojo.
+	var panel := main.find_child("BreakerPanel", true, false) as BreakerPanel
+	_check(panel != null and panel.switch_count() == 5, "el breaker tiene 5 circuitos", failures)
+	_check(get_nodes_in_group("power_transformer").size() == 3,
+		"3 transformadores con interactuable", failures)
+	_check(power.is_circuit_powered(PowerSystem.Circuit.UTILITIES),
+		"Utilities alimenta las luces", failures)
+
+	if panel != null:
+		var switch := panel.get_switch(PowerSystem.Circuit.PLAYING)
+		var enabled_before := power.is_circuit_enabled(PowerSystem.Circuit.PLAYING)
+		_stand_and_aim(player, switch, 1.2, -3.95)
+		for i in 4:
+			await physics_frame
+		_check(player.current_interactable == switch, "el raycast enfoca un breaker", failures)
+		Input.action_press("interact")
+		await physics_frame
+		Input.action_release("interact")
+		await physics_frame
+		_check(power.is_circuit_enabled(PowerSystem.Circuit.PLAYING) != enabled_before,
+			"E conmuta el circuito", failures)
+		power.set_circuit_enabled(PowerSystem.Circuit.PLAYING, enabled_before)
+
+		var zones: Dictionary = base.get("zones")
+		var zone_light: Light3D = null
+		if not zones.is_empty():
+			zone_light = (zones.values()[0] as Node3D).get_node_or_null("Light") as Light3D
+		_check(zone_light != null and zone_light.visible,
+			"las luces de zona están encendidas", failures)
+
+		power.trigger_blackout()
+		await physics_frame
+		_check(zone_light != null and not zone_light.visible,
+			"el apagón deja la base a oscuras", failures)
+		_check(panel.restart_enabled(), "el botón rojo se habilita en apagón", failures)
+		_check(not panel.press_restart(), "la primera pulsación del botón arma", failures)
+		_check(power.is_restart_armed(), "el botón rojo arma el breaker", failures)
+		_check(panel.press_restart() and not power.is_blackout(),
+			"dos pulsaciones rearman la base", failures)
+		_check(zone_light != null and zone_light.visible, "las luces vuelven al rearmar", failures)
+
+	# Hito 5: estación de señales.
+	_check(signals != null, "SignalSystem presente", failures)
+	_check(console != null, "consola de señales presente", failures)
+	if signals != null and console != null:
+		_check(signals.catalog_size() == 8, "catálogo con 8 señales", failures)
+		var relay := signals.select_by_id(&"relay_hum")
+		_check(relay != null and relay.condition == SignalSystem.Condition.OK,
+			"la señal de prueba es válida", failures)
+		_check(signals.radar_bearing(0) != signals.radar_bearing(1),
+			"los tres radares dan rumbos distintos", failures)
+
+		signals.set_azimuth(0.0)
+		signals.set_elevation(0.0)
+		_check(not bool(signals.scan().get("found", true)),
+			"el ping falla lejos de la portadora", failures)
+		signals.set_azimuth(relay.azimuth)
+		signals.set_elevation(relay.elevation)
+		_check(bool(signals.scan().get("found", false)),
+			"el ping encuentra la portadora", failures)
+
+		_align_signal(signals, relay)
+		_check(signals.alignment() >= 0.99, "las seis perillas alinean la señal", failures)
+		_check(signals.start_download(), "la descarga arranca alineada", failures)
+		signals.tick(8.0)
+		_check(signals.download_count() == 1, "la descarga completa una señal", failures)
+		_check(signals.quality_of(0) > 0.8, "la calidad depende de la alineación", failures)
+
+		_check(signals.play_copy(0) and signals.is_playing(), "la señal se reproduce", failures)
+		signals.stop_playback()
+		_check(not signals.is_playing(), "la reproducción se detiene", failures)
+		_check(signals.save_copy(0), "la señal se guarda en la base de datos", failures)
+		_check(not signals.save_copy(0), "no se guarda dos veces la misma señal", failures)
+
+		var value_before := signals.copy_value(0)
+		_check(signals.process_copy(0, 1), "procesa nivel 1", failures)
+		_check(not signals.process_copy(0, 3), "no se salta un nivel de procesado", failures)
+		_check(signals.process_copy(0, 2), "procesa nivel 2", failures)
+		_check(signals.process_copy(0, 3), "procesa nivel 3", failures)
+		_check(signals.copy_value(0) > value_before, "procesar sube el valor", failures)
+
+		var disk := signals.export_copy(0)
+		_check(int(disk.get("value", 0)) > 0, "exportar a disco calcula el valor", failures)
+		var earned := signals.sell_disk(signals.disk_count() - 1)
+		_check(earned == int(disk.get("value", 0)) and signals.credits == earned,
+			"vender el disco paga créditos", failures)
+		var copy_disk := signals.export_copy(0)
+		_check(int(copy_disk.get("value", -1)) == 0, "una copia vale 0", failures)
+
+		var satellite := signals.select_by_id(&"silent_satellite")
+		_align_signal(signals, satellite)
+		_check(not signals.start_download(), "un satélite caído no descarga", failures)
+		var invalid := signals.select_by_id(&"false_object")
+		_align_signal(signals, invalid)
+		_check(not signals.start_download(), "un objeto inválido no descarga", failures)
+
+		var weak := signals.select_by_id(&"weak_transmission")
+		_align_signal(signals, weak)
+		_check(signals.start_download(), "la señal débil arranca", failures)
+		signals.tick(8.0)
+		_check(signals.quality_of(signals.download_count() - 1) <= 0.45,
+			"la señal débil limita la calidad al 45%", failures)
+
+		var storm := signals.select_by_id(&"storm_echo")
+		_align_signal(signals, storm)
+		_check(signals.start_download(), "la tormenta deja descargar", failures)
+		signals.tick(8.0)
+		_check(signals.quality_of(signals.download_count() - 1) < storm.quality,
+			"la tormenta resta calidad", failures)
+
+		var art := SignalArt.texture_for(relay)
+		_check(art is ImageTexture and art.get_width() == 64, "la señal genera su imagen", failures)
+		_check(console.tab_count() == 3, "tres paneles siguen en terminal", failures)
+		console.open_tab(1)
+		_check(console.is_open() and console.current_tab() == 1,
+			"la consola abre Reproducción", failures)
+		console.close()
+		_check(not console.is_open(), "la consola se cierra", failures)
+
+		_check(get_nodes_in_group("signal_panel").size() == 4, "4 paneles físicos", failures)
+		var panels := get_nodes_in_group("signal_panel")
+		panels.sort_custom(func(a: Node, b: Node) -> bool: return String(a.name) < String(b.name))
+
+		# Fase A de la estación física: Descargas con perillas, detector y palanca.
+		var downloads := (panels[1] as Node3D).get_node_or_null("DownloadsPanel") as DownloadsPanel
+		_check(downloads != null, "panel de Descargas físico", failures)
+		if downloads != null:
+			_check(downloads.knob_count() == 6, "seis perillas físicas", failures)
+			_check(downloads.screen_title() != "", "la pantalla de Descargas da lectura", failures)
+			_check(downloads.get_node_or_null("Chassis") != null
+				and downloads.get_node_or_null("Chassis/ChassisBatch0") != null,
+				"la consola tiene chasis con geometría fusionada", failures)
+			_check(downloads.get_node_or_null("Head") != null
+				and downloads.get_node_or_null("Head/VuNeedle") != null,
+				"la consola tiene cabezal y vúmetro", failures)
+			_check(downloads.get_node_or_null("CrtScreen") != null
+				and downloads.get_node_or_null("Lamp") != null,
+				"la consola tiene CRT y lámpara", failures)
+			var knob := downloads.get_knob(0)
+			_check(knob != null, "la perilla de frecuencia existe", failures)
+			if knob != null:
+				signals.select_by_id(&"relay_hum")
+				_stand_and_aim(player, knob, 1.1, 0.05)
+				for i in 4:
+					await physics_frame
+				_check(player.current_interactable == knob,
+					"el raycast enfoca una perilla", failures)
+				var frequency_before := signals.frequency
+				var wheel := InputEventMouseButton.new()
+				wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+				wheel.pressed = true
+				knob._unhandled_input(wheel)
+				_check(signals.frequency != frequency_before,
+					"la rueda gira la perilla", failures)
+				_align_signal(signals, signals.selected_def)
+				downloads.sync_knobs()
+				_check(signals.alignment() >= 0.99, "las perillas alinean la señal", failures)
+				var lever := downloads.get_lever()
+				_check(lever != null, "la palanca de descarga existe", failures)
+				if lever != null:
+					lever.activate()
+					_check(signals.is_downloading(), "la palanca inicia la descarga", failures)
+					lever.activate()
+					_check(not signals.is_downloading(), "la palanca detiene la descarga", failures)
+
+		var opener := (panels[0] as Node3D).get_node_or_null("SignalPanelInteract") as Interactable
+		_check(opener != null, "el panel tiene interactuable", failures)
+		if opener != null:
+			_stand_and_aim(player, opener, 1.3, 0.05)
+			for i in 4:
+				await physics_frame
+			_check(player.current_interactable == opener,
+				"el raycast enfoca el panel de señales", failures)
+			Input.action_press("interact")
+			await physics_frame
+			Input.action_release("interact")
+			await physics_frame
+			_check(console.is_open(), "E abre la estación de señales", failures)
+			console.close()
+
+		_check(power.is_circuit_powered(PowerSystem.Circuit.CALCULATIONS),
+			"la estación no altera la energía", failures)
+
+	# Hito 6: ciclo diario, tarea, tienda y dron.
+	_check(cycle != null, "DailyCycle presente", failures)
+	_check(cycle_console != null, "terminal del ciclo presente", failures)
+	if cycle != null and cycle_console != null:
+		_check(is_equal_approx(cycle.clock.minutes_per_second, 0.32),
+			"un día dura 75 min reales", failures)
+		_check(cycle.clock.day == 1 and cycle.clock.hour() >= 18,
+			"el día arranca a las 18:00", failures)
+		_check(cycle.task != null and cycle.task.day == 1, "la tarea del día 1 existe", failures)
+
+		var task := cycle.task
+		_check(cycle.qualifying_signals() >= task.signals_required,
+			"hay señales que cumplen la tarea", failures)
+		var credits_before := signals.credits
+		var points_before := cycle.economy.points
+		_check(cycle.deliver_task(), "la tarea se entrega", failures)
+		_check(signals.credits == credits_before + task.reward_credits,
+			"la tarea paga créditos", failures)
+		_check(cycle.economy.points == points_before + task.reward_points,
+			"la tarea paga puntos", failures)
+		_check(not cycle.deliver_task(), "no se entrega dos veces", failures)
+
+		# Tienda: rechazo sin créditos, cobro y pedido pendiente.
+		var poor := cycle.economy.buy("empty_disk", 0)
+		_check(not bool(poor.get("ok", true)), "la tienda rechaza sin créditos", failures)
+		var credits_store := signals.credits
+		var purchase := cycle.buy("empty_disk")
+		_check(bool(purchase.get("ok", false)) and signals.credits == credits_store - 25,
+			"la tienda cobra el pedido", failures)
+		_check(cycle.economy.pending_orders() == 1, "el pedido espera al dron", failures)
+
+		# Dormir cruza medianoche y el dron entrega a las 06:00.
+		cycle.clock.sleep_to(6)
+		_check(cycle.clock.hour() == 6 and cycle.clock.day == 2,
+			"dormir avanza a las 06:00 del día siguiente", failures)
+		_check(cycle.economy.pending_orders() == 0, "el dron entrega el pedido", failures)
+		_check(cycle.last_gifts.size() >= 2, "el dron trae el pedido y un disco vacío", failures)
+		_check(cycle.task != null and cycle.task.day == 2, "la tarea se renueva a medianoche", failures)
+		_check(player.inventory.items.size() >= 2, "el dron deja los bultos en la mochila", failures)
+
+		# No entregar la tarea del día 2 aplica multa.
+		var points_fine := cycle.economy.points
+		cycle.clock.sleep_to(6)
+		_check(cycle.economy.points < points_fine, "no entregar aplica multa", failures)
+
+		# Bonus semanal: paga una vez y no se repite.
+		var points_bonus := cycle.economy.points
+		var bonus := cycle.economy.weekly_bonus(1)
+		_check(bonus == 100 and cycle.economy.points == points_bonus + 100,
+			"el bonus semanal paga puntos", failures)
+		_check(cycle.economy.weekly_bonus(1) == 0, "el bonus no se cobra dos veces", failures)
+
+		# Guardado provisional en memoria.
+		var snap := cycle.snapshot()
+		var saved_day := cycle.clock.day
+		cycle.clock.day = 9
+		cycle.restore(snap)
+		_check(cycle.clock.day == saved_day, "el guardado provisional restaura el día", failures)
+		_check(cycle.task != null and cycle.task.day == saved_day,
+			"el guardado provisional restaura la tarea", failures)
+
+		# HUD y terminal.
+		hud._refresh_clock()
+		_check(hud.clock_label is Label and hud.clock_label.text.contains("DÍA"),
+			"el HUD muestra el reloj", failures)
+		_check(cycle_console.tab_count() == 4, "la terminal tiene cuatro pestañas", failures)
+		cycle_console.open_tab(1)
+		_check(cycle_console.is_open() and cycle_console.current_tab() == 1,
+			"la terminal abre Tarea", failures)
+		cycle_console.close()
+		_check(not cycle_console.is_open(), "la terminal se cierra", failures)
+
+		var terminal := base.get_node_or_null("MainComputer") as Interactable
+		_check(terminal != null, "la terminal física existe", failures)
+		if terminal != null:
+			_stand_and_aim(player, terminal, 1.3, 0.05)
+			for i in 4:
+				await physics_frame
+			_check(player.current_interactable == terminal,
+				"el raycast enfoca la terminal", failures)
+			Input.action_press("interact")
+			await physics_frame
+			Input.action_release("interact")
+			await physics_frame
+			_check(cycle_console.is_open(), "E abre la terminal", failures)
+			cycle_console.close()
+
 	_finish(failures)
+
+
+func _align_signal(system: SignalSystem, def: SignalDef) -> void:
+	if def == null:
+		return
+	system.set_knob(&"frequency", def.frequency)
+	system.set_knob(&"polarity", def.polarity)
+	system.set_knob(&"gain", def.gain)
+	system.set_knob(&"bandwidth", def.bandwidth)
+	system.set_knob(&"filter", def.filter)
+	system.set_knob(&"squelch", def.squelch)
 
 
 func _measure_speed(player: Player, action: String) -> float:
@@ -466,9 +831,10 @@ func _release_actions() -> void:
 		Input.action_release(action)
 
 
-func _stand_and_aim(player: Player, target: Node3D, distance: float) -> void:
+func _stand_and_aim(player: Player, target: Node3D, distance: float,
+		floor_y: float = 0.05) -> void:
 	var target_pos := target.global_position
-	player.global_position = Vector3(target_pos.x, 0.05, target_pos.z + distance)
+	player.global_position = Vector3(target_pos.x, floor_y, target_pos.z + distance)
 	var eye := player.global_position + Vector3(0, 1.62, 0)
 	var direction := (target_pos - eye).normalized()
 	player.rotation.y = atan2(-direction.x, -direction.z)
@@ -477,7 +843,7 @@ func _stand_and_aim(player: Player, target: Node3D, distance: float) -> void:
 
 func _finish(failures: Array[String]) -> void:
 	if failures.is_empty():
-		print("SMOKE OK: hitos 0, 1, 2 y 3")
+		print("SMOKE OK: hitos 0, 1, 2, 3, 4, 5 y 6")
 		quit(0)
 	else:
 		for failure in failures:
