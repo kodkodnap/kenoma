@@ -68,13 +68,14 @@ Presupuesto de escena: **< 150k triángulos visibles, < 250 draw calls, 60 FPS**
 | Cajas | `scenes/main.tscn` | < 100 | placeholder | 3 cajas |
 | Jugador | `scenes/player/player.tscn` | 0 | provisional | Cápsula invisible |
 | Máquina de prueba | `scenes/machines/test_machine.tscn` | < 500 | prototipo | Se rehace en hito 2/3 |
+| Consola de Descargas | `scripts/machines/downloads_panel.gd` | < 15k | hecho (5.5-A) | Primitivas procedurales: chasis, CRT, vúmetro, lámpara y controles |
 
 ### 5.2 Assets objetivo
 
 | Asset | Hito | Fuente | Tris | Estado |
 |---|---:|---|---:|---|
 | Base modular (paredes, puertas, ventanas) | 3 | Propio / Poly Haven | < 30k | pendiente |
-| Panel de señal (4 variantes) | 5 | Propio | < 15k | pendiente |
+| Panel de señal (4 variantes) | 5 | Propio | < 15k | 1 de 4 (Descargas, 5.5-A) |
 | Servidor (30 + 24) | 3/8 | Propio | < 8k | pendiente |
 | Transformador | 4 | Propio | < 15k | pendiente |
 | Breaker | 4 | Propio | < 8k | pendiente |
@@ -98,6 +99,9 @@ Presupuesto de escena: **< 150k triángulos visibles, < 250 draw calls, 60 FPS**
 ## 7. Pantallas y UI
 
 - Las pantallas de computadora usan `SubViewport` con UI propia.
+- El CRT de la consola de Descargas es un `SubViewport` de 640×360 con `CrtScreen`: rejilla, traza,
+  barrido, viñeta y parpadeo dibujados en `_draw`, más un vidrio con reflejo generado. El tubo queda
+  dentro de un bisel atornillado con visera.
 - Texturas de pantalla en 1024×768 o 1280×720; nada de fuentes ilegibles.
 - Los controles físicos (perillas, botones) son mallas separadas con animación.
 - El HUD es diegético siempre que se pueda: LEDs, notas, etiquetas.

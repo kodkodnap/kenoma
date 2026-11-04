@@ -17,8 +17,10 @@
 | I-008 | 2026-10-30 | Accesibilidad: subtítulos, FOV, sensibilidad, reducir sustos | pendiente | Hito 15; no recortar. |
 | I-009 | 2026-10-30 | Medir rendimiento en cada hito, no al final | en curso | F3 + presupuesto en `ARCHITECTURE.md`. |
 | I-010 | 2026-10-30 | Usar Poly Haven / Poly Pizza antes que generación 3D | pendiente | Pipeline en `ASSETS.md`; Hyper3D solo si falta. |
-| I-011 | 2026-10-30 | Primeras 8–12 señales de prueba con audio/imagen originales | pendiente | Hito 5. |
+| I-011 | 2026-10-30 | Primeras 8–12 señales de prueba con audio/imagen originales | hecho | Hito 5: 8 señales en `data/signals/catalog.json`, imagen y audio generados. |
 | I-012 | 2026-10-30 | Empezar con un solo minijuego de servidor y ampliar después | pendiente | Evita fatiga y alcance excesivo. |
+| I-014 | 2026-11-01 | Estación física: operar las máquinas con perillas, palancas y objetos, no con menús | en curso | Fase A hecha: consola de Descargas con CRT, vúmetro, lámpara y controles. Fases B–D en `TASKS.md`; el overlay queda solo para tareas y tienda. |
+| I-013 | 2026-11-01 | Catálogo procedural de 100+ señales, no 100 entradas a mano | pendiente | Después del hito 6: 10–15 señales de historia fijas + generador determinista con semilla por día, pools de nombre/tono/condición y selección diaria. El catálogo ya es JSON, así que no requiere refactor de `SignalSystem`. |
 
 ## Ideas del usuario (pendientes de recibir)
 

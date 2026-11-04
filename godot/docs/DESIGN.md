@@ -243,10 +243,10 @@ vive fuera de las escenas, en `scripts/core/`, y se prueba sin render.
 | 0 | Investigación, catálogo y documentación | **cerrado** |
 | 1 | Proyecto base: jugador 4/8/1,5 m/s, stamina, linterna, debug | **cerrado** |
 | 2 | Framework Interactable/Grabbable/Machine/Panel/Item/Entity/Event + inventario | **cerrado** |
-| 3 | Alpha Root Base en placeholders | pendiente |
-| 4 | Energía: transformadores, breaker, apagones | pendiente |
-| 5 | Estación de señales completa | pendiente |
-| 6 | Ciclo diario, dron, cintas, tienda | pendiente |
+| 3 | Alpha Root Base en placeholders | **cerrado** |
+| 4 | Energía: transformadores, breaker, apagones | **cerrado** |
+| 5 | Estación de señales completa | **cerrado** |
+| 6 | Ciclo diario, dron, cintas, tienda | **cerrado** |
 | 7 | Mapa exterior a escala, 24 platos, radares, torre | pendiente |
 | 8 | Servidores, consola, hashcodes, reparación | pendiente |
 | 9 | Estadísticas, dificultad y ajustes | pendiente |

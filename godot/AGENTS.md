@@ -8,6 +8,23 @@
 > `docs/ORIGINAL_FEATURES.md` → `docs/DESIGN.md` → `docs/ARCHITECTURE.md` → `docs/TASKS.md` →
 > `docs/IDEAS.md` → `docs/ASSETS.md`.
 
+## Skills obligatorias
+
+Antes de tocar `godot/`, carga la skill que corresponda con la herramienta `skill`. Viven en
+`~/.agents/skills` (fuera del repo) y el cargador las expone por nombre; si no aparecen en la
+sesión, lee su `SKILL.md` con `read_files`. Son estas:
+
+| Si tocas… | Carga antes |
+| --- | --- |
+| Cualquier `.gd`: ciclo de vida, tipado, señales, `await` | `godot-gdscript` |
+| `scripts/core/**`: estado, máquinas de estado, patrones | `godot-gdscript-patterns` |
+| `scenes/**/*.tscn`, instanciación, autoloads | `godot-nodes-scenes` |
+| `scripts/ui/**`: HUD, paneles, themes, foco | `godot-ui-control` |
+
+Reglas: mínimo una skill por tarea, cargada antes de la primera edición; al cerrar, di cuáles usaste
+y qué decisión cambiaron. Si mueves rutas, actualiza `.agents/skills/manifest.json` (raíz): el gate
+`npm run skills:check` comprueba que esta tabla, los globs y las skills instaladas sigan cuadrando.
+
 ## Prompt vigente (2026-10-30)
 
 El usuario aclaró que la referencia es una **inspiración muy cercana**, no un clon literal: mismos
@@ -77,8 +94,25 @@ resumida en `docs/ORIGINAL_FEATURES.md`.
   4 paneles, 24 platos, 3 transformadores, 3 radares, 4 turbinas y torre; sótano con breaker,
   crematorio y taquillas; two ramps (subida/bajada) y techo. Smoke 89 checks; capturas Forward+ de 8
   puntos. Presupuesto 11.7k triángulos / 78 draw calls.
-- `TestMachine` y `PowerGrid` todo-o-nada siguen como prototipo; el hito 4 los sustituye por
-  transformadores y breakers.
+- **Hito 4 cerrado:** energía con `PowerSystem` puro en `scripts/core/power_system.gd` (3 × 1200 W,
+  5 circuitos, estabilidad, sobrecarga, apagón y control remoto), `BreakerPanel` en el sótano y
+  `PowerTransformer` reparables en los tres transformadores exteriores. Utilities apaga las luces de
+  zona. `PowerGrid` eliminado. HUD con estabilidad, carga y aviso. Smoke 153 checks.
+- **Hito 5 cerrado:** `SignalSystem` puro (catálogo JSON de 8 señales, ping con 3 radares, seis
+  perillas, descarga con calidad, fallos de señal, base de datos, niveles 1–3, discos, copias a 0 y
+  venta), `SignalConsole` con 4 paneles en `SubViewport`, imagen 64×64 generada y audio sintetizado.
+  Los cuatro paneles físicos de Signal Processing abren su pestaña con E. Smoke 191 checks.
+- **Hito 6 cerrado:** `GameClock` (75 min reales/día, ×1/×10/×60, dormir), `DailyTask`, `Economy`
+  (5 artículos, 3 categorías, pedidos, multa, bonus) y `DailyCycle` (renueva tarea a medianoche,
+  dron a las 06:00, snapshot en memoria), con `CycleConsole` de 4 pestañas en la consola central.
+  Smoke 221 checks.
+- **Hito 5.5 (fase A) hecho:** `DownloadsPanel` es una consola completa de ~2 m con chasis
+  atornillado, cubierta inclinada, CRT de fósforo (`CrtScreen` sobre `SubViewport`), vúmetro, LEDs,
+  lámpara de cuello de ganso, cables y seis perillas con escala (más detector y palanca). Materiales
+  y piezas 100% procedurales (`MachineMaterials`, `MachineMesh`); `MachineBatch` fusiona lo estático
+  por material y baja la escena a ~205 draw calls. Descargas ya no abre la terminal; quedan 3
+  pestañas. Smoke 234 checks. Fases B–E pendientes; los otros paneles siguen con placeholder.
+- `TestMachine` sigue como prototipo de la base de máquina.
 - El juego web ESTATICA de la raíz sigue sin trackear y no debe modificarse.
 - Repositorio: `C:\Users\ibane\Documents\proyecto_personal\estatica`; proyecto Godot en `godot/`.
 

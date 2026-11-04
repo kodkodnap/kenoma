@@ -4,9 +4,10 @@ Juego de terror y simulación en primera persona inspirado en los **sistemas** d
 Eres un radioastrónomo aislado en una base alpina: encuentras señales, las descargas, las procesas,
 localizas satélites y mantienes la energía. Todo el arte, el código, los textos y el audio son originales.
 
-> **Estado:** hitos 0–3 cerrados: documentación, jugador, framework de interacción e inventario, y
-> Alpha Root Base completa en placeholders (22 salas, 30 servidores, sótano, plantas y exteriores).
-> Siguiente: hito 4, energía con transformadores y breaker.
+> **Estado:** hitos 0–6 cerrados y fase A de la estación física: documentación, jugador, interacción
+> e inventario, Alpha Root Base, energía, estación de señales, ciclo diario (reloj de 75 min, tarea a
+> medianoche, tienda, dron a las 06:00, multas y bonus) y la consola de Descargas: chasis, CRT de
+> fósforo, vúmetro, lámpara y controles físicos. Siguiente: fases B–E de la estación física o hito 7.
 >
 > El juego web ESTATICA de la raíz es un proyecto aparte; este vive en `godot/`.
 
@@ -56,8 +57,12 @@ GODOT="C:/Users/ibane/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-stabl
 
 El smoke comprueba arranque, jugador, cámara, linterna, colisión, overlay, la máquina de prueba,
 inventario por volumen, agarre/rotación/tiro, panel con `SubViewport`, bases de entidad/evento, la
-Alpha Root Base (zonas con luz, 30 servidores, 4 paneles, props, rampas, recorridos y presupuesto) y
-las 89 comprobaciones acumuladas. Cada hito añade sus pruebas.
+Alpha Root Base (zonas con luz, 30 servidores, 4 paneles, props, rampas, recorridos y presupuesto),
+la energía (capacidad, eficiencia, avería, apagón, doble rearme, control remoto y luces), la estación
+de señales (radares, alineación, descarga, fallos, procesado, copias y venta), el ciclo diario (reloj,
+tarea, tienda, dron, multa, bonus y snapshot), la consola física de Descargas (chasis fusionado, CRT,
+vúmetro, seis perillas por raycast, rueda, detector y palanca) y las 234 comprobaciones acumuladas.
+Cada hito añade sus pruebas.
 
 ## Documentación
 
@@ -84,8 +89,8 @@ godot/
 
 ## Roadmap
 
-Hitos 0–2: documentación, jugador e interacción/inventario. Hito 3: base. Hito 4: energía. Hito 5:
-señales. Hito 6: ciclo diario. Hito 7: mapa. Hito 8: servidores. Hito 9: stats. Hito 10: entidades.
+Hitos 0–2: documentación, jugador e interacción/inventario. Hitos 3–6: base, energía, estación de
+señales y ciclo diario. Hito 7: mapa exterior. Hito 6: ciclo diario. Hito 7: mapa. Hito 8: servidores. Hito 9: stats. Hito 10: entidades.
 Hitos 11–14: Tier 2–4. Hito 15: guardado, menús y pulido.
 
 Detalle en [`docs/TASKS.md`](docs/TASKS.md).

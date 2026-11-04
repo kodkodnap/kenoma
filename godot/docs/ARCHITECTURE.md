@@ -85,15 +85,16 @@ Data (Resources)
 |---|---|---|
 | `GameBalance` | Valores globales: velocidades, día, stamina, energía, dificultad. | hecho (hito 1) |
 | `GameState` | Estado serializable de la partida. | pendiente |
-| `GameClock` | Día, hora, velocidad, dormir, eventos de medianoche/06:00. | pendiente |
-| `SignalDef` | Recurso de señal: tipo, calidad, nivel, precio, audio, imagen, evento. | pendiente |
-| `SignalSystem` | Cadena Coordinates → Download → Playback → Processing → Drive. | pendiente |
-| `PowerSystem` | Transformadores, breakers, consumo, estabilidad, apagón. | prototipo |
+| `GameClock` | Día, hora, velocidad, dormir, eventos de medianoche/06:00. | hecho (hito 6) |
+| `SignalDef` | Datos de señal: condición, rumbo, perillas, calidad, precio, imagen y audio. | hecho (hito 5) |
+| `SignalSystem` | Cadena Coordinates → Download → Playback → Processing → disco y venta. | hecho (hito 5) |
+| `PowerSystem` | Transformadores, breakers, consumo, estabilidad, apagón y rearme. | hecho (hito 4) |
 | `ServerSystem` | 54 servidores, estados, reparación, mejoras, hashcodes. | pendiente |
-| `Economy` | Puntos, tienda, ventas, multas, bonus semanal. | pendiente |
+| `Economy` | Puntos, tienda, pedidos, multas y bonus semanal. | hecho (hito 6) |
 | `EventDirector` | Eventos por día, peso, cooldown y flags. | base hecha (hito 2) |
 | `SaveSystem` | Serialización versionada y migraciones. | pendiente |
-| `DailyTask` | Tarea del día: señales, hashcodes, cintas, recompensa. | pendiente |
+| `DailyTask` | Tarea del día: señales (hashcodes/cintas en hitos 8 y 11), recompensa y multa. | hecho (hito 6) |
+| `DailyCycle` | Director puro: reloj + tarea + economía + dron y guardado provisional. | hecho (hito 6) |
 | `Inventory` | Volumen, contenedores, equipo, apilar. | hecho (hito 2) |
 
 ### 4.2 Jugador
@@ -114,11 +115,16 @@ Data (Resources)
 | `ItemContainer` | Inventario de contenedor. | hecho (hito 2) |
 | `MachineDef` | Datos de máquina: nombre, estados, calor, consumo. | prototipo |
 | `Machine` | Estados OFF/ON/OVERHEATED/NO_POWER, calor, modo. | prototipo |
-| `PowerConsumer` | Consumo y estado de energía. | prototipo |
+| `PowerConsumer` | Consumo y estado de energía; lo enchufa `PowerSystem`. | hecho (hito 4) |
 | `ScreenPanel` | Base de paneles con SubViewport y controles. | hecho (hito 2) |
-| `Knob` / `Button` / `Switch` / `Lever` | Controles físicos reutilizables. | prototipo en `TestMachine` |
-| `Transformer` | Estabilidad, daño, reinicio. | pendiente |
-| `BreakerPanel` | Cinco breakers y redistribución. | pendiente |
+| `RotaryKnob` / `ToggleSwitch` / `Lever` | Controles físicos reutilizables con placa, escala, guarda y señal propia. | hecho (hito 5.5-A) |
+| `DownloadsPanel` | Consola física de descargas: chasis, cubierta, CRT, vúmetro, 6 perillas, detector y palanca. | hecho (hito 5.5-A) |
+| `CrtScreen` | `Control` que dibuja rejilla, traza de fósforo, barrido y viñeta del CRT. | hecho (hito 5.5-A) |
+| `MachineMaterials` | Materiales y texturas procedurales: pintura, acero, baquelita, vidrio, escalas. | hecho (hito 5.5-A) |
+| `MachineMesh` | Primitivas, tubos, tornillos y rejillas; lotes por material con `begin_batch`. | hecho (hito 5.5-A) |
+| `MachineBatch` | Fusiona geometría estática por material y la vuelca como un `MeshInstance3D`. | hecho (hito 5.5-A) |
+| `PowerTransformer` | Estabilidad, daño y reparación manual con mantener E. | hecho (hito 4) |
+| `BreakerPanel` | Cinco breakers, botón rojo de dos pulsaciones y avisos. | hecho (hito 4) |
 | `Server` | Estado, reparación, mejoras. | pendiente |
 | `SatelliteDish` | Precisión, calibración, consola, hashcode. | pendiente |
 | `RadarTower` | Fusibles, salud, ping. | pendiente |
@@ -137,7 +143,9 @@ Data (Resources)
 | `EntityDef` | Datos de entidad. | hecho (hito 2) |
 | `Entity` | Base activar/desactivar; IA en hito 10. | hecho (hito 2) |
 | `EntityDirector` | Spawns por evento, hora, stat o radar. | pendiente |
-| `Hud` | Vitales (stamina/linterna), foco, hold, estado de máquina; reloj en hito 6. | hecho (hito 1) |
+| `Hud` | Vitales (stamina/linterna), foco, hold, estado de máquina y red; reloj en hito 6. | hecho (hito 4) |
+| `SignalConsole` | Cuatro paneles de señal con SubViewport, pestañas y venta de discos. | hecho (hito 5) |
+| `SignalArt` / `SignalAudio` | Imagen 64×64 generada y audio sintetizado por señal. | hecho (hito 5) |
 | `ComputerScreen` | SubViewport y UI de terminal. | pendiente |
 | `PerfOverlay` | FPS, draw calls, primitivas, memoria. | hecho |
 
@@ -151,7 +159,20 @@ Data (Resources)
 | `Machine` | `state_changed(state)` | HUD, panel, audio |
 | `Machine` | `heat_changed(value)` | Panel, audio |
 | `PowerSystem` | `power_changed(on)` | Máquinas, luces, puertas |
+| `PowerSystem` | `circuit_changed(circuit, powered)` | Consumidores, HUD |
 | `PowerSystem` | `stability_changed(value)` | HUD, transformador |
+| `PowerSystem` | `blackout_started` / `power_restored` | HUD, eventos |
+| `PowerSystem` | `warning_changed(text)` | HUD, breaker |
+| `SignalSystem` | `download_progress(value)` | Consola |
+| `SignalSystem` | `download_completed(copy)` | Consola |
+| `SignalSystem` | `playback_changed(playing)` | Consola, audio |
+| `SignalSystem` | `credits_changed(value)` | Consola |
+| `GameClock` | `midnight_reached(day)` / `drone_hour_reached(day)` | DailyCycle |
+| `DailyCycle` | `task_ready` / `task_delivered` / `task_missed` | Terminal |
+| `DailyCycle` | `drone_arrived(gifts)` | Terminal, jugador |
+| `RotaryKnob` | `value_changed(value)` | DownloadsPanel |
+| `ToggleSwitch` | `toggled(on)` | DownloadsPanel |
+| `Lever` | `pulled(on)` | DownloadsPanel |
 | `GameClock` | `day_changed(day)` | Tareas, eventos, guardado |
 | `GameClock` | `hour_changed(hour)` | Luces, eventos, dron |
 | `SignalSystem` | `signal_found(def)` | Database, tareas |
@@ -250,6 +271,12 @@ Técnicas: MultiMesh para árboles/arbustos, LOD, occlusion culling, LightmapGI,
 `VisibleOnScreenNotifier3D`, carga por distancia, pooling de partículas y objetos.
 
 Medido (hito 3): 11.7k triángulos / 78 draw calls con la Alpha Root Base completa.
+Medido (2026-11-01, consola de Descargas): 30.1k primitivas / 205 draw calls con jugador, base y
+consola en pantalla. La consola aporta 102 mallas; el batido estático por material deja 24. Las
+perillas, la aguja del vúmetro y la palanca conservan sus nodos porque se mueven.
+
+Regla: la geometría fija de una máquina se construye dentro de `MachineMesh.begin_batch(parent)` y
+`end_batch(parent)`. Las piezas que animan un pivote no entran en el lote.
 
 ## 10. Verificación
 
@@ -287,11 +314,14 @@ Cada hito añade sus comprobaciones al smoke antes de implementar (TDD).
 | Machine / TestMachine | prototipo | OFF/ON/OVERHEATED/NO_POWER; se reutiliza la base |
 | ScreenPanel | hecho | Overlay con SubViewport; pantallas 3D en hito 5 |
 | Entity / EventDirector | base | Sin IA ni eventos reales; hitos 10/13 |
-| PowerGrid | prototipo | 1.500 W todo-o-nada; se sustituye por transformadores/breakers (hito 4) |
+| PowerSystem | hecho | 3 × 1200 W, 5 circuitos, estabilidad, apagón y rearme; PowerGrid eliminado |
 | Alpha Root Base | hecho | 22 salas + props; 11.7k tris / 78 draws; recorridos y rampas verificados |
-| HUD | hecho | Stamina, batería, foco, hold, inventario, estado y carga |
+| HUD | hecho | Stamina, batería, foco, hold, inventario, estado y red |
 | PerfOverlay | hecho | F3 |
-| Señales, servidores, guardado | pendiente | Hitos 5–15 |
+| SignalSystem / SignalConsole | hecho | 8 señales, 4 paneles, catálogo JSON, cadena y venta |
+| DailyCycle / CycleConsole | hecho | 75 min/día, tarea, tienda, dron, multa y bonus; snapshot en memoria |
+| Estación física (fase A) | hecho | Consola de Descargas con chasis, CRT de fósforo, vúmetro, lámpara y controles; 205 draws; resto pendiente |
+| Servidores, consola y guardado | pendiente | Hitos 8 y 15 |
 
 ## 12. Cómo añadir un sistema
 

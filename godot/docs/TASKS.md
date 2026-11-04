@@ -14,9 +14,11 @@
 | 1 | Proyecto base y jugador | **hecho** | Smoke (51 checks) + captura Forward+ |
 | 2 | Framework de interacción e inventario | **hecho** | Smoke (85 checks) + captura Forward+ |
 | 3 | Alpha Root Base en placeholders | **hecho** | Smoke (89 checks) + recorrido + capturas Forward+ |
-| 4 | Energía | pendiente | Smoke + apagón jugable |
-| 5 | Estación de señales | pendiente | Smoke + cadena completa |
-| 6 | Ciclo diario y dron | pendiente | Smoke + día completo |
+| 4 | Energía | **hecho** | Smoke (153 checks) + apagón jugable |
+| 5 | Estación de señales | **hecho** | Smoke (191 checks) + cadena completa |
+| 5.5 | Estación física (fase A) | **hecho** | Smoke (234 checks): Descargas con perillas, detector y palanca |
+| 5.5 B–E | Coordinates, Playback, Processing y retirada del overlay | pendiente | Smoke + operación real de cada máquina |
+| 6 | Ciclo diario y dron | **hecho** | Smoke (234 checks acumulados) + día completo |
 | 7 | Mapa exterior a escala | pendiente | Smoke + recorrido |
 | 8 | Servidores, consola y hashcodes | pendiente | Smoke |
 | 9 | Estadísticas y dificultad | pendiente | Smoke |
@@ -26,6 +28,10 @@
 | 13 | Tier 3 | pendiente | Smoke |
 | 14 | Tier 4 | pendiente | Smoke |
 | 15 | Guardado, menús y pulido | pendiente | Smoke + partida completa |
+
+> El smoke crece por acumulación: hoy son **234 comprobaciones** (0 fallos, `SMOKE OK: hitos 0, 1,
+> 2, 3, 4, 5 y 6`) y cubren los hitos 0–6 más la fase A de 5.5. Los conteos de los hitos 4 y 5 son los
+> de su cierre; los de 5.5 y 6 se han corregido al total real.
 
 ---
 
@@ -196,6 +202,9 @@ cámara y debug. Sin máquinas todavía.
 
 **Objetivo:** que la base dependa de tres transformadores y un breaker de cinco circuitos.
 
+**Estado: hecho (2026-11-01).** Smoke con 153 comprobaciones en verde; apagón y rearme jugables en
+el sótano.
+
 ### Entregables
 
 - `Transformer` con estabilidad, daño, reinicio de dos pulsaciones y apagón.
@@ -208,18 +217,40 @@ cámara y debug. Sin máquinas todavía.
 
 ### Criterio de aceptación
 
-- [ ] Apagar Calculations libera energía y acelera los circuitos restantes.
-- [ ] A estabilidad 0 se corta toda la base.
-- [ ] El botón rojo exige dos pulsaciones para reiniciar.
-- [ ] Un transformador dañado impide el reinicio hasta repararlo.
-- [ ] El control remoto tarda 30 s y se puede mejorar.
-- [ ] Smoke en verde.
+- [x] Apagar Calculations libera energía y acelera los circuitos restantes.
+- [x] A estabilidad 0 se corta toda la base.
+- [x] El botón rojo exige dos pulsaciones para reiniciar.
+- [x] Un transformador dañado impide el reinicio hasta repararlo.
+- [x] El control remoto tarda 30 s y se puede mejorar.
+- [x] Smoke en verde.
+
+### Notas de implementación
+
+- `PowerSystem` (`scripts/core/power_system.gd`) es lógica pura: no es un nodo y no conoce escenas.
+  Sustituye al prototipo `PowerGrid`, que se ha eliminado.
+- Tres transformadores de 1200 W; la capacidad efectiva escala con la estabilidad de cada uno. Cinco
+  circuitos (Cálculos, Descargas, Coordenadas, Reproducción, Servicios) con su carga en
+  `balance.tres` (`power_circuit_draws`).
+- Con demanda > capacidad baja la eficiencia (circuitos más lentos) y la estabilidad. El
+  transformador C se quema antes por peso de carga (0,6 / 1,0 / 1,4), de modo que el apagón deja una
+  avería concreta que reparar.
+- Rearme: dos pulsaciones en 5 s; un transformador dañado lo bloquea. Se repara manteniendo E 2,5 s
+  en el transformador exterior (`PowerTransformer`).
+- El breaker es un `BreakerPanel` en el marcador del sótano: cinco interruptores y botón rojo, todos
+  interactuables con raycast. Utilities apaga y enciende las luces de zona de la base.
+- Control remoto: API `start_remote_restart()` y mejora de 30 s a 1 s (`upgrade_remote()`); la compra
+  del módulo llega con la economía del hito 6.
+- El HUD muestra estabilidad, carga, sobrecarga y aviso de apagón.
+- Las puertas aún no existen; su conexión a Utilities se hará cuando se implementen (hito 5).
 
 ---
 
 ## Hito 5 — Estación de señales
 
 **Objetivo:** la cadena completa de señal, con las cuatro pantallas y los discos.
+
+**Estado: hecho (2026-11-01).** Smoke con 191 comprobaciones en verde; cadena completa de punta a
+punta en la consola de Signal Processing.
 
 ### Entregables
 
@@ -234,19 +265,90 @@ cámara y debug. Sin máquinas todavía.
 
 ### Criterio de aceptación
 
-- [ ] Se encuentra una señal con los tres radares.
-- [ ] Se descarga ajustando polaridad y frecuencia.
-- [ ] Se reproduce y se guarda en la base de datos.
-- [ ] Se procesa a nivel 1, 2 y 3.
-- [ ] Se exporta a disco y se vende.
-- [ ] Una copia vale 0.
-- [ ] Smoke en verde.
+- [x] Se encuentra una señal con los tres radares.
+- [x] Se descarga ajustando polaridad y frecuencia.
+- [x] Se reproduce y se guarda en la base de datos.
+- [x] Se procesa a nivel 1, 2 y 3.
+- [x] Se exporta a disco y se vende.
+- [x] Una copia vale 0.
+- [x] Smoke en verde.
+
+### Notas de implementación
+
+- `SignalSystem` (`scripts/core/signal_system.gd`) es lógica pura: catálogo, ping, alineación,
+  descarga, reproducción, base de datos, procesado, exportación y venta. No conoce nodos ni UI.
+- Catálogo data-driven en `data/signals/catalog.json` con 8 señales: cuatro válidas y una de cada
+  fallo (débil, satélite caído, tormenta, objeto inválido). Los fallos informan; no son azar.
+- Coordinates: azimut/elevación, ping y tres rumbos de radar con desvío. Descargas: seis perillas
+  (frecuencia, polaridad, ganancia, ancho, filtro, squelch) y detector de alineación; por debajo del
+  55% no arranca.
+- La calidad de descarga sale de la alineación y del tipo de señal; la débil topa al 45% y la
+  tormenta multiplica por 0,6. Procesar exige calidad 50/65/78% y niveles en orden, y sube el valor.
+- La primera exportación de una señal paga; las copias valen 0. La venta suma créditos (la economía
+  real llega en el hito 6).
+- `SignalConsole` (CanvasLayer con `SubViewport`) agrupa los cuatro paneles con pestañas y se abre
+  desde los cuatro paneles físicos de Signal Processing (raycast + E). Mouse visible al abrir.
+- Imagen de cada señal generada en runtime (`SignalArt`, 64×64) y audio sintetizado
+  (`SignalAudio`, `AudioStreamGenerator`): sin assets externos.
+- Los discos y la base de datos viven en la consola; las cajas físicas, el zip drive y el dron
+  llegan con el ciclo diario (hito 6).
 
 ---
+
+## Hito 5.5 — Estación física
+
+**Objetivo:** sustituir la terminal por máquinas con controles reales (perillas, interruptores,
+palancas y, más adelante, ranuras y discos), al estilo de una cabina de radio.
+
+**Estado: fase A hecha (2026-11-01).** Smoke con 234 comprobaciones en verde.
+
+### Fases
+
+- **A (hecho):** Descargas como consola completa: chasis atornillado con puerta, cubierta inclinada,
+  CRT de fósforo, vúmetro, LEDs, lámpara de cuello de ganso y cables. Seis perillas, detector y palanca.
+- **B (pendiente):** Coordinates con perillas de azimut/elevación, botón de ping y diales de radar.
+- **C (pendiente):** Playback con ranura de disco y discos físicos entre máquinas.
+- **D (pendiente):** Processing con botones de nivel y start físicos.
+- **E (pendiente):** eliminar el overlay `SignalConsole`.
+
+### Notas de implementación (fase A)
+
+- Controles reutilizables en `scripts/machines/controls/`: `RotaryKnob` (rueda del ratón o E para un
+  paso), `ToggleSwitch` y `Lever` (mantener E 0,7 s). Construyen su propia geometría y `Label3D`.
+- `DownloadsPanel` monta una consola de ~2 m: chasis beige con puerta, bisagras, manilla, rejillas y
+  patas; cubierta inclinada con seis perillas (la de frecuencia es la principal), detector, palanca y
+  conectores BNC; cabezal con CRT, vúmetro, LEDs y altavoz; lámpara de cuello de ganso y cables.
+- El CRT es un `SubViewport` con `CrtScreen`: rejilla, traza animada de fósforo, líneas de barrido,
+  viñeta, parpadeo y texto de terminal. Solo muestra lecturas: no recibe clics.
+- Materiales y piezas: `MachineMaterials` (pintura desgastada, acero cepillado, baquelita, goma,
+  vidrio, chapa de aviso, escalas impresas) y `MachineMesh` (cajas, cilindros, tubos, tornillos y
+  rejillas). Todo procedural, sin assets externos.
+- `MachineBatch` fusiona la geometría estática por material: la consola pasa de 148 mallas a 102 y
+  el escenario de 246 a 205 draw calls con la máquina en pantalla. Las piezas móviles (perillas,
+  aguja, palanca) conservan su nodo.
+- El marcador de Descargas ya no abre la terminal: instancia el panel físico y `BaseBuilder` deja de
+  dibujar la caja de relleno de ese panel. Coordenadas, Reproducción y Procesado siguen en la consola,
+  que pasa de cuatro a tres pestañas.
+- La perilla se gira con la rueda mientras está enfocada; E avanza un paso. El jugador mantiene el
+  foco porque sigue el raycast normal.
+
+### Verificación visual (2026-11-01)
+
+- Capturas Forward+ a 3,2 / 1,9 / 1,35 m: CRT legible, vúmetro con aguja, lámpara y cables presentes.
+- La cubierta tapa la franja inferior del CRT si se mira desde muy cerca y muy abajo; de pie se ve
+  entera. Se corrigió el orden de capas (el cristal tapaba la pantalla) y se subió el tubo.
+- Los otros tres paneles siguen con la caja placeholder: se sustituyen en las fases B–D.
+- El marcador de Descargas ya no abre la terminal: instancia el panel físico. Coordenadas,
+  Reproducción y Procesado siguen en la consola, que pasa de cuatro a tres pestañas.
+- La perilla se gira con la rueda mientras está enfocada; E avanza un paso. El jugador mantiene el
+  foco porque sigue el raycast normal.
 
 ## Hito 6 — Ciclo diario, dron y tienda
 
 **Objetivo:** el bucle de 24 horas con tareas, pedidos y puntos.
+
+**Estado: hecho (2026-11-01).** Smoke con 234 comprobaciones acumuladas en verde; día completo, tarea, tienda,
+dron, multa y bonus jugables desde la terminal.
 
 ### Entregables
 
@@ -261,12 +363,32 @@ cámara y debug. Sin máquinas todavía.
 
 ### Criterio de aceptación
 
-- [ ] Un día completo dura 75 min en Normal (se puede acelerar para probar).
-- [ ] La tarea llega a medianoche y se puede entregar.
-- [ ] El dron trae el pedido y un disco vacío.
-- [ ] La tienda cobra y entrega.
-- [ ] El bonus y la multa se aplican.
-- [ ] Smoke en verde.
+- [x] Un día completo dura 75 min en Normal (se puede acelerar para probar).
+- [x] La tarea llega a medianoche y se puede entregar.
+- [x] El dron trae el pedido y un disco vacío.
+- [x] La tienda cobra y entrega.
+- [x] El bonus y la multa se aplican.
+- [x] Smoke en verde.
+
+### Notas de implementación
+
+- `GameClock` (`scripts/core/game_clock.gd`): día, hora, velocidad ×1/×10/×60 y dormir hasta una
+  hora. 1440 min de juego en 75 min reales (`0,32` min/s). Emite medianoche y las 06:00 al cruzarlas,
+  incluso al dormir o acelerar.
+- `DailyTask`: tarea generada por día con semilla; pide señales guardadas de un nivel mínimo y paga
+  créditos y puntos. Hashcodes y cintas quedan a 0 hasta los hitos 8 y 11 (campos ya previstos).
+- `Economy`: puntos, tienda de 5 artículos en 3 categorías, pedidos, entrega y bonus semanal (100
+  puntos por semana, una vez). Los créditos siguen en `SignalSystem`; la tienda calcula el saldo.
+- `DailyCycle`: director puro que une reloj, tarea, economía y señal. A medianoche renueva la tarea y
+  aplica la multa si no se entregó; a las 06:00 el dron entrega pedidos, deja un disco vacío y, cada
+  7 días, el bonus.
+- `CycleConsole`: terminal con cuatro pestañas (Reloj, Tarea, Tienda, Dron) en `SubViewport`, abierta
+  con E desde la consola central de Signal Processing. No pausa el mundo.
+- El dron añade los bultos a la mochila del jugador; los discos y cintas son `ItemDef` reales.
+- Guardado provisional en memoria (`snapshot`/`restore`): día, hora, tarea, puntos, pedidos y
+  créditos. El guardado en disco llega en el hito 15.
+- Diferido a hitos posteriores: saco/caja de discos y zip drive físicos, estación de bobinas y cintas
+  A/B, favoritos de tienda y recuperación de stamina al dormir (hito 9).
 
 ---
 
