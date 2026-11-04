@@ -1,0 +1,35 @@
+[
+  {
+    "id": "empty_disk",
+    "name": "Disco vacío",
+    "category": "Suministros",
+    "price": 25,
+    "item_path": "res://data/items/disk.tres"
+  },
+  {
+    "id": "tape",
+    "name": "Cinta de datos",
+    "category": "Suministros",
+    "price": 40,
+    "item_path": "res://data/items/tape.tres"
+  },
+  {
+    "id": "spare_part",
+    "name": "Pieza de repuesto",
+    "category": "Máquinas",
+    "price": 60,
+    "item_path": "res://data/items/spare_part.tres"
+  },
+  {
+    "id": "storm_filter",
+    "name": "Filtro de tormenta",
+    "category": "Mejoras",
+    "price": 90
+  },
+  {
+    "id": "remote_module",
+    "name": "Módulo de control remoto",
+    "category": "Mejoras",
+    "price": 120
+  }
+]

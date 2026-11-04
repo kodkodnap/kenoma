@@ -80,6 +80,26 @@ theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
 theme_override_font_sizes/font_size = 16
 text = "Mochila 0 · 0.0/24.0 m³"
 
+[node name="Power" type="Label" parent="."]
+offset_left = 20.0
+offset_top = 108.0
+offset_right = 420.0
+offset_bottom = 190.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.78, 0.84, 0.9, 1)
+theme_override_font_sizes/font_size = 16
+text = "Estabilidad 100%"
+
+[node name="Clock" type="Label" parent="."]
+offset_left = 20.0
+offset_top = 194.0
+offset_right = 420.0
+offset_bottom = 226.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.82, 0.88, 0.92, 1)
+theme_override_font_sizes/font_size = 16
+text = "DÍA 1 · 18:00"
+
 [node name="Status" type="Label" parent="."]
 anchor_left = 1.0
 anchor_right = 1.0

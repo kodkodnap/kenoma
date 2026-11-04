@@ -1,11 +1,10 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene format=3 uid="uid://dmb3hh5tlha0y"]
 
 [ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/debug/perf_overlay.tscn" id="2_overlay"]
-[ext_resource type="Script" path="res://scripts/core/main.gd" id="3_main"]
+[ext_resource type="Script" uid="uid://6py35kw8o6dw" path="res://scripts/core/main.gd" id="3_main"]
 [ext_resource type="PackedScene" path="res://scenes/machines/test_machine.tscn" id="4_machine"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]
-[ext_resource type="Script" path="res://scripts/core/power_grid.gd" id="6_grid"]
 [ext_resource type="PackedScene" path="res://scenes/base/alpha_root_base.tscn" id="7_base"]
 
 [sub_resource type="Environment" id="Env_night"]
@@ -19,28 +18,25 @@ fog_enabled = true
 fog_light_color = Color(0.05, 0.07, 0.1, 1)
 fog_density = 0.004
 
-[node name="Main" type="Node3D"]
+[node name="Main" type="Node3D" unique_id=510003987]
 script = ExtResource("3_main")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=268819565]
 environment = SubResource("Env_night")
 
-[node name="Moon" type="DirectionalLight3D" parent="."]
+[node name="Moon" type="DirectionalLight3D" parent="." unique_id=1492931274]
 transform = Transform3D(0.8253356, -0.44229966, 0.3509874, 0, 0.62161, 0.7833269, -0.5646425, -0.6465076, 0.51303685, 0, 0, 0)
 light_color = Color(0.55, 0.65, 0.9, 1)
 light_energy = 0.75
 
-[node name="Base" parent="." instance=ExtResource("7_base")]
+[node name="Base" parent="." unique_id=2141765265 instance=ExtResource("7_base")]
 
-[node name="PowerGrid" type="Node" parent="."]
-script = ExtResource("6_grid")
-
-[node name="TestMachine" parent="." instance=ExtResource("4_machine")]
+[node name="TestMachine" parent="." unique_id=1402054352 instance=ExtResource("4_machine")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 0, 10)
 
-[node name="Player" parent="." instance=ExtResource("1_player")]
+[node name="Player" parent="." unique_id=1544661026 instance=ExtResource("1_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 6)
 
-[node name="PerfOverlay" parent="." instance=ExtResource("2_overlay")]
+[node name="PerfOverlay" parent="." unique_id=1148315694 instance=ExtResource("2_overlay")]
 
-[node name="HUD" parent="." instance=ExtResource("5_hud")]
+[node name="HUD" parent="." unique_id=1392985523 instance=ExtResource("5_hud")]

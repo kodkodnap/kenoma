@@ -1,22 +1,6 @@
-[gd_resource type="Resource" script_class="GameBalance" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="GameBalance" format=3 uid="uid://dl4305ewj8rfk"]
 
-[ext_resource type="Script" path="res://scripts/core/game_balance.gd" id="1_balance"]
+[ext_resource type="Script" uid="uid://cbx4t0x0q2wha" path="res://scripts/core/game_balance.gd" id="1_balance"]
 
 [resource]
 script = ExtResource("1_balance")
-walk_speed = 4.0
-sprint_speed = 8.0
-crouch_speed = 1.5
-jump_velocity = 4.5
-ground_acceleration = 40.0
-air_acceleration = 8.0
-stand_height = 1.8
-crouch_height = 1.2
-head_height = 1.62
-crouch_head_height = 1.0
-stamina_max = 100.0
-stamina_drain_per_second = 12.0
-stamina_regen_per_second = 10.0
-stamina_sprint_min = 15.0
-flashlight_drain_per_second = 0.006
-inventory_capacity = 24.0

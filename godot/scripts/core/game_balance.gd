@@ -26,3 +26,17 @@ extends Resource
 
 @export_group("Inventario")
 @export var inventory_capacity: float = 24.0
+
+@export_group("Energía")
+## Transformadores sanos a estabilidad 1.0. La capacidad total es 3 × 1200 W.
+@export var transformer_count: int = 3
+@export var transformer_capacity_w: float = 1200.0
+## Carga base por circuito: Cálculos, Descargas, Coordenadas, Reproducción, Servicios.
+@export var power_circuit_draws: Array[float] = [800.0, 650.0, 550.0, 450.0, 350.0]
+@export var power_stability_drain_per_second: float = 0.08
+@export var power_stability_recover_per_second: float = 0.05
+## Segundos para la segunda pulsación del botón rojo.
+@export var power_restart_window: float = 5.0
+@export var power_restart_stability: float = 0.35
+## Pasos del módulo de control remoto: 30 s → 20 → 12 → 6 → 3 → 1.
+@export var power_remote_steps: Array[float] = [30.0, 20.0, 12.0, 6.0, 3.0, 1.0]
