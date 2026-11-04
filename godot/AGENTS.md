@@ -107,11 +107,16 @@ resumida en `docs/ORIGINAL_FEATURES.md`.
   dron a las 06:00, snapshot en memoria), con `CycleConsole` de 4 pestañas en la consola central.
   Smoke 221 checks.
 - **Hito 5.5 (fase A) hecho:** `DownloadsPanel` es una consola completa de ~2 m con chasis
-  atornillado, cubierta inclinada, CRT de fósforo (`CrtScreen` sobre `SubViewport`), vúmetro, LEDs,
-  lámpara de cuello de ganso, cables y seis perillas con escala (más detector y palanca). Materiales
-  y piezas 100% procedurales (`MachineMaterials`, `MachineMesh`); `MachineBatch` fusiona lo estático
-  por material y baja la escena a ~205 draw calls. Descargas ya no abre la terminal; quedan 3
-  pestañas. Smoke 234 checks. Fases B–E pendientes; los otros paneles siguen con placeholder.
+  atornillado, zócalo trasero, cubierta inclinada, CRT de fósforo (`CrtScreen` sobre `SubViewport`),
+  vúmetro, LEDs, lámpara de cuello de ganso y cables. Controles variados, no un muro de perillas: una
+  perilla de frecuencia, selector de polaridad de tres posiciones (`SelectorSwitch`), detector,
+  pulsador de guardado (`PushButton`) y palanca de descarga. La geometría se deriva de cotas
+  compartidas (`CABINET_TOP`, `RISER_TOP`, `DECK_BACK_Z`…): la cubierta muere en la arista frontal
+  del chasis y arranca en la arista del zócalo, donde se apoya el cabezal; el smoke comprueba ese
+  encaje (`deck_front_edge`, `deck_back_edge`, `head_front_bottom`). Materiales y piezas 100%
+  procedurales (`MachineMaterials`, `MachineMesh`); `MachineBatch` fusiona lo estático por material.
+  Descargas ya no abre la terminal; quedan 3 pestañas. Smoke 242 checks. Fases B–E pendientes; los
+  otros paneles siguen con placeholder.
 - `TestMachine` sigue como prototipo de la base de máquina.
 - El juego web ESTATICA de la raíz sigue sin trackear y no debe modificarse.
 - Repositorio: `C:\Users\ibane\Documents\proyecto_personal\estatica`; proyecto Godot en `godot/`.

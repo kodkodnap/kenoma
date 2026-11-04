@@ -16,9 +16,9 @@
 | 3 | Alpha Root Base en placeholders | **hecho** | Smoke (89 checks) + recorrido + capturas Forward+ |
 | 4 | Energía | **hecho** | Smoke (153 checks) + apagón jugable |
 | 5 | Estación de señales | **hecho** | Smoke (191 checks) + cadena completa |
-| 5.5 | Estación física (fase A) | **hecho** | Smoke (234 checks): Descargas con perillas, detector y palanca |
+| 5.5 | Estación física (fase A) | **hecho** | Smoke (242 checks): Descargas con perilla, selector, detector, pulsador y palanca |
 | 5.5 B–E | Coordinates, Playback, Processing y retirada del overlay | pendiente | Smoke + operación real de cada máquina |
-| 6 | Ciclo diario y dron | **hecho** | Smoke (234 checks acumulados) + día completo |
+| 6 | Ciclo diario y dron | **hecho** | Smoke (242 checks acumulados) + día completo |
 | 7 | Mapa exterior a escala | pendiente | Smoke + recorrido |
 | 8 | Servidores, consola y hashcodes | pendiente | Smoke |
 | 9 | Estadísticas y dificultad | pendiente | Smoke |
@@ -29,7 +29,7 @@
 | 14 | Tier 4 | pendiente | Smoke |
 | 15 | Guardado, menús y pulido | pendiente | Smoke + partida completa |
 
-> El smoke crece por acumulación: hoy son **234 comprobaciones** (0 fallos, `SMOKE OK: hitos 0, 1,
+> El smoke crece por acumulación: hoy son **242 comprobaciones** (0 fallos, `SMOKE OK: hitos 0, 1,
 > 2, 3, 4, 5 y 6`) y cubren los hitos 0–6 más la fase A de 5.5. Los conteos de los hitos 4 y 5 son los
 > de su cierre; los de 5.5 y 6 se han corregido al total real.
 
@@ -279,9 +279,9 @@ punta en la consola de Signal Processing.
   descarga, reproducción, base de datos, procesado, exportación y venta. No conoce nodos ni UI.
 - Catálogo data-driven en `data/signals/catalog.json` con 8 señales: cuatro válidas y una de cada
   fallo (débil, satélite caído, tormenta, objeto inválido). Los fallos informan; no son azar.
-- Coordinates: azimut/elevación, ping y tres rumbos de radar con desvío. Descargas: seis perillas
-  (frecuencia, polaridad, ganancia, ancho, filtro, squelch) y detector de alineación; por debajo del
-  55% no arranca.
+- Coordinates: azimut/elevación, ping y tres rumbos de radar con desvío. Descargas: una perilla de
+  frecuencia, selector de polaridad de tres posiciones y detector que marca la banda; por debajo
+  del 55% de alineación no arranca. Dos controles, como el panel original, no seis perillas.
 - La calidad de descarga sale de la alineación y del tipo de señal; la débil topa al 45% y la
   tormenta multiplica por 0,6. Procesar exige calidad 50/65/78% y niveles en orden, y sube el valor.
 - La primera exportación de una señal paga; las copias valen 0. La venta suma créditos (la economía
@@ -300,12 +300,15 @@ punta en la consola de Signal Processing.
 **Objetivo:** sustituir la terminal por máquinas con controles reales (perillas, interruptores,
 palancas y, más adelante, ranuras y discos), al estilo de una cabina de radio.
 
-**Estado: fase A hecha (2026-11-01).** Smoke con 234 comprobaciones en verde.
+**Estado: fase A hecha (2026-11-01).** Smoke con 242 comprobaciones en verde.
 
 ### Fases
 
-- **A (hecho):** Descargas como consola completa: chasis atornillado con puerta, cubierta inclinada,
-  CRT de fósforo, vúmetro, LEDs, lámpara de cuello de ganso y cables. Seis perillas, detector y palanca.
+- **A (hecho):** Descargas como consola completa: chasis atornillado con puerta, zócalo trasero,
+  cubierta inclinada, CRT de fósforo, vúmetro, LEDs, lámpara de cuello de ganso y cables. Controles
+  variados: perilla de frecuencia, selector de polaridad de tres posiciones, detector, pulsador de
+  guardado y palanca. La geometría sale de cotas compartidas y el smoke comprueba el encaje de
+  cubierta, zócalo y cabezal.
 - **B (pendiente):** Coordinates con perillas de azimut/elevación, botón de ping y diales de radar.
 - **C (pendiente):** Playback con ranura de disco y discos físicos entre máquinas.
 - **D (pendiente):** Processing con botones de nivel y start físicos.

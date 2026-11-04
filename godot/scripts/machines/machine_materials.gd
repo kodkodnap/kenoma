@@ -176,17 +176,6 @@ static func scanlines() -> StandardMaterial3D:
 		return mat)
 
 
-## Escala impresa de las perillas (aro con marcas y zona roja). Alpha: el centro es transparente.
-static func knob_dial() -> StandardMaterial3D:
-	return _cached("knob_dial", func() -> StandardMaterial3D:
-		var mat := StandardMaterial3D.new()
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.albedo_texture = _dial_texture(22, 4, 18, 40, 46)
-		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-		return mat)
-
-
 ## Escala del vúmetro: fondo crema con arco, marcas y zona roja.
 static func vu_dial() -> StandardMaterial3D:
 	return _cached("vu_dial", func() -> StandardMaterial3D:
@@ -330,29 +319,6 @@ static func _scanline_texture() -> ImageTexture:
 			var vignette := smoothstep(0.45, 1.2, edge) * 0.5
 			var alpha := clampf(line_alpha + vignette, 0.0, 0.62)
 			image.set_pixel(x, y, Color(0.0, 0.02, 0.015, alpha))
-	return ImageTexture.create_from_image(image)
-
-
-static func _dial_texture(ticks: int, major_every: int, red_from: int,
-		inner: float, outer: float) -> ImageTexture:
-	var size := 192
-	var image := Image.create(size, size, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0, 0, 0, 0))
-	var center := Vector2(size, size) * 0.5
-	var half := size * 0.5
-	for i in ticks:
-		var ratio := float(i) / float(ticks - 1)
-		var angle := lerpf(-2.15, 2.15, ratio) - PI * 0.5
-		var major := i % major_every == 0
-		var color := Color(0.93, 0.9, 0.76, 0.95)
-		if i >= red_from:
-			color = Color(0.95, 0.33, 0.2, 1.0)
-		var from_r := (inner * 0.01) * half if major else (inner * 0.014) * half
-		var to_r := (outer * 0.01) * half
-		_draw_line(image, center + Vector2(cos(angle), sin(angle)) * from_r,
-			center + Vector2(cos(angle), sin(angle)) * to_r, color, 3 if major else 1)
-	_draw_line(image, Vector2(center.x - 3.0, center.y - half * 0.5),
-		Vector2(center.x + 3.0, center.y - half * 0.5), Color(0.95, 0.33, 0.2, 1.0), 2)
 	return ImageTexture.create_from_image(image)
 
 

@@ -77,11 +77,25 @@ func _build() -> void:
 	shape.position.z = 0.03
 	add_child(shape)
 
-	# Plato embutido en la cubierta y escala impresa alrededor.
-	MachineMesh.cylinder(self, Vector3(0.0, 0.0, 0.002), 0.118, 0.014,
+	# Escala impresa en geometría: aro claro con marcas, sin texturas con alfa.
+	MachineMesh.cylinder(self, Vector3(0.0, 0.0, 0.004), 0.152, 0.008,
+		MachineMaterials.cream(), Vector3(PI * 0.5, 0.0, 0.0), 32, -1.0, "ScaleRing")
+	MachineMesh.cylinder(self, Vector3(0.0, 0.0, 0.006), 0.118, 0.012,
 		MachineMaterials.dark_steel(), Vector3(PI * 0.5, 0.0, 0.0), 24, -1.0, "Plate")
-	MachineMesh.quad(self, Vector3(0.0, 0.0, 0.0105), Vector2(0.235, 0.235),
-		MachineMaterials.knob_dial(), Vector3.ZERO, "Dial")
+	var ticks: Array[Transform3D] = []
+	var red_ticks: Array[Transform3D] = []
+	for i in 22:
+		var ratio := float(i) / 21.0
+		var angle := lerpf(-2.15, 2.15, ratio)
+		var spot := Vector3(sin(angle), cos(angle), 0.0) * 0.137 + Vector3(0.0, 0.0, 0.0085)
+		var tick := Transform3D(Basis(Vector3(0.0, 0.0, 1.0), -angle), spot)
+		if ratio > 0.8:
+			red_ticks.append(tick)
+		else:
+			ticks.append(tick)
+	MachineMesh.slats(self, ticks, Vector3(0.005, 0.02, 0.003), MachineMaterials.cream(), "Ticks")
+	MachineMesh.slats(self, red_ticks, Vector3(0.006, 0.022, 0.003), MachineMaterials.red_grip(),
+		"RedTicks")
 
 	_pivot = Node3D.new()
 	_pivot.name = "Pivot"
@@ -103,5 +117,5 @@ func _build() -> void:
 		MachineMaterials.steel(), 0.006, 0.005)
 
 	# La perilla puede ir tumbada en una cubierta inclinada: la leyenda se endereza.
-	_label = MachineMesh.label(self, label_text, Vector3(0.0, -0.152, 0.02), 0.0012,
-		Color(0.74, 0.7, 0.56), 16, Vector3(PI * 0.5, 0.0, 0.0))
+	_label = MachineMesh.label(self, label_text, Vector3(0.0, -0.196, 0.002), 0.0013,
+		Color(0.87, 0.82, 0.66), 16, Vector3(PI * 0.5, 0.0, 0.0))

@@ -9,10 +9,6 @@ extends Resource
 @export var elevation: float = 0.0
 @export var frequency: int = 500
 @export var polarity: int = 1
-@export var gain: int = 50
-@export var bandwidth: int = 50
-@export var filter: int = 50
-@export var squelch: int = 50
 @export var quality: float = 0.8
 @export var base_value: int = 100
 @export var image_seed: int = 1
@@ -29,10 +25,6 @@ static func from_dict(data: Dictionary) -> SignalDef:
 	def.elevation = float(data.get("elevation", 0.0))
 	def.frequency = int(data.get("frequency", 500))
 	def.polarity = int(data.get("polarity", 1))
-	def.gain = int(data.get("gain", 50))
-	def.bandwidth = int(data.get("bandwidth", 50))
-	def.filter = int(data.get("filter", 50))
-	def.squelch = int(data.get("squelch", 50))
 	def.quality = float(data.get("quality", 0.8))
 	def.base_value = int(data.get("base_value", 100))
 	def.image_seed = int(data.get("image_seed", 1))

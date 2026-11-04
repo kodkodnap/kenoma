@@ -88,8 +88,8 @@ func _build() -> void:
 	MachineMesh.cylinder(_pivot, Vector3(0.0, 0.0, 0.0), 0.026, 0.05,
 		MachineMaterials.dark_steel(), Vector3(PI * 0.5, 0.0, 0.0), 12, -1.0, "Hub")
 
-	_name_label = MachineMesh.label(self, label_text, Vector3(0.0, -0.168, 0.02), 0.0012,
-		Color(0.74, 0.7, 0.56), 16, Vector3(PI * 0.5, 0.0, 0.0))
+	_name_label = MachineMesh.label(self, label_text, Vector3(0.0, -0.168, 0.002), 0.0013,
+		Color(0.87, 0.82, 0.66), 16, Vector3(PI * 0.5, 0.0, 0.0))
 	MachineMesh.bolts(self, [Vector3(-0.088, -0.122, 0.016), Vector3(0.088, 0.122, 0.016),
 			Vector3(-0.088, 0.122, 0.016), Vector3(0.088, -0.122, 0.016)],
 		MachineMaterials.steel(), 0.006, 0.005)

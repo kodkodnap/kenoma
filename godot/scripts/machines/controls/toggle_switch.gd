@@ -87,7 +87,7 @@ func _build() -> void:
 		Color(0.5, 0.55, 0.5), 14, upright)
 	MachineMesh.label(self, "ON", Vector3(0.062, -0.05, 0.012), 0.0012,
 		Color(0.62, 0.6, 0.5), 14, upright)
-	_name_label = MachineMesh.label(self, label_text, Vector3(0.0, -0.156, 0.02), 0.0012,
-		Color(0.74, 0.7, 0.56), 16, upright)
+	_name_label = MachineMesh.label(self, label_text, Vector3(0.0, -0.156, 0.002), 0.0013,
+		Color(0.87, 0.82, 0.66), 16, upright)
 	MachineMesh.bolts(self, [Vector3(-0.072, -0.1, 0.014), Vector3(0.072, 0.1, 0.014)],
 		MachineMaterials.steel(), 0.006, 0.005)

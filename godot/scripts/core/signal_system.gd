@@ -28,10 +28,6 @@ var azimuth: float = 0.0
 var elevation: float = 0.0
 var frequency: int = 500
 var polarity: int = 1
-var gain: int = 50
-var bandwidth: int = 50
-var filter: int = 50
-var squelch: int = 50
 var selected_def: SignalDef = null
 var downloads: Array[Dictionary] = []
 var disks: Array[Dictionary] = []
@@ -129,14 +125,6 @@ func set_knob(knob: StringName, value: int) -> void:
 			frequency = clampi(value, 0, 1000)
 		&"polarity":
 			polarity = clampi(value, 0, 2)
-		&"gain":
-			gain = clampi(value, 0, 100)
-		&"bandwidth":
-			bandwidth = clampi(value, 0, 100)
-		&"filter":
-			filter = clampi(value, 0, 100)
-		&"squelch":
-			squelch = clampi(value, 0, 100)
 
 
 func knob(id: StringName) -> int:
@@ -145,14 +133,6 @@ func knob(id: StringName) -> int:
 			return frequency
 		&"polarity":
 			return polarity
-		&"gain":
-			return gain
-		&"bandwidth":
-			return bandwidth
-		&"filter":
-			return filter
-		&"squelch":
-			return squelch
 	return 0
 
 
@@ -160,18 +140,15 @@ func nudge_knob(knob: StringName, delta: int) -> void:
 	set_knob(knob, knob(knob) + delta)
 
 
-## 1.0 = perillas exactas; 0.0 = nada alineado.
+## 1.0 = frecuencia y polaridad exactas; 0.0 = nada alineado.
+## Solo dos controles, como el panel original: el resto de la cadena es del aparato.
 func alignment() -> float:
 	if selected_def == null:
 		return 0.0
 	var def := selected_def
 	var error := 0.0
-	error += absf(float(frequency - def.frequency)) / 1000.0 * 0.35
-	error += absf(float(polarity - def.polarity)) / 2.0 * 0.2
-	error += absf(float(gain - def.gain)) / 100.0 * 0.15
-	error += absf(float(bandwidth - def.bandwidth)) / 100.0 * 0.15
-	error += absf(float(filter - def.filter)) / 100.0 * 0.1
-	error += absf(float(squelch - def.squelch)) / 100.0 * 0.05
+	error += absf(float(frequency - def.frequency)) / 1000.0 * 0.7
+	error += absf(float(polarity - def.polarity)) / 2.0 * 0.3
 	return clampf(1.0 - error, 0.0, 1.0)
 
 

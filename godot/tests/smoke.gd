@@ -642,7 +642,11 @@ func _run() -> void:
 		var downloads := (panels[1] as Node3D).get_node_or_null("DownloadsPanel") as DownloadsPanel
 		_check(downloads != null, "panel de Descargas físico", failures)
 		if downloads != null:
-			_check(downloads.knob_count() == 6, "seis perillas físicas", failures)
+			_check(downloads.knob_count() == 1, "una sola perilla de frecuencia", failures)
+			_check(downloads.get_polarity_switch() != null,
+				"selector de polaridad de tres posiciones", failures)
+			_check(downloads.get_detector() != null and downloads.get_save_button() != null,
+				"detector y pulsador de guardado", failures)
 			_check(downloads.screen_title() != "", "la pantalla de Descargas da lectura", failures)
 			_check(downloads.get_node_or_null("Chassis") != null
 				and downloads.get_node_or_null("Chassis/ChassisBatch0") != null,
@@ -650,12 +654,25 @@ func _run() -> void:
 			_check(downloads.get_node_or_null("Head") != null
 				and downloads.get_node_or_null("Head/VuNeedle") != null,
 				"la consola tiene cabezal y vúmetro", failures)
-			_check(downloads.get_node_or_null("CrtScreen") != null
+			_check(downloads.find_child("CrtScreen", true, false) != null
 				and downloads.get_node_or_null("Lamp") != null,
 				"la consola tiene CRT y lámpara", failures)
+			# Encaje del mueble: cubierta, zócalo y cabezal comparten aristas.
+			_check(downloads.deck_front_edge().distance_to(
+				Vector3(0.0, DownloadsPanel.CABINET_TOP, DownloadsPanel.DECK_FRONT_Z)) < 0.02,
+				"la cubierta muere en la arista frontal del chasis", failures)
+			_check(absf(downloads.deck_back_edge().y - DownloadsPanel.RISER_TOP) < 0.01
+				and absf(downloads.deck_back_edge().z - downloads.head_front_bottom().z) < 0.01,
+				"la cubierta arranca en el zócalo del cabezal", failures)
+			_check(absf(downloads.head_front_bottom().y - DownloadsPanel.RISER_TOP) < 0.02,
+				"el cabezal se apoya en el zócalo", failures)
 			var knob := downloads.get_knob(0)
 			_check(knob != null, "la perilla de frecuencia existe", failures)
 			if knob != null:
+				var deck := downloads.get_node("Deck") as Node3D
+				var seat := deck.global_transform.affine_inverse() * knob.global_position
+				_check(absf(seat.y) < 0.006 and seat.z > 0.02 and seat.z < 0.33,
+					"la perilla se apoya en la cubierta", failures)
 				signals.select_by_id(&"relay_hum")
 				_stand_and_aim(player, knob, 1.1, 0.05)
 				for i in 4:
@@ -671,14 +688,30 @@ func _run() -> void:
 					"la rueda gira la perilla", failures)
 				_align_signal(signals, signals.selected_def)
 				downloads.sync_knobs()
-				_check(signals.alignment() >= 0.99, "las perillas alinean la señal", failures)
+				_check(signals.alignment() >= 0.99, "la perilla y el selector alinean la señal", failures)
 				var lever := downloads.get_lever()
 				_check(lever != null, "la palanca de descarga existe", failures)
 				if lever != null:
+					var detector := downloads.get_detector()
+					detector.set_on(false)
+					lever.activate()
+					_check(not signals.is_downloading(),
+						"sin detector no arranca la descarga", failures)
+					detector.set_on(true)
 					lever.activate()
 					_check(signals.is_downloading(), "la palanca inicia la descarga", failures)
 					lever.activate()
 					_check(not signals.is_downloading(), "la palanca detiene la descarga", failures)
+
+			# El pulsador guarda la copia recién descargada en la base de datos.
+			signals.select_by_id(&"relay_hum")
+			_align_signal(signals, signals.selected_def)
+			signals.start_download()
+			signals.tick(8.0)
+			var saved_before := signals.saved_count()
+			downloads.get_save_button().activate()
+			_check(signals.saved_count() == saved_before + 1,
+				"el pulsador guarda la copia en la base", failures)
 
 		var opener := (panels[0] as Node3D).get_node_or_null("SignalPanelInteract") as Interactable
 		_check(opener != null, "el panel tiene interactuable", failures)
@@ -793,10 +826,6 @@ func _align_signal(system: SignalSystem, def: SignalDef) -> void:
 		return
 	system.set_knob(&"frequency", def.frequency)
 	system.set_knob(&"polarity", def.polarity)
-	system.set_knob(&"gain", def.gain)
-	system.set_knob(&"bandwidth", def.bandwidth)
-	system.set_knob(&"filter", def.filter)
-	system.set_knob(&"squelch", def.squelch)
 
 
 func _measure_speed(player: Player, action: String) -> float:
