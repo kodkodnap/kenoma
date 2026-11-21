@@ -324,7 +324,7 @@ Cada hito añade sus comprobaciones al smoke antes de implementar (TDD).
 | PerfOverlay | hecho | F3 |
 | SignalSystem / SignalConsole | hecho | 8 señales, catálogo JSON, cadena y venta; terminal reducida a Reproducción |
 | DailyCycle / CycleConsole | hecho | 75 min/día, tarea, tienda, dron, multa y bonus; snapshot en memoria |
-| Estación física (fases A, B y D) | hecho | Descargas, Coordinates y Procesado como consolas físicas; Procesado con FASE→LOCK→CONFIRMAR; terminal de una pestaña; 273 checks |
+| Estación física (fases A, B y D) | hecho | Descargas, Coordinates y Procesado como consolas físicas; Procesado con FASE→LOCK→CONFIRMAR; terminal de una pestaña; 281 checks |
 | Servidores, consola y guardado | pendiente | Hitos 8 y 15 |
 
 ## 12. Cómo añadir un sistema

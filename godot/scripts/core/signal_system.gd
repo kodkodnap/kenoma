@@ -166,11 +166,14 @@ func set_decode_tuning(value: float) -> void:
 	decode_tuning = clampf(value, 0.0, 1.0)
 
 
-## Estabilidad de la onda en tiempo real: 1.0 en la fase objetivo de la señal.
+## Estabilidad de la onda en tiempo real: 1.0 en la fase de la copia que se procesará.
+## Sin copia guardada no hay nada que decodificar y la traza queda en ruido.
 func decode_stability() -> float:
-	if selected_def == null:
+	var index := last_saved_index()
+	if index < 0:
 		return 0.0
-	var error := absf(decode_tuning - selected_def.decode_target) * decode_sensitivity
+	var def: SignalDef = downloads[index]["def"]
+	var error := absf(decode_tuning - def.decode_target) * decode_sensitivity
 	return clampf(1.0 - error, 0.0, 1.0)
 
 
@@ -183,11 +186,13 @@ func last_saved_index() -> int:
 
 ## Consume la última copia guardada si la onda ya está lo bastante estable.
 func confirm_decode() -> bool:
-	if decode_stability() < decode_ready_stability:
-		return false
 	var index := last_saved_index()
 	if index < 0:
-		return false
+		return _fail("NO HAY COPIA GUARDADA EN LA BASE DE DATOS")
+	if decode_stability() < decode_ready_stability:
+		return _fail("FASE INESTABLE · AJUSTA LA ONDA")
+	if copy_level(index) >= 3:
+		return _fail("COPIA YA PROCESADA AL NIVEL 3")
 	return process_copy(index, copy_level(index) + 1)
 
 
@@ -355,6 +360,10 @@ func export_copy(index: int) -> Dictionary:
 	if index < 0 or index >= downloads.size():
 		return {}
 	var copy: Dictionary = downloads[index]
+	if int(copy["level"]) < 1:
+		_status = "PROCESA LA COPIA ANTES DE EXPORTARLA A DISCO"
+		error_raised.emit(_status)
+		return {}
 	var key: StringName = copy["id"]
 	var previous := int(_export_counts.get(key, 0))
 	_export_counts[key] = previous + 1

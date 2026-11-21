@@ -117,7 +117,7 @@ resumida en `docs/ORIGINAL_FEATURES.md`.
   procedurales (`MachineMaterials`, `MachineMesh`); `MachineBatch` fusiona lo estático por material.
   Descargas ya no abre la terminal; quedan 3 pestañas. Smoke 242 checks. Las fases B y D se cerraron
   después: hoy los paneles 1, 2 y 4 son físicos, la terminal tiene una pestaña y el smoke acumula
-  273 checks; quedan pendientes la fase C (Playback) y la E (retirada del overlay).
+  281 checks; quedan pendientes la fase C (Playback) y la E (retirada del overlay).
 - **Hito 5.5 (fases B y D) hecho:** Coordinates y Procesado son consolas físicas en sus marcadores.
   Procesado usa `signal-processing-console.glb` (12 mallas, ~3,4k tris), `CrtScreen` vivo y controles
   invisibles FASE/CONFIRMAR: girar FASE cambia la estabilidad de la onda en tiempo real, LOCK se

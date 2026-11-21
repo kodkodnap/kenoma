@@ -200,12 +200,12 @@ func _build_collision() -> void:
 
 
 func _on_confirm() -> void:
-	if _system == null or _locked:
+	if _system == null:
 		return
 	if _system.confirm_decode():
 		_locked = true
 		_lock_material.emission_energy_multiplier = 2.8
-		_status_label.text = "COPIA PROCESADA · DISCO DISPONIBLE"
+		_status_label.text = _system.status() + " · DISCO DISPONIBLE"
 		_confirm_button.flash()
 	else:
-		_status_label.text = "FASE INESTABLE · AJUSTA LA ONDA"
+		_status_label.text = _system.status()

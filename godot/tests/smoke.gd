@@ -783,8 +783,8 @@ func _run() -> void:
 			"objetivo de fase en el catálogo", failures)
 		if decode_def != null:
 			decode_system.set_decode_tuning(0.5)
-			_check(is_equal_approx(decode_system.decode_stability(), 1.0),
-				"fase exacta da estabilidad 1", failures)
+			_check(decode_system.decode_stability() == 0.0,
+				"sin copia guardada la onda no se estabiliza", failures)
 			decode_system.set_decode_tuning(0.0)
 			_check(decode_system.decode_stability() == 0.0,
 				"fase lejana da estabilidad 0", failures)
@@ -832,7 +832,49 @@ func _run() -> void:
 			_check(is_equal_approx(processing.get_crt().stability, 1.0),
 				"la onda del CRT se estabiliza al girar la perilla", failures)
 			processing.get_confirm_button().activate()
-			_check(processing.is_locked(), "confirmar bloquea el panel", failures)
+			_check(processing.is_locked(), "confirmar enciende el LED LOCK", failures)
+			processing.get_confirm_button().activate()
+			_check(decode_system.copy_level(0) == 3,
+				"el panel permite procesar los tres niveles", failures)
+
+		# Fase D: la fase objetivo pertenece a la copia que se va a procesar.
+		var mismatch_system := SignalSystem.new()
+		mismatch_system.setup(SignalSystem.load_catalog("res://data/signals/catalog.json"))
+		mismatch_system.configure_balance(load("res://data/balance.tres") as GameBalance)
+		var saved_def := mismatch_system.select_by_id(&"distant_choir")
+		_align_signal(mismatch_system, saved_def)
+		mismatch_system.start_download()
+		mismatch_system.tick(8.0)
+		mismatch_system.save_copy(0)
+		var other_def := mismatch_system.select_by_id(&"relay_hum")
+		mismatch_system.set_decode_tuning(other_def.decode_target)
+		_check(mismatch_system.decode_stability() < mismatch_system.decode_ready_stability,
+			"la fase objetivo sigue a la copia guardada, no al escaneo actual", failures)
+		_check(not mismatch_system.confirm_decode(),
+			"no se procesa una copia ajena a la fase sintonizada", failures)
+		_check(mismatch_system.copy_level(0) == 0, "la copia ajena no sube de nivel", failures)
+
+		var no_copy_system := SignalSystem.new()
+		no_copy_system.setup(SignalSystem.load_catalog("res://data/signals/catalog.json"))
+		no_copy_system.configure_balance(load("res://data/balance.tres") as GameBalance)
+		no_copy_system.select_by_id(&"relay_hum")
+		no_copy_system.set_decode_tuning(0.5)
+		_check(not no_copy_system.confirm_decode(), "sin copia no se confirma", failures)
+		_check(no_copy_system.status().contains("COPIA"),
+			"sin copia explica el motivo", failures)
+
+		var gate_system := SignalSystem.new()
+		gate_system.setup(SignalSystem.load_catalog("res://data/signals/catalog.json"))
+		gate_system.configure_balance(load("res://data/balance.tres") as GameBalance)
+		var gate_def := gate_system.select_by_id(&"relay_hum")
+		_align_signal(gate_system, gate_def)
+		gate_system.start_download()
+		gate_system.tick(8.0)
+		gate_system.save_copy(0)
+		_check(gate_system.export_copy(0).is_empty(),
+			"sin procesar no se exporta a disco", failures)
+		_check(gate_system.status().contains("PROCESA"),
+			"exportar sin procesar explica el motivo", failures)
 
 	# Hito 6: ciclo diario, tarea, tienda y dron.
 	_check(cycle != null, "DailyCycle presente", failures)

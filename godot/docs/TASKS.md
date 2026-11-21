@@ -16,9 +16,9 @@
 | 3 | Alpha Root Base en placeholders | **hecho** | Smoke (89 checks) + recorrido + capturas Forward+ |
 | 4 | Energía | **hecho** | Smoke (153 checks) + apagón jugable |
 | 5 | Estación de señales | **hecho** | Smoke (191 checks) + cadena completa |
-| 5.5 | Estación física (fases A, B y D) | **hecho** | Smoke (273 checks): Descargas, Coordinates y Procesado físicos (FASE → LOCK) |
+| 5.5 | Estación física (fases A, B y D) | **hecho** | Smoke (281 checks): Descargas, Coordinates y Procesado físicos (FASE → LOCK) |
 | 5.5 C y E | Playback y retirada del overlay | pendiente | Smoke + operación real de cada máquina |
-| 6 | Ciclo diario y dron | **hecho** | Smoke (273 checks acumulados) + día completo |
+| 6 | Ciclo diario y dron | **hecho** | Smoke (281 checks acumulados) + día completo |
 | 7 | Mapa exterior a escala | pendiente | Smoke + recorrido |
 | 8 | Servidores, consola y hashcodes | pendiente | Smoke |
 | 9 | Estadísticas y dificultad | pendiente | Smoke |
@@ -29,7 +29,7 @@
 | 14 | Tier 4 | pendiente | Smoke |
 | 15 | Guardado, menús y pulido | pendiente | Smoke + partida completa |
 
-> El smoke crece por acumulación: hoy son **273 comprobaciones** (0 fallos, `SMOKE OK: hitos 0, 1,
+> El smoke crece por acumulación: hoy son **281 comprobaciones** (0 fallos, `SMOKE OK: hitos 0, 1,
 > 2, 3, 4, 5 y 6`) y cubren los hitos 0–6 más las fases A, B y D de 5.5. Los conteos de los hitos 4 y 5
 > son los de su cierre; los de 5.5 y 6 se han corregido al total real.
 
@@ -300,7 +300,7 @@ punta en la consola de Signal Processing.
 **Objetivo:** sustituir la terminal por máquinas con controles reales (perillas, interruptores,
 palancas y, más adelante, ranuras y discos), al estilo de una cabina de radio.
 
-**Estado: fases A, B y D hechas (2026-11-21).** Smoke con 273 comprobaciones en verde.
+**Estado: fases A, B y D hechas (2026-11-21).** Smoke con 281 comprobaciones en verde.
 
 ### Fases
 
@@ -370,7 +370,7 @@ palancas y, más adelante, ranuras y discos), al estilo de una cabina de radio.
 - Smoke: al cierre de la fase B, `tab_count() == 2` y `open_tab(0)` abre Reproducción; el bloque
   comprueba el panel físico (perillas, pulsador, CRT, raycast de ping y ping con azimut/elevación
   alineados que fija la portadora `relay_hum`). La fase D baja a `tab_count() == 1` y añade el panel de
-  Procesado, su dial y su confirmar. 245 comprobaciones al cierre de B, 273 tras la D; Forward+ real
+  Procesado, su dial y su confirmar. 245 comprobaciones al cierre de B, 281 tras la D; Forward+ real
   sin errores.
 
 ### Notas de implementación (fase D)
@@ -384,10 +384,14 @@ palancas y, más adelante, ranuras y discos), al estilo de una cabina de radio.
 - `decode_tuning` y `decode_stability()` viven en `SignalSystem`; la sensibilidad y el umbral están en
   `data/balance.tres` (2.5 y 0.78) y `decode_target` en cada entrada de `catalog.json`. `_process`
   asigna `stability` y `signal_level` cada frame: girar FASE cambia el jitter al instante.
-- `confirm_decode()` usa la última copia guardada, exige estabilidad ≥ umbral y ejecuta
-  `process_copy(idx, copy_level(idx)+1)`; el LED LOCK y el texto propio «COPIA PROCESADA · DISCO
-  DISPONIBLE» marcan el éxito. Sin copia o con calidad baja no procesa y muestra «FASE INESTABLE ·
-  AJUSTA LA ONDA».
+- `decode_stability()` toma el objetivo de la última copia guardada (no de la portadora escaneada):
+  sin copia la traza queda en ruido, y escanear otra señal ya no permite procesar una copia ajena.
+- `confirm_decode()` usa esa copia, exige estabilidad ≥ umbral y ejecuta
+  `process_copy(idx, copy_level(idx)+1)`; se puede pulsar hasta completar los tres niveles. El LED LOCK
+  y el texto del sistema con «· DISCO DISPONIBLE» marcan cada éxito. Sin copia, fase inestable, copia
+  agotada o calidad baja muestran el motivo real.
+- `export_copy()` exige nivel ≥ 1: sin procesar no se exporta a disco, así que la máquina tiene un
+  efecto real en la cadena. Los textos siguen siendo originales de Kenoma.
 - Los textos y WAV del `.blend` no se importan: el exportador elimina `FONT` y los planos de CRT; las
   etiquetas se regeneran en Godot con contenido original de Kenoma.
 

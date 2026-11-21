@@ -86,6 +86,10 @@ Es un corte vertical completo: modelo importado, control físico, simulación, a
 Nota: no se importan los WAV del `.blend` y este corte no añade audio propio de Procesado; los textos
 visibles se regeneran en Godot como contenido original de Kenoma.
 
+Corrección funcional posterior (misma fecha, smoke 281/281): `decode_stability()` deriva del `decode_target`
+de la última copia guardada (0 sin copia), `confirm_decode()` explica cada fallo y permite subir los tres
+niveles, y `export_copy()` exige nivel ≥ 1 para que Procesado tenga efecto real en la cadena.
+
 ## 5. Riesgos y mitigaciones
 
 | Riesgo | Mitigación |
