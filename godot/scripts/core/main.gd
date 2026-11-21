@@ -19,6 +19,7 @@ var signals: SignalSystem = SignalSystem.new()
 var cycle: DailyCycle = DailyCycle.new()
 var signal_console: SignalConsole
 var cycle_console: CycleConsole
+var terminal_sell_dock: DiskDock
 
 
 func _ready() -> void:
@@ -154,10 +155,43 @@ func _wire_signal_panels() -> void:
 		shape.shape = box
 		opener.add_child(shape)
 		marker.add_child(opener)
+		if i == 2:
+			terminal_sell_dock = DiskDock.new()
+			terminal_sell_dock.name = "TerminalSellDock"
+			terminal_sell_dock.position = Vector3(1.15, 0.1, 0.45)
+			terminal_sell_dock.prompt = "Insertar o retirar disco"
+			marker.add_child(terminal_sell_dock)
+			terminal_sell_dock.activated.connect(_on_terminal_dock_activated)
+			terminal_sell_dock.disk_inserted.connect(_on_terminal_disk)
 
 
 func _on_signal_panel(_source: Interactable, tab: int) -> void:
 	signal_console.open_tab(tab)
+
+
+## Igual que en Procesado: al coger el disco se limpia el foco, así que el dock
+## no lo ve; se lo pedimos al jugador directamente.
+func _on_terminal_dock_activated(_source: Interactable) -> void:
+	var players := get_tree().get_nodes_in_group("player")
+	if players.is_empty():
+		return
+	var player: Node = players[0]
+	var held: Variant = player.get("held")
+	if held is DiskMedia:
+		player.call("drop_held", 0.0)
+		terminal_sell_dock.insert(held)
+
+
+## Vende el disco insertado y lo devuelve, aunque ya estuviera vendido.
+func _on_terminal_disk(disk: DiskMedia) -> void:
+	if disk == null:
+		return
+	var index := disk.disk_index
+	var disks: Array = signals.disks
+	if index >= 0 and index < disks.size():
+		signals.sell_disk(index)
+	disk.refresh_label()
+	terminal_sell_dock.eject()
 
 
 ## Terminal del ciclo en la consola central de Signal Processing.

@@ -706,6 +706,69 @@ func _run() -> void:
 		var panels := get_nodes_in_group("signal_panel")
 		panels.sort_custom(func(a: Node, b: Node) -> bool: return String(a.name) < String(b.name))
 
+		# Hito 5.6 Task 4: ranura de venta en la terminal (marcador SignalPanel3).
+		var sell_dock: Node = main.get("terminal_sell_dock") as Node
+		_check(sell_dock != null, "la terminal tiene ranura de venta", failures)
+		if sell_dock != null:
+			_check(sell_dock.get_parent() == panels[2],
+				"la ranura de venta cuelga del marcador SignalPanel3", failures)
+			_check((panels[2] as Node3D).get_node_or_null("SignalPanelInteract") != null,
+				"la ranura convive con SignalPanelInteract", failures)
+
+			# Un disco nuevo, sin vender y con valor (id aún no exportado).
+			var for_sale := signals.select_by_id(&"distant_choir")
+			signals.set_azimuth(for_sale.azimuth)
+			signals.set_elevation(for_sale.elevation)
+			_check(bool(signals.scan().get("found", false)), "el ping halla la portadora a vender", failures)
+			_align_signal(signals, for_sale)
+			_check(signals.start_download(), "la descarga del disco a vender arranca", failures)
+			signals.tick(8.0)
+			var sell_copy := signals.download_count() - 1
+			_check(signals.save_copy(sell_copy), "la copia a vender se guarda", failures)
+			_check(signals.process_copy(sell_copy, 1), "la copia a vender se procesa", failures)
+			var exported: Dictionary = signals.export_copy(sell_copy)
+			var sell_index := signals.disks.size() - 1
+			var sell_value := int(exported.get("value", 0))
+			_check(sell_value > 0, "el disco a vender tiene valor", failures)
+
+			var sale_scene := load("res://scenes/items/disk_media.tscn") as PackedScene
+			var sale_media: Node = sale_scene.instantiate()
+			main.add_child(sale_media)
+			sale_media.global_position = Vector3(40.0, 8.0, 40.0)
+			sale_media.call("setup", signals, sell_index)
+			await process_frame
+			var sale_inserts: Array[int] = []
+			var sale_ejects: Array[int] = []
+			sell_dock.connect("disk_inserted", func(_d: Node) -> void: sale_inserts.append(1))
+			sell_dock.connect("disk_ejected", func(_d: Node) -> void: sale_ejects.append(1))
+
+			var credits_before_sale := signals.credits
+			player.grab(sale_media)
+			_check(player.held == sale_media, "el jugador sostiene el disco para vender", failures)
+			sell_dock.call("activate")
+			_check(sale_inserts.size() == 1, "activar la ranura inserta el disco sostenido", failures)
+			_check(player.held == null, "el disco deja de estar sostenido", failures)
+			_check(bool(signals.disks[sell_index].get("sold", false)),
+				"el disco insertado queda vendido", failures)
+			_check(signals.credits == credits_before_sale + sell_value,
+				"vender en la terminal paga créditos", failures)
+			_check(sale_ejects.size() == 1 and sell_dock.get("disk") == null,
+				"la terminal expulsa el disco tras vender", failures)
+			var sale_interact := sale_media.get("interactable") as Interactable
+			_check(not sale_media.freeze and sale_media.visible and sale_interact != null
+					and sale_interact.enabled and sale_interact.collision_layer != 0,
+				"expulsar devuelve el disco al mundo", failures)
+
+			# Reinsertar un disco ya vendido no vuelve a pagar.
+			var credits_after_sale := signals.credits
+			player.grab(sale_media)
+			sell_dock.call("activate")
+			_check(sale_inserts.size() == 2 and sale_ejects.size() == 2,
+				"el disco vendido se inserta y se expulsa de nuevo", failures)
+			_check(signals.credits == credits_after_sale,
+				"un disco ya vendido no aumenta créditos", failures)
+			sale_media.queue_free()
+
 		# Fase A de la estación física: Descargas con perillas, detector y palanca.
 		var downloads := (panels[1] as Node3D).get_node_or_null("DownloadsPanel") as DownloadsPanel
 		_check(downloads != null, "panel de Descargas físico", failures)
