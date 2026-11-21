@@ -473,7 +473,22 @@ func _build_props() -> void:
 func _build_signal_room() -> void:
 	var window := _signal_detail("SignalWindow", Vector3(0.0, 2.3, -18.0))
 	window.set_meta("width", BaseLayout.SIGNAL_WINDOW_WIDTH)
-	_box("cold", Vector3(0.0, 2.3, -19.2), Vector3(12.0, 2.6, 0.2), Basis.IDENTITY, false)
+	# Exterior frío tras el cristal: campo de nieve, horizonte y picos recortados.
+	# Antes había un panel opaco aquí y el hueco se leía como una pantalla azul.
+	_box("snow", Vector3(0.0, -0.05, -32.0), Vector3(70.0, 0.3, 28.0), Basis.IDENTITY, false)
+	_box("cold", Vector3(0.0, 5.0, -72.0), Vector3(90.0, 10.0, 0.5), Basis.IDENTITY, false)
+	for peak_variant in [{"x": -9.0, "h": 6.0, "z": -52.0},
+			{"x": 0.0, "h": 4.0, "z": -44.0}, {"x": 9.0, "h": 7.0, "z": -58.0}]:
+		var peak: Dictionary = peak_variant
+		var px := float(peak["x"])
+		var ph := float(peak["h"])
+		var pz := float(peak["z"])
+		var tilt := atan(ph / 5.0)
+		var slope := sqrt(ph * ph + 25.0)
+		_box("dark_metal", Vector3(px - 2.5, ph * 0.5, pz),
+			Vector3(slope, 0.7, 1.2), Basis(Vector3.BACK, tilt), false)
+		_box("dark_metal", Vector3(px + 2.5, ph * 0.5, pz),
+			Vector3(slope, 0.7, 1.2), Basis(Vector3.BACK, -tilt), false)
 
 	_signal_detail("TarimaBaja", Vector3(0.0, 0.07, -14.0))
 	_box("wood", Vector3(0.0, 0.06, -14.0), Vector3(24.0, 0.12, 6.0), Basis.IDENTITY, false)
