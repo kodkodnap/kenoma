@@ -5,6 +5,7 @@ extends RefCounted
 const WALL_HEIGHT := 3.5
 const DOOR_WIDTH := 2.4
 const DOOR_HEIGHT := 2.8
+const SIGNAL_WINDOW_WIDTH := 10.0
 
 ## Habitaciones. x/z son la esquina mínima; w/d el tamaño; y la altura del suelo.
 ## Las puertas se expresan con side + at (x en muros norte/sur, z en este/oeste).
@@ -54,6 +55,8 @@ const ROOMS := [
 		"id": "signal", "label": "SIGNAL PROCESSING & RESEARCH",
 		"x": -14.0, "z": -18.0, "w": 28.0, "d": 16.0, "y": 0.0,
 		"doors": [{"side": "south", "at": 0.0}],
+		"windows": [{"side": "north", "at": 0.0, "width": SIGNAL_WINDOW_WIDTH,
+			"bottom": 1.45, "height": 1.7}],
 	},
 	{
 		"id": "server_room", "label": "SERVER NETWORK ROOM",
@@ -223,6 +226,31 @@ static func collect_walls() -> Array:
 					"width": float(door.get("width", DOOR_WIDTH)),
 					"height": float(door.get("height", DOOR_HEIGHT)),
 				})
+
+	for room_variant in ROOMS:
+		var room: Dictionary = room_variant
+		if not bool(room.get("walls", true)):
+			continue
+		for window_variant in room.get("windows", []):
+			var window: Dictionary = window_variant
+			var key := _door_key(room, window)
+			if not walls.has(key):
+				continue
+			var windows: Array = walls[key]["windows"]
+			var exists := false
+			for existing_variant in windows:
+				var existing: Dictionary = existing_variant
+				if is_equal_approx(float(existing["at"]), float(window["at"])) \
+						and is_equal_approx(float(existing["width"]), float(window["width"])):
+					exists = true
+					break
+			if not exists:
+				windows.append({
+					"at": float(window["at"]),
+					"width": float(window["width"]),
+					"bottom": float(window.get("bottom", 1.4)),
+					"height": float(window.get("height", 1.6)),
+				})
 	return walls.values()
 
 
@@ -238,6 +266,7 @@ static func _add_edge(walls: Dictionary, axis: String, fixed: float,
 		"end": maxf(start, end),
 		"y": y,
 		"doors": [],
+		"windows": [],
 	}
 
 

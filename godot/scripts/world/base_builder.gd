@@ -54,6 +54,7 @@ func _ready() -> void:
 	_build_stairs()
 	_build_roof()
 	_build_props()
+	_build_signal_room()
 	_build_exterior()
 	_flush_batches()
 	_build_lights()
@@ -74,6 +75,9 @@ func _make_materials() -> void:
 	_materials["led_red"] = _material(Color(0.85, 0.08, 0.08), 0.0, 0.4, Color(1.0, 0.1, 0.1), 2.0)
 	_materials["warning"] = _material(Color(0.75, 0.55, 0.08), 0.0, 0.7, Color(0.8, 0.45, 0.05), 0.6)
 	_materials["paper"] = _material(Color(0.72, 0.7, 0.62), 0.0, 0.9)
+	_materials["glass"] = MachineMaterials.glass()
+	_materials["cold"] = _material(Color(0.06, 0.12, 0.2), 0.0, 1.0,
+		Color(0.04, 0.12, 0.24), 0.8)
 
 
 func _material(color: Color, metallic: float, roughness: float,
@@ -136,21 +140,46 @@ func _build_walls() -> void:
 		var start := float(wall["start"])
 		var end := float(wall["end"])
 		var y := float(wall["y"])
-		var doors: Array = wall["doors"].duplicate()
-		doors.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var openings: Array = []
+		for door_variant in wall["doors"]:
+			var door: Dictionary = door_variant
+			openings.append({
+				"at": float(door["at"]),
+				"width": float(door["width"]),
+				"bottom": 0.0,
+				"height": float(door["height"]),
+				"window": false,
+			})
+		for window_variant in wall.get("windows", []):
+			var window: Dictionary = window_variant
+			openings.append({
+				"at": float(window["at"]),
+				"width": float(window["width"]),
+				"bottom": float(window["bottom"]),
+				"height": float(window["height"]),
+				"window": true,
+			})
+		openings.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 			return float(a["at"]) < float(b["at"]))
 		var cursor := start
-		for door_variant in doors:
-			var door: Dictionary = door_variant
-			var half := float(door["width"]) * 0.5
-			var d0 := float(door["at"]) - half
-			var d1 := float(door["at"]) + half
+		for opening_variant in openings:
+			var opening: Dictionary = opening_variant
+			var half := float(opening["width"]) * 0.5
+			var d0 := float(opening["at"]) - half
+			var d1 := float(opening["at"]) + half
 			if d0 > cursor + 0.01:
 				_wall_segment(axis, fixed, cursor, d0, y, 0.0, WALL_HEIGHT)
-			var door_height := float(door["height"])
-			if door_height < WALL_HEIGHT:
-				_wall_segment(axis, fixed, d0, d1, y, door_height, WALL_HEIGHT - door_height)
-			_door_frame(axis, fixed, d0, d1, y, door_height)
+			var bottom := float(opening["bottom"])
+			var height := float(opening["height"])
+			if bottom > 0.01:
+				_wall_segment(axis, fixed, d0, d1, y, 0.0, bottom)
+			if bottom + height < WALL_HEIGHT - 0.01:
+				_wall_segment(axis, fixed, d0, d1, y, bottom + height,
+					WALL_HEIGHT - bottom - height)
+			if opening["window"]:
+				_window_frame(axis, fixed, d0, d1, y, bottom, height)
+			else:
+				_door_frame(axis, fixed, d0, d1, y, height)
 			cursor = maxf(cursor, d1)
 		if cursor < end - 0.01:
 			_wall_segment(axis, fixed, cursor, end, y, 0.0, WALL_HEIGHT)
@@ -195,6 +224,29 @@ func _door_frame(axis: String, fixed: float, from: float, to: float,
 			Vector3(WALL_THICKNESS + 0.06, height, 0.1), Basis.IDENTITY, false)
 		_box("metal", Vector3(fixed, y + height - 0.05, center.z),
 			Vector3(WALL_THICKNESS + 0.06, 0.1, to - from), Basis.IDENTITY, false)
+
+
+## Hueco de ventana: marco metálico y cristal semitransparente sin colisión.
+func _window_frame(axis: String, fixed: float, from: float, to: float,
+		y: float, bottom: float, height: float) -> void:
+	var center := (from + to) * 0.5
+	var mid_y := y + bottom + height * 0.5
+	var span := to - from
+	var depth := WALL_THICKNESS + 0.08
+	if axis == "x":
+		_box("metal", Vector3(from, mid_y, fixed), Vector3(0.12, height, depth), Basis.IDENTITY, false)
+		_box("metal", Vector3(to, mid_y, fixed), Vector3(0.12, height, depth), Basis.IDENTITY, false)
+		_box("metal", Vector3(center, y + bottom + 0.05, fixed), Vector3(span, 0.1, depth), Basis.IDENTITY, false)
+		_box("metal", Vector3(center, y + bottom + height - 0.05, fixed), Vector3(span, 0.1, depth), Basis.IDENTITY, false)
+		_box("glass", Vector3(center, mid_y, fixed),
+			Vector3(span - 0.12, height - 0.1, 0.03), Basis.IDENTITY, false)
+	else:
+		_box("metal", Vector3(fixed, mid_y, from), Vector3(depth, height, 0.12), Basis.IDENTITY, false)
+		_box("metal", Vector3(fixed, mid_y, to), Vector3(depth, height, 0.12), Basis.IDENTITY, false)
+		_box("metal", Vector3(fixed, y + bottom + 0.05, center), Vector3(depth, 0.1, span), Basis.IDENTITY, false)
+		_box("metal", Vector3(fixed, y + bottom + height - 0.05, center), Vector3(depth, 0.1, span), Basis.IDENTITY, false)
+		_box("glass", Vector3(fixed, mid_y, center),
+			Vector3(0.03, height - 0.1, span - 0.12), Basis.IDENTITY, false)
 
 
 func _build_platforms() -> void:
@@ -415,6 +467,67 @@ func _build_props() -> void:
 	# Cubierta: antena y respiraderos.
 	for i in 4:
 		_box("metal", Vector3(-12.0 + i * 7.0, 8.0, 0.0), Vector3(0.4, 0.6, 0.4))
+
+
+## Detalle propio de Signal Processing: ventanal, mobiliario y luz fría/ámbar.
+func _build_signal_room() -> void:
+	var window := _signal_detail("SignalWindow", Vector3(0.0, 2.3, -18.0))
+	window.set_meta("width", BaseLayout.SIGNAL_WINDOW_WIDTH)
+	_box("cold", Vector3(0.0, 2.3, -19.2), Vector3(12.0, 2.6, 0.2), Basis.IDENTITY, false)
+
+	_signal_detail("TarimaBaja", Vector3(0.0, 0.07, -14.0))
+	_box("wood", Vector3(0.0, 0.06, -14.0), Vector3(24.0, 0.12, 6.0), Basis.IDENTITY, false)
+
+	_signal_detail("ArcoConsolas", Vector3(0.0, 2.85, -16.4))
+	for i in 5:
+		var ax := -10.0 + i * 5.0
+		var az := -16.2 - 0.5 * cos(TAU * float(i) / 8.0)
+		var tilt := 0.12 * (float(i) - 2.0)
+		_box("dark_metal", Vector3(ax, 2.85, az), Vector3(5.0, 0.16, 0.16),
+			Basis(Vector3.UP, tilt), false)
+
+	_signal_detail("RadarPared", Vector3(-13.7, 2.0, -9.0))
+	_box("dark_metal", Vector3(-13.85, 2.0, -9.0), Vector3(0.22, 1.1, 1.1), Basis.IDENTITY, false)
+	_box("screen", Vector3(-13.7, 2.1, -9.0), Vector3(0.05, 0.8, 0.8), Basis.IDENTITY, false)
+	_box("metal", Vector3(-13.5, 2.0, -9.0), Vector3(0.06, 0.9, 0.06), Basis.IDENTITY, false)
+
+	_signal_detail("MesaDiscos", Vector3(-8.0, 0.8, -12.0))
+	_box("wood", Vector3(-8.0, 0.8, -12.0), Vector3(2.6, 0.12, 1.2), Basis.IDENTITY, false)
+	for dx in [-1.1, 1.1]:
+		for dz in [-0.45, 0.45]:
+			_box("dark_metal", Vector3(-8.0 + dx, 0.4, -12.0 + dz),
+				Vector3(0.1, 0.8, 0.1), Basis.IDENTITY, false)
+	for i in 3:
+		_box("metal", Vector3(-8.8 + i * 0.8, 0.88, -12.0),
+			Vector3(0.5, 0.03, 0.5), Basis.IDENTITY, false)
+
+	_signal_detail("Papeles", Vector3(8.0, 0.9, -12.0))
+	_box("wood", Vector3(8.0, 0.75, -12.0), Vector3(2.2, 0.1, 1.0), Basis.IDENTITY, false)
+	for i in 4:
+		_box("paper", Vector3(7.4 + i * 0.4, 0.82, -12.0 + 0.1 * float(i % 2)),
+			Vector3(0.3, 0.01, 0.42), Basis(Vector3.UP, 0.2 * float(i) - 0.3), false)
+
+	_signal_detail("Cableado", Vector3(6.0, 0.12, -15.5))
+	for i in 3:
+		_box("dark_metal", Vector3(-3.0 + i * 6.0, 0.05, -15.6),
+			Vector3(6.0, 0.05, 0.05), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-13.7, 1.2, -9.0), Vector3(0.05, 2.4, 0.05), Basis.IDENTITY, false)
+
+	_signal_detail("LamparaAmbar", Vector3(-11.0, 2.6, -15.0))
+	_box("metal", Vector3(-11.0, 2.2, -15.0), Vector3(0.06, 0.7, 0.06), Basis.IDENTITY, false)
+	_box("light", Vector3(-11.0, 2.6, -15.0), Vector3(0.3, 0.18, 0.3), Basis.IDENTITY, false)
+	_signal_detail("LamparaAzul", Vector3(11.0, 2.6, -15.0))
+	_box("metal", Vector3(11.0, 2.2, -15.0), Vector3(0.06, 0.7, 0.06), Basis.IDENTITY, false)
+	_box("cold", Vector3(11.0, 2.6, -15.0), Vector3(0.3, 0.18, 0.3), Basis.IDENTITY, false)
+
+
+func _signal_detail(detail_name: String, position: Vector3) -> Marker3D:
+	var marker := Marker3D.new()
+	marker.name = detail_name
+	marker.position = position
+	marker.add_to_group("signal_room_detail")
+	add_child(marker)
+	return marker
 
 
 func _add_panel(px: float, pz: float, index: int) -> void:

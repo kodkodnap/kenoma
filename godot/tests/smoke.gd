@@ -376,6 +376,22 @@ func _run() -> void:
 		_check(base.get_node_or_null("RoofRamp") is StaticBody3D,
 			"rampa al tejado presente", failures)
 
+		# Hito 5.6 Task 5: ventanal y vida en Signal Processing.
+		var signal_window := base.get_node_or_null("SignalWindow") as Node3D
+		_check(signal_window != null
+				and float(signal_window.get_meta("width", 0.0)) >= 8.0
+				and absf(signal_window.global_position.z - (-18.0)) < 0.5,
+			"ventanal de señales de al menos 8 m en z=-18", failures)
+		_check(get_nodes_in_group("signal_room_detail").size() >= 6,
+			"detalle de la sala de señales con al menos 6 nodos", failures)
+		_check(get_nodes_in_group("signal_panel").size() == 4,
+			"4 paneles junto al ventanal", failures)
+		var window_budget := _count_budget(main)
+		_check(int(window_budget.get("draws", 0)) < 250,
+			"presupuesto del ventanal: menos de 250 draw calls", failures)
+		_check(int(window_budget.get("triangles", 0)) < 150000,
+			"presupuesto del ventanal: menos de 150k triángulos", failures)
+
 		# Recorrido real: pasillo y entrada a Signal Processing.
 		_reset_player(player, Vector3(0.0, 0.05, 0.0))
 		for i in 2:
