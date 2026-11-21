@@ -627,7 +627,7 @@ func _run() -> void:
 
 		var art := SignalArt.texture_for(relay)
 		_check(art is ImageTexture and art.get_width() == 64, "la señal genera su imagen", failures)
-		_check(console.tab_count() == 2, "dos paneles siguen en terminal", failures)
+		_check(console.tab_count() == 1, "una sola pestaña en terminal", failures)
 		console.open_tab(0)
 		_check(console.is_open() and console.current_tab() == 0,
 			"la consola abre Reproducción", failures)
@@ -746,6 +746,16 @@ func _run() -> void:
 					"el ping fija portadora con azimut y elevación alineados", failures)
 		_check(power.is_circuit_powered(PowerSystem.Circuit.CALCULATIONS),
 			"la estación no altera la energía", failures)
+
+		# Fase D: Procesado ya es una máquina física en el marcador 4.
+		var processing_physical := (panels[3] as Node3D).get_node_or_null("ProcessingPanel") as ProcessingPanel
+		_check(processing_physical != null, "panel de Procesado físico", failures)
+		_check(panels[3].get_node_or_null("SignalPanelInteract") == null,
+			"sin overlay en Procesado", failures)
+		console.open_tab(0)
+		_check(console.current_tab() == 0,
+			"la terminal sigue abriendo Reproducción", failures)
+		console.close()
 
 		# Fase D: contrato del modelo exportado desde Blender.
 		var processing_model := load("res://assets/models/signal-processing-console.glb") as PackedScene

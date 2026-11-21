@@ -33,6 +33,7 @@ func _ready() -> void:
 	_apply_base_lights()
 
 	signals.setup(SignalSystem.load_catalog(SIGNAL_CATALOG))
+	signals.configure_balance(load("res://data/balance.tres") as GameBalance)
 	signal_console = SIGNAL_CONSOLE.instantiate() as SignalConsole
 	signal_console.name = "SignalConsole"
 	add_child(signal_console)
@@ -113,18 +114,30 @@ func _process(delta: float) -> void:
 	cycle.advance(delta)
 
 
-## Engancha los paneles de Signal Processing. Descargas es físico; el resto, terminal.
+## Engancha los paneles de Signal Processing. Coordinates y Descargas son físicas; el resto, terminal.
 ## `tabs[i] == -1` significa que ese panel no abre el overlay.
 func _wire_signal_panels() -> void:
 	var markers := get_tree().get_nodes_in_group("signal_panel")
 	markers.sort_custom(func(a: Node, b: Node) -> bool: return String(a.name) < String(b.name))
 	var panel_names := ["Coordenadas", "Descargas", "Reproducción", "Procesado"]
-	var tabs := [0, -1, 1, 2]
+	var tabs := [-1, -1, 0, -1]
 	for i in mini(markers.size(), panel_names.size()):
 		var marker := markers[i] as Node3D
 		if marker == null:
 			continue
 		if tabs[i] < 0:
+			if i == 0:
+				var coordinates := CoordinatesPanel.new()
+				coordinates.name = "CoordinatesPanel"
+				marker.add_child(coordinates)
+				coordinates.setup(signals)
+				continue
+			if i == 3:
+				var processing := ProcessingPanel.new()
+				processing.name = "ProcessingPanel"
+				marker.add_child(processing)
+				processing.setup(signals)
+				continue
 			var downloads := DownloadsPanel.new()
 			downloads.name = "DownloadsPanel"
 			marker.add_child(downloads)

@@ -1,9 +1,9 @@
 class_name SignalConsole
 extends CanvasLayer
-## Paneles de señal que siguen en terminal: Coordinates, Playback y Processing.
-## Downloads ya es físico (`DownloadsPanel`) y no se abre desde aquí.
+## Único panel que sigue en terminal: Reproducción.
+## Downloads y Coordinates son físicos (`DownloadsPanel` / `CoordinatesPanel`) y no se abren desde aquí.
 
-const TAB_NAMES := ["COORDENADAS", "REPRODUCCIÓN", "PROCESADO"]
+const TAB_NAMES := ["REPRODUCCIÓN"]
 
 @onready var viewport: SubViewport = $Frame/SubViewportContainer/SubViewport
 @onready var ui_root: Control = $Frame/SubViewportContainer/SubViewport/Ui
@@ -19,7 +19,6 @@ var _status_label: Label
 var _current_tab: int = 0
 var _status_text: String = ""
 var _selected_download: int = 0
-var _selected_saved: int = 0
 
 
 func _ready() -> void:
@@ -133,28 +132,7 @@ func _refresh() -> void:
 		child.free()
 	match _current_tab:
 		0:
-			_build_coordinates()
-		1:
 			_build_playback()
-		2:
-			_build_processing()
-
-
-func _build_coordinates() -> void:
-	for i in 3:
-		_content.add_child(_label("RADAR %d    %05.1f°" % [i + 1, _system.radar_bearing(i)], 18))
-	_content.add_child(_label("Ajusta azimut y elevación, luego lanza el ping.", 14))
-	_content.add_child(_row("AZIMUT", "%.1f°" % _system.azimuth,
-		func() -> void: _nudge_azimuth(-5.0), func() -> void: _nudge_azimuth(5.0)))
-	_content.add_child(_row("ELEVACIÓN", "%.1f°" % _system.elevation,
-		func() -> void: _nudge_elevation(-2.0), func() -> void: _nudge_elevation(2.0)))
-	_content.add_child(_button("PING — BUSCAR PORTADORA", _on_ping))
-	var def := _system.selected_def
-	if def == null:
-		_content.add_child(_label("Sin portadora fijada."))
-	else:
-		_content.add_child(_label("%s · %s" % [def.display_name, def.description], 16))
-		_content.add_child(_label(_system.condition_text(def)))
 
 
 func _build_playback() -> void:
@@ -201,67 +179,8 @@ func _build_playback() -> void:
 	]))
 
 
-func _build_processing() -> void:
-	if _system.saved_count() == 0:
-		_content.add_child(_label("Guarda una señal en la base de datos para procesarla."))
-		return
-	var saved: Array[int] = []
-	for i in _system.download_count():
-		if _system.copy_is_saved(i):
-			saved.append(i)
-	_selected_saved = clampi(_selected_saved, 0, saved.size() - 1)
-	var list := ItemList.new()
-	list.custom_minimum_size.y = 110
-	for index in saved:
-		var copy: Dictionary = _system.downloads[index]
-		list.add_item("%s · nivel %d · %.0f%%" % [
-			copy["def"].display_name,
-			int(copy["level"]),
-			float(copy["quality"]) * 100.0,
-		])
-	list.select(_selected_saved)
-	list.item_selected.connect(_on_saved_selected)
-	_content.add_child(list)
-
-	var copy_index: int = saved[_selected_saved]
-	var row := HBoxContainer.new()
-	for level in [1, 2, 3]:
-		row.add_child(_level_button(copy_index, level))
-	_content.add_child(row)
-	_content.add_child(_label("Valor actual: %d créditos" % _system.copy_value(copy_index), 16))
-	_content.add_child(_label("Umbrales de calidad: 50% / 65% / 78%."))
-
-
-func _level_button(copy_index: int, level: int) -> Button:
-	return _button("NIVEL %d" % level, func() -> void:
-		_system.process_copy(copy_index, level)
-		_status_text = _system.status()
-		_refresh.call_deferred()
-	)
-
-
-func _nudge_azimuth(delta: float) -> void:
-	_system.set_azimuth(_system.azimuth + delta)
-	_refresh.call_deferred()
-
-
-func _nudge_elevation(delta: float) -> void:
-	_system.set_elevation(_system.elevation + delta)
-	_refresh.call_deferred()
-
-
-func _on_ping() -> void:
-	_status_text = String(_system.scan().get("message", ""))
-	_refresh.call_deferred()
-
-
 func _on_download_selected(index: int) -> void:
 	_selected_download = index
-	_refresh.call_deferred()
-
-
-func _on_saved_selected(index: int) -> void:
-	_selected_saved = index
 	_refresh.call_deferred()
 
 
@@ -294,18 +213,6 @@ func _on_sell(index: int) -> void:
 	_refresh.call_deferred()
 
 
-func _row(title: String, value: String, minus: Callable, plus: Callable) -> HBoxContainer:
-	var row := HBoxContainer.new()
-	var name_label := _label(title)
-	name_label.custom_minimum_size.x = 140
-	row.add_child(name_label)
-	var value_label := _label(value)
-	value_label.custom_minimum_size.x = 110
-	value_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	row.add_child(value_label)
-	row.add_child(_button("-", minus))
-	row.add_child(_button("+", plus))
-	return row
 
 
 func _button(text: String, callback: Callable) -> Button:

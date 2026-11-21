@@ -322,15 +322,15 @@ func _build_props() -> void:
 	_box("led_green", Vector3(-15.0, 1.5, -15.7), Vector3(0.7, 0.4, 0.05), Basis.IDENTITY, false)
 	_note("NO USAR EL MICROONDAS\nDESPUÉS DE LAS 03:00", Vector3(-22.0, 2.2, -17.7))
 	# Signal Processing: cuatro paneles y consola de radar.
-	# El 2 (Descargas) es una consola física completa y no lleva caja de relleno.
+	# Los 1 y 2 (Coordinates y Descargas) son consolas físicas completas: no llevan caja de relleno.
 	for i in 4:
 		var px := -9.0 + i * 6.0
-		if i != 1:
+		if i > 1 and i < 3:
 			_box("dark_metal", Vector3(px, 1.25, -17.55), Vector3(2.1, 1.5, 0.5))
 			_box("screen", Vector3(px, 1.35, -17.25), Vector3(1.7, 0.95, 0.05),
 				Basis.IDENTITY, false)
 		_add_panel(px, -17.2, i)
-		if i != 1:
+		if i > 1 and i < 3:
 			_note("PANEL %d" % (i + 1), Vector3(px, 2.45, -17.4))
 	_box("dark_metal", Vector3(0.0, 0.85, -9.0), Vector3(2.4, 1.7, 1.8))
 	_box("screen", Vector3(0.0, 1.1, -8.05), Vector3(1.6, 1.0, 0.05), Basis.IDENTITY, false)
@@ -422,7 +422,7 @@ func _add_panel(px: float, pz: float, index: int) -> void:
 	panel.name = "SignalPanel%d" % (index + 1)
 	panel.position = Vector3(px, 1.25, pz)
 	panel.add_to_group("signal_panel")
-	if index != 1:
+	if index > 1:
 		var label := Label3D.new()
 		label.text = "SIG %d" % (index + 1)
 		label.font_size = 28
