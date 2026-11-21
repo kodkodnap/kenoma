@@ -1,6 +1,6 @@
 # AGENTS — Kenoma
 
-> Proyecto Godot 4 dentro de `godot/`. El juego web ESTATICA de la raíz es otro proyecto y **no se toca**.
+> Proyecto Godot 4 dentro de `godot/`. La versión web (Three.js) de ESTATICA, en la raíz, está **deprecada**: no se desarrolla ni se modifica.
 >
 > **Nombre:** Kenoma. **Repo:** <https://github.com/kodkodnap/kenoma>.
 >
@@ -115,10 +115,15 @@ resumida en `docs/ORIGINAL_FEATURES.md`.
   del chasis y arranca en la arista del zócalo, donde se apoya el cabezal; el smoke comprueba ese
   encaje (`deck_front_edge`, `deck_back_edge`, `head_front_bottom`). Materiales y piezas 100%
   procedurales (`MachineMaterials`, `MachineMesh`); `MachineBatch` fusiona lo estático por material.
-  Descargas ya no abre la terminal; quedan 3 pestañas. Smoke 242 checks. Fases B–E pendientes; los
-  otros paneles siguen con placeholder.
+  Descargas ya no abre la terminal; quedan 3 pestañas. Smoke 242 checks. Las fases B y D se cerraron
+  después: hoy los paneles 1, 2 y 4 son físicos, la terminal tiene una pestaña y el smoke acumula
+  273 checks; quedan pendientes la fase C (Playback) y la E (retirada del overlay).
+- **Hito 5.5 (fases B y D) hecho:** Coordinates y Procesado son consolas físicas en sus marcadores.
+  Procesado usa `signal-processing-console.glb` (12 mallas, ~3,4k tris), `CrtScreen` vivo y controles
+  invisibles FASE/CONFIRMAR: girar FASE cambia la estabilidad de la onda en tiempo real, LOCK se
+  enciende al confirmar y se habilita exportar la copia. No se importan textos ni audio del `.blend`.
 - `TestMachine` sigue como prototipo de la base de máquina.
-- El juego web ESTATICA de la raíz sigue sin trackear y no debe modificarse.
+- La versión web (Three.js) de ESTATICA, en la raíz, está deprecada: no se desarrolla ni se modifica.
 - Repositorio: `C:\Users\ibane\Documents\proyecto_personal\estatica`; proyecto Godot en `godot/`.
 
 ## Verificación obligatoria

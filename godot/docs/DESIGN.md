@@ -56,7 +56,7 @@ rehacerlo por reflejo.
 ```
 00:00  Correo con la tarea del día
 06:00  El dron trae el pedido y un disco vacío
-       Coordenadas → Descarga → Reproducción → Procesado → Disco
+       Coordenadas → Descarga → Reproducción/Guardado → Procesado (FASE → LOCK → CONFIRMAR) → Disco
        Hashcodes de satélites → consola → zip drive
        Cintas de datos → estación de bobinas → caja
        Reparar servidores, calibrar platos, mantener energía
@@ -117,7 +117,10 @@ rehacerlo por reflejo.
 - Coordinates: cursor, quick scan, tres radares y ping; los fallos son información, no castigos aleatorios.
 - Downloads: seis perillas con sensibilidad distinta, tres direcciones de polaridad, detector y tormentas.
 - Playback: escuchar, guardar en database y exportar a disco.
-- Processing: tres niveles; el nivel 3 requiere mejora y puede disparar eventos.
+- Procesado: gira la perilla FASE hasta que la traza del CRT pierde jitter; al pasar el umbral se
+  enciende LOCK y CONFIRMAR sube de nivel la última copia guardada y habilita exportarla a disco.
+  Los niveles siguen `PROCESS_THRESHOLDS`. Los textos del `.blend` no se importan: las etiquetas y el
+  CRT se regeneran como contenido original de Kenoma.
 - Venta: caja de discos al dron; copias y señales ya vendidas valen cero.
 
 Los valores exactos están en `ORIGINAL_FEATURES.md` §2 y se implementan en `data/signals/`.
@@ -262,7 +265,7 @@ Detalle y criterios de aceptación en [`TASKS.md`](TASKS.md).
 ## 14. Decisiones tomadas
 
 1. Godot 4.7.2, Forward+, GDScript tipado.
-2. El proyecto vive en `godot/`; el juego web ESTATICA de la raíz no se toca.
+2. El proyecto vive en `godot/`; la versión web (Three.js) de la raíz está deprecada y no se modifica.
 3. 1 unidad = 1 metro; Y arriba; −Z adelante.
 4. Contenido data-driven; los nombres van en `data/`.
 5. Nada de assets, código, textos ni audio del original.

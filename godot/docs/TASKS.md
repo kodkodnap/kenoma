@@ -16,9 +16,9 @@
 | 3 | Alpha Root Base en placeholders | **hecho** | Smoke (89 checks) + recorrido + capturas Forward+ |
 | 4 | Energía | **hecho** | Smoke (153 checks) + apagón jugable |
 | 5 | Estación de señales | **hecho** | Smoke (191 checks) + cadena completa |
-| 5.5 | Estación física (fase A) | **hecho** | Smoke (242 checks): Descargas con perilla, selector, detector, pulsador y palanca |
-| 5.5 B–E | Coordinates, Playback, Processing y retirada del overlay | pendiente | Smoke + operación real de cada máquina |
-| 6 | Ciclo diario y dron | **hecho** | Smoke (242 checks acumulados) + día completo |
+| 5.5 | Estación física (fases A, B y D) | **hecho** | Smoke (273 checks): Descargas, Coordinates y Procesado físicos (FASE → LOCK) |
+| 5.5 C y E | Playback y retirada del overlay | pendiente | Smoke + operación real de cada máquina |
+| 6 | Ciclo diario y dron | **hecho** | Smoke (273 checks acumulados) + día completo |
 | 7 | Mapa exterior a escala | pendiente | Smoke + recorrido |
 | 8 | Servidores, consola y hashcodes | pendiente | Smoke |
 | 9 | Estadísticas y dificultad | pendiente | Smoke |
@@ -29,9 +29,9 @@
 | 14 | Tier 4 | pendiente | Smoke |
 | 15 | Guardado, menús y pulido | pendiente | Smoke + partida completa |
 
-> El smoke crece por acumulación: hoy son **242 comprobaciones** (0 fallos, `SMOKE OK: hitos 0, 1,
-> 2, 3, 4, 5 y 6`) y cubren los hitos 0–6 más la fase A de 5.5. Los conteos de los hitos 4 y 5 son los
-> de su cierre; los de 5.5 y 6 se han corregido al total real.
+> El smoke crece por acumulación: hoy son **273 comprobaciones** (0 fallos, `SMOKE OK: hitos 0, 1,
+> 2, 3, 4, 5 y 6`) y cubren los hitos 0–6 más las fases A, B y D de 5.5. Los conteos de los hitos 4 y 5
+> son los de su cierre; los de 5.5 y 6 se han corregido al total real.
 
 ---
 
@@ -46,7 +46,7 @@
 - `docs/ARCHITECTURE.md` con capas, clases objetivo, señales, datos, colisiones y rendimiento.
 - `docs/TASKS.md` con los 15 hitos.
 - `docs/IDEAS.md`, `docs/ASSETS.md`, `AGENTS.md` y `README.md` actualizados.
-- El juego web ESTATICA de la raíz queda intacto.
+- La versión web (Three.js) de la raíz queda deprecada e intacta.
 
 ### Criterio de aceptación
 
@@ -300,7 +300,7 @@ punta en la consola de Signal Processing.
 **Objetivo:** sustituir la terminal por máquinas con controles reales (perillas, interruptores,
 palancas y, más adelante, ranuras y discos), al estilo de una cabina de radio.
 
-**Estado: fase A hecha (2026-11-01).** Smoke con 242 comprobaciones en verde.
+**Estado: fases A, B y D hechas (2026-11-21).** Smoke con 273 comprobaciones en verde.
 
 ### Fases
 
@@ -309,9 +309,21 @@ palancas y, más adelante, ranuras y discos), al estilo de una cabina de radio.
   variados: perilla de frecuencia, selector de polaridad de tres posiciones, detector, pulsador de
   guardado y palanca. La geometría sale de cotas compartidas y el smoke comprueba el encaje de
   cubierta, zócalo y cabezal.
-- **B (pendiente):** Coordinates con perillas de azimut/elevación, botón de ping y diales de radar.
+- **B (hecho):** Coordinates como consola en el sitio de SignalPanel1 con el gabinete GLB de Meshy
+  (`assets/models/coordinates-console.glb`, 13.000 tris, 1,24×1,58×1,13 m; fuente
+  `references/maquina-busqueda-señales-limpia.glb` y blend `blender/coordinates-console.blend`). El
+  cristal horneado se cubre con una pantalla CRT viva curva (`SubViewport` 720×480 + `CoordinatesScreen`:
+  PPI con anillos, barrido y huellas de los tres radares, lecturas de azimut/elevación y estado). Las
+  perillas AZIMUT (0–360, 5°) y ELEVACIÓN (0–80, 2°) y el pulsador BUSCAR (ping) son áreas invisibles
+  alineadas con los mandos horneados; medidores, joystick e interruptores quedan de decoración. El
+  marcador ya no abre la terminal: instancia el panel físico. La consola pasa de tres a dos pestañas
+  (Reproducción y Procesado).
 - **C (pendiente):** Playback con ranura de disco y discos físicos entre máquinas.
-- **D (pendiente):** Processing con botones de nivel y start físicos.
+- **D (hecho):** Procesado como consola física (`ProcessingPanel` + `signal-processing-console.glb`):
+  perilla FASE invisible sobre la rueda horneada, CRT vivo con jitter según `decode_stability()`,
+  pulsador CONFIRMAR sobre la ranura y LED LOCK. Al confirmar por encima del umbral se sube de nivel la
+  última copia guardada y se habilita exportarla a disco; la terminal queda con una pestaña
+  (Reproducción).
 - **E (pendiente):** eliminar el overlay `SignalConsole`.
 
 ### Notas de implementación (fase A)
@@ -330,19 +342,66 @@ palancas y, más adelante, ranuras y discos), al estilo de una cabina de radio.
   el escenario de 246 a 205 draw calls con la máquina en pantalla. Las piezas móviles (perillas,
   aguja, palanca) conservan su nodo.
 - El marcador de Descargas ya no abre la terminal: instancia el panel físico y `BaseBuilder` deja de
-  dibujar la caja de relleno de ese panel. Coordenadas, Reproducción y Procesado siguen en la consola,
-  que pasa de cuatro a tres pestañas.
+  dibujar la caja de relleno de ese panel. En las fases B y D lo hacen Coordinates y Procesado;
+  queda solo Reproducción en la consola, que pasa de cuatro a una pestaña.
 - La perilla se gira con la rueda mientras está enfocada; E avanza un paso. El jugador mantiene el
   foco porque sigue el raycast normal.
+
+### Notas de implementación (fase B)
+
+- `CoordinatesPanel` (`scripts/machines/coordinates_panel.gd`) instancia el gabinete limpio de Meshy
+  (`res://assets/models/coordinates-console.glb`) sin rotación: el frente del GLB ya mira a +Z en
+  Godot. El modelo se apoya en el suelo (`MODEL_POS.y = -1.25`, origen en la base) y se adelanta
+  `-0.20` en Z para que la consola quede delante del marcador.
+- El cristal horneado queda tapado por una malla CRT curva propia (`CrtScreen`, 18×12, parábola de
+  7 cm) con material UNSHADED (albedo/emisión = textura del `SubViewport` 720×480). La malla se
+  genera con `SurfaceTool`; el material lleva `cull_mode = CULL_DISABLED`. `CoordinatesScreen` dibuja
+  PPI centrado con anillos, barrido y estelas, huellas de los tres radares leídas de `radar_bearing`,
+  lecturas de azimut, elevación, portadora y alineación, sello LOCK y halo de fósforo con líneas de
+  barrido.
+- Los controles funcionales son `RotaryKnob` y `PushButton` **invisibles** (`visible = false`) con su
+  área de interacción exactamente sobre los mandos horneados: AZIMUT (0–360, 5°) sobre la perilla
+  izquierda, ELEVACIÓN (0–80, 2°) sobre la segunda y BUSCAR sobre el rocker derecho. El jugador ve el
+  prompt al enfocarlos y los gira con la rueda o E; el resto del tablero es decoración.
+- Colisión: un `StaticBody3D` con una caja que cubre el gabinete completo (1,243×1,576×1,127).
+- La fase B sustituye la caja placeholder del primer panel (`SignalPanel1`, x = −9):
+  `BaseBuilder` ya no la dibuja, `main.gd` instancia `CoordinatesPanel` en su marcador y el terminal
+  pierde la pestaña COORDENADAS (quedan Reproducción y Procesado).
+- Smoke: al cierre de la fase B, `tab_count() == 2` y `open_tab(0)` abre Reproducción; el bloque
+  comprueba el panel físico (perillas, pulsador, CRT, raycast de ping y ping con azimut/elevación
+  alineados que fija la portadora `relay_hum`). La fase D baja a `tab_count() == 1` y añade el panel de
+  Procesado, su dial y su confirmar. 245 comprobaciones al cierre de B, 273 tras la D; Forward+ real
+  sin errores.
+
+### Notas de implementación (fase D)
+
+- `ProcessingPanel` instancia `res://assets/models/signal-processing-console.glb` (12 mallas fusionadas
+  por material, ~2.960 tris + CRT 460; 1,20×0,62×0,79 m, origen en la base) y tapa el cristal horneado
+  con un `CrtScreen` vivo en `SubViewport` 640×360 sobre `SIG_crt_bezel`.
+- La perilla FASE (0..1, paso 0.005) y el pulsador CONFIRMAR son `visible=false` sobre `SIG_dial_freq`
+  y `SIG_slot_housing`, con constantes de respaldo medidas en el export. No hay `MachineBatch` nuevo:
+  la geometría decorativa ya viene fusionada en el GLB.
+- `decode_tuning` y `decode_stability()` viven en `SignalSystem`; la sensibilidad y el umbral están en
+  `data/balance.tres` (2.5 y 0.78) y `decode_target` en cada entrada de `catalog.json`. `_process`
+  asigna `stability` y `signal_level` cada frame: girar FASE cambia el jitter al instante.
+- `confirm_decode()` usa la última copia guardada, exige estabilidad ≥ umbral y ejecuta
+  `process_copy(idx, copy_level(idx)+1)`; el LED LOCK y el texto propio «COPIA PROCESADA · DISCO
+  DISPONIBLE» marcan el éxito. Sin copia o con calidad baja no procesa y muestra «FASE INESTABLE ·
+  AJUSTA LA ONDA».
+- Los textos y WAV del `.blend` no se importan: el exportador elimina `FONT` y los planos de CRT; las
+  etiquetas se regeneran en Godot con contenido original de Kenoma.
 
 ### Verificación visual (2026-11-01)
 
 - Capturas Forward+ a 3,2 / 1,9 / 1,35 m: CRT legible, vúmetro con aguja, lámpara y cables presentes.
 - La cubierta tapa la franja inferior del CRT si se mira desde muy cerca y muy abajo; de pie se ve
   entera. Se corrigió el orden de capas (el cristal tapaba la pantalla) y se subió el tubo.
-- Los otros tres paneles siguen con la caja placeholder: se sustituyen en las fases B–D.
-- El marcador de Descargas ya no abre la terminal: instancia el panel físico. Coordenadas,
-  Reproducción y Procesado siguen en la consola, que pasa de cuatro a tres pestañas.
+- Captura Forward+ de la fase D: `docs/captures/05_procesado.png`, consola en primer plano con el CRT,
+  la onda y la perilla central visibles; render sin errores.
+- Las fases A, B y D sustituyen la caja placeholder en los paneles 1, 2 y 4 (Descargas, Coordinates y
+  Procesado); Reproducción sigue con la caja placeholder: se sustituye en la fase C.
+- Los marcadores de Descargas, Coordinates y Procesado ya no abren la terminal: instancian paneles
+  físicos. Reproducción sigue en la consola, que pasa de cuatro a una pestaña.
 - La perilla se gira con la rueda mientras está enfocada; E avanza un paso. El jugador mantiene el
   foco porque sigue el raycast normal.
 

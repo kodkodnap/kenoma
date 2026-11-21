@@ -87,7 +87,7 @@ Data (Resources)
 | `GameState` | Estado serializable de la partida. | pendiente |
 | `GameClock` | Día, hora, velocidad, dormir, eventos de medianoche/06:00. | hecho (hito 6) |
 | `SignalDef` | Datos de señal: condición, rumbo, perillas, calidad, precio, imagen y audio. | hecho (hito 5) |
-| `SignalSystem` | Cadena Coordinates → Download → Playback → Processing → disco y venta. | hecho (hito 5) |
+| `SignalSystem` | Cadena Coordinates → Download → Playback → Processing → disco y venta; `decode_tuning`/`decode_stability()` alimentan el CRT. | hecho (hito 5.5-D) |
 | `PowerSystem` | Transformadores, breakers, consumo, estabilidad, apagón y rearme. | hecho (hito 4) |
 | `ServerSystem` | 54 servidores, estados, reparación, mejoras, hashcodes. | pendiente |
 | `Economy` | Puntos, tienda, pedidos, multas y bonus semanal. | hecho (hito 6) |
@@ -120,6 +120,7 @@ Data (Resources)
 | `RotaryKnob` / `ToggleSwitch` / `Lever` | Controles físicos reutilizables con placa, escala, guarda y señal propia. | hecho (hito 5.5-A) |
 | `DownloadsPanel` | Consola física de descargas: chasis, cubierta, CRT, vúmetro, 6 perillas, detector y palanca. | hecho (hito 5.5-A) |
 | `CrtScreen` | `Control` que dibuja rejilla, traza de fósforo, barrido y viñeta del CRT. | hecho (hito 5.5-A) |
+| `ProcessingPanel` | Consola física de Procesado: GLB horneado, CRT vivo, perilla FASE y pulsador CONFIRMAR invisibles, LED LOCK. | hecho (hito 5.5-D) |
 | `MachineMaterials` | Materiales y texturas procedurales: pintura, acero, baquelita, vidrio, escalas. | hecho (hito 5.5-A) |
 | `MachineMesh` | Primitivas, tubos, tornillos y rejillas; lotes por material con `begin_batch`. | hecho (hito 5.5-A) |
 | `MachineBatch` | Fusiona geometría estática por material y la vuelca como un `MeshInstance3D`. | hecho (hito 5.5-A) |
@@ -144,7 +145,7 @@ Data (Resources)
 | `Entity` | Base activar/desactivar; IA en hito 10. | hecho (hito 2) |
 | `EntityDirector` | Spawns por evento, hora, stat o radar. | pendiente |
 | `Hud` | Vitales (stamina/linterna), foco, hold, estado de máquina y red; reloj en hito 6. | hecho (hito 4) |
-| `SignalConsole` | Cuatro paneles de señal con SubViewport, pestañas y venta de discos. | hecho (hito 5) |
+| `SignalConsole` | Terminal con una pestaña (Reproducción); los paneles 1, 2 y 4 son máquinas físicas. | hecho (hito 5.5-D) |
 | `SignalArt` / `SignalAudio` | Imagen 64×64 generada y audio sintetizado por señal. | hecho (hito 5) |
 | `ComputerScreen` | SubViewport y UI de terminal. | pendiente |
 | `PerfOverlay` | FPS, draw calls, primitivas, memoria. | hecho |
@@ -198,6 +199,7 @@ Valores globales, todos exportados:
 - Linterna: drenaje, recarga, energía.
 - Tiempo: duración del día por dificultad, horas de correo/dron.
 - Energía: capacidad, estabilidad, consumo por componente, tiempo de reinicio.
+- Procesado: `decode_stability_threshold 0.78`, `decode_sensitivity 2.5`.
 - Dificultad: multiplicadores de tarea, minijuegos y eventos.
 
 ### 6.2 Recursos
@@ -274,6 +276,8 @@ Medido (hito 3): 11.7k triángulos / 78 draw calls con la Alpha Root Base comple
 Medido (2026-11-01, consola de Descargas): 30.1k primitivas / 205 draw calls con jugador, base y
 consola en pantalla. La consola aporta 102 mallas; el batido estático por material deja 24. Las
 perillas, la aguja del vúmetro y la palanca conservan sus nodos porque se mueven.
+Medido (2026-11-21, consola de Procesado): 12 mallas / ~2.960 tris + CRT 460 tris; el GLB se fusiona
+por material para no añadir más de ~12 draws, con el escenario por debajo de 250.
 
 Regla: la geometría fija de una máquina se construye dentro de `MachineMesh.begin_batch(parent)` y
 `end_batch(parent)`. Las piezas que animan un pivote no entran en el lote.
@@ -318,9 +322,9 @@ Cada hito añade sus comprobaciones al smoke antes de implementar (TDD).
 | Alpha Root Base | hecho | 22 salas + props; 11.7k tris / 78 draws; recorridos y rampas verificados |
 | HUD | hecho | Stamina, batería, foco, hold, inventario, estado y red |
 | PerfOverlay | hecho | F3 |
-| SignalSystem / SignalConsole | hecho | 8 señales, 4 paneles, catálogo JSON, cadena y venta |
+| SignalSystem / SignalConsole | hecho | 8 señales, catálogo JSON, cadena y venta; terminal reducida a Reproducción |
 | DailyCycle / CycleConsole | hecho | 75 min/día, tarea, tienda, dron, multa y bonus; snapshot en memoria |
-| Estación física (fase A) | hecho | Consola de Descargas con chasis, CRT de fósforo, vúmetro, lámpara y controles; 205 draws; resto pendiente |
+| Estación física (fases A, B y D) | hecho | Descargas, Coordinates y Procesado como consolas físicas; Procesado con FASE→LOCK→CONFIRMAR; terminal de una pestaña; 273 checks |
 | Servidores, consola y guardado | pendiente | Hitos 8 y 15 |
 
 ## 12. Cómo añadir un sistema

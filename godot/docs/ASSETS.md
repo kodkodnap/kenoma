@@ -97,6 +97,8 @@ Presupuesto de escena: **< 150k triángulos visibles, < 250 draw calls, 60 FPS**
 - Formato: OGG para música/ambiente, WAV para efectos cortos.
 - Nombres: `amb_`, `sfx_`, `ui_`, `vo_`.
 - El audio se sintetiza cuando sea posible para ahorrar peso.
+- Ningún WAV de `blender/sounds/` entra en el juego; los textos literales del `.blend` se sustituyen
+  por etiquetas propias en `ProcessingPanel`.
 
 ## 7. Pantallas y UI
 
@@ -104,6 +106,9 @@ Presupuesto de escena: **< 150k triángulos visibles, < 250 draw calls, 60 FPS**
 - El CRT de la consola de Descargas es un `SubViewport` de 640×360 con `CrtScreen`: rejilla, traza,
   barrido, viñeta y parpadeo dibujados en `_draw`, más un vidrio con reflejo generado. El tubo queda
   dentro de un bisel atornillado con visera.
+- El CRT de Procesado reutiliza `CrtScreen` en un `SubViewport` 640×360 pegado al bisel del GLB;
+  `stability = decode_stability()` y `signal_level = 1` convierten la perilla FASE en jitter de la
+  traza en tiempo real, sin temporizadores.
 - Texturas de pantalla en 1024×768 o 1280×720; nada de fuentes ilegibles.
 - Los controles físicos (perillas, botones) son mallas separadas con animación.
 - El HUD es diegético siempre que se pueda: LEDs, notas, etiquetas.
@@ -122,10 +127,13 @@ Cada asset de terceros se registra con autor, URL y licencia. Si la licencia no 
 
 ## 9. Verificación
 
-- [ ] El modelo se ve bien a escala 1:1.
-- [ ] El origen y la colisión son correctos.
-- [ ] No supera el presupuesto.
-- [ ] Las partes móviles están separadas.
-- [ ] El material funciona con la iluminación del juego.
-- [ ] Está registrado aquí.
-- [ ] No hay assets del original.
+- [x] El modelo se ve bien a escala 1:1 (`docs/captures/05_procesado.png`).
+- [x] El origen y la colisión son correctos.
+- [x] No supera el presupuesto.
+- [x] Las partes móviles están separadas.
+- [x] El material funciona con la iluminación del juego.
+- [x] Está registrado aquí.
+- [x] No hay assets del original.
+
+Nota: los materiales procedurales del `.blend` no sobreviven al glTF; el GLB llega con materiales
+simples y el CRT vivo se regenera en Godot. El panel lateral horneado queda liso.
