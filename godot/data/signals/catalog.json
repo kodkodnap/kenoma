@@ -11,6 +11,7 @@
     "base_value": 220,
     "image_seed": 11,
     "audio_tone": 174.0,
+    "decode_target": 0.5,
     "description": "Portadora repetitiva con pausas de cuatro segundos."
   },
   {
@@ -25,6 +26,7 @@
     "base_value": 190,
     "image_seed": 23,
     "audio_tone": 196.0,
+    "decode_target": 0.25,
     "description": "Voces superpuestas que no coinciden con ninguna emisora."
   },
   {
@@ -39,6 +41,7 @@
     "base_value": 240,
     "image_seed": 37,
     "audio_tone": 262.0,
+    "decode_target": 0.35,
     "description": "Dígitos leídos con una calma que no es humana."
   },
   {
@@ -53,6 +56,7 @@
     "base_value": 170,
     "image_seed": 41,
     "audio_tone": 330.0,
+    "decode_target": 0.45,
     "description": "Un latido cada doce segundos, siempre en el mismo rumbo."
   },
   {
@@ -67,6 +71,7 @@
     "base_value": 120,
     "image_seed": 53,
     "audio_tone": 147.0,
+    "decode_target": 0.65,
     "description": "Apenas se distingue del ruido de fondo."
   },
   {
@@ -81,6 +86,7 @@
     "base_value": 150,
     "image_seed": 67,
     "audio_tone": 110.0,
+    "decode_target": 0.75,
     "description": "El enlace está caído; el plato no responde."
   },
   {
@@ -95,6 +101,7 @@
     "base_value": 200,
     "image_seed": 79,
     "audio_tone": 392.0,
+    "decode_target": 0.85,
     "description": "La descarga pierde calidad mientras dure la tormenta."
   },
   {
@@ -109,6 +116,7 @@
     "base_value": 0,
     "image_seed": 97,
     "audio_tone": 98.0,
+    "decode_target": 0.30,
     "description": "El radar devuelve una forma que no es una señal."
   }
 ]

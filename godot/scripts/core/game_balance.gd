@@ -40,3 +40,7 @@ extends Resource
 @export var power_restart_stability: float = 0.35
 ## Pasos del módulo de control remoto: 30 s → 20 → 12 → 6 → 3 → 1.
 @export var power_remote_steps: Array[float] = [30.0, 20.0, 12.0, 6.0, 3.0, 1.0]
+
+@export_group("Procesado")
+@export var decode_stability_threshold: float = 0.78
+@export var decode_sensitivity: float = 2.5

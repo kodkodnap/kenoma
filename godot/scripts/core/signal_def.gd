@@ -13,6 +13,7 @@ extends Resource
 @export var base_value: int = 100
 @export var image_seed: int = 1
 @export var audio_tone: float = 220.0
+@export var decode_target: float = 0.5
 @export var description: String = ""
 
 
@@ -29,5 +30,6 @@ static func from_dict(data: Dictionary) -> SignalDef:
 	def.base_value = int(data.get("base_value", 100))
 	def.image_seed = int(data.get("image_seed", 1))
 	def.audio_tone = float(data.get("audio_tone", 220.0))
+	def.decode_target = float(data.get("decode_target", 0.5))
 	def.description = str(data.get("description", ""))
 	return def

@@ -29,6 +29,9 @@ var elevation: float = 0.0
 var frequency: int = 500
 var polarity: int = 1
 var selected_def: SignalDef = null
+var decode_tuning: float = 0.0
+var decode_sensitivity: float = 2.5
+var decode_ready_stability: float = 0.78
 var downloads: Array[Dictionary] = []
 var disks: Array[Dictionary] = []
 var credits: int = 0
@@ -150,6 +153,42 @@ func alignment() -> float:
 	error += absf(float(frequency - def.frequency)) / 1000.0 * 0.7
 	error += absf(float(polarity - def.polarity)) / 2.0 * 0.3
 	return clampf(1.0 - error, 0.0, 1.0)
+
+
+func configure_balance(balance: GameBalance) -> void:
+	if balance == null:
+		return
+	decode_sensitivity = balance.decode_sensitivity
+	decode_ready_stability = balance.decode_stability_threshold
+
+
+func set_decode_tuning(value: float) -> void:
+	decode_tuning = clampf(value, 0.0, 1.0)
+
+
+## Estabilidad de la onda en tiempo real: 1.0 en la fase objetivo de la señal.
+func decode_stability() -> float:
+	if selected_def == null:
+		return 0.0
+	var error := absf(decode_tuning - selected_def.decode_target) * decode_sensitivity
+	return clampf(1.0 - error, 0.0, 1.0)
+
+
+func last_saved_index() -> int:
+	for i in range(downloads.size() - 1, -1, -1):
+		if bool(downloads[i]["saved"]):
+			return i
+	return -1
+
+
+## Consume la última copia guardada si la onda ya está lo bastante estable.
+func confirm_decode() -> bool:
+	if decode_stability() < decode_ready_stability:
+		return false
+	var index := last_saved_index()
+	if index < 0:
+		return false
+	return process_copy(index, copy_level(index) + 1)
 
 
 ## Busca la portadora más cercana al azimut/elevación actuales.

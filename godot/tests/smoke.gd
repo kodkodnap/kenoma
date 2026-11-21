@@ -760,6 +760,44 @@ func _run() -> void:
 				"sin CRT literal en el GLB", failures)
 			processing_model_inst.free()
 
+		# Fase D: lógica pura de decodificación, aislada del estado de la partida.
+		var decode_system := SignalSystem.new()
+		decode_system.setup(SignalSystem.load_catalog("res://data/signals/catalog.json"))
+		decode_system.configure_balance(load("res://data/balance.tres") as GameBalance)
+		_check(is_equal_approx(decode_system.decode_ready_stability, 0.78),
+			"umbral de estabilidad desde balance", failures)
+		_check(decode_system.decode_stability() == 0.0,
+			"sin portadora no hay estabilidad", failures)
+		var decode_def := decode_system.select_by_id(&"relay_hum")
+		_check(decode_def != null and is_equal_approx(decode_def.decode_target, 0.5),
+			"objetivo de fase en el catálogo", failures)
+		if decode_def != null:
+			decode_system.set_decode_tuning(0.5)
+			_check(is_equal_approx(decode_system.decode_stability(), 1.0),
+				"fase exacta da estabilidad 1", failures)
+			decode_system.set_decode_tuning(0.0)
+			_check(decode_system.decode_stability() == 0.0,
+				"fase lejana da estabilidad 0", failures)
+			_check(decode_system.last_saved_index() == -1,
+				"sin copias no hay índice guardado", failures)
+			_check(not decode_system.confirm_decode(),
+				"sin copia guardada no se procesa", failures)
+			_align_signal(decode_system, decode_def)
+			_check(decode_system.start_download(), "la copia de prueba se descarga", failures)
+			decode_system.tick(8.0)
+			_check(decode_system.save_copy(0), "la copia de prueba se guarda", failures)
+			_check(decode_system.last_saved_index() == 0,
+				"la última copia guardada es la que se procesa", failures)
+			decode_system.set_decode_tuning(0.5)
+			_check(decode_system.confirm_decode(), "con fase y calidad se procesa", failures)
+			_check(decode_system.copy_level(0) == 1,
+				"confirmar ejecuta el nivel siguiente", failures)
+			decode_system.downloads[0]["quality"] = 0.1
+			_check(not decode_system.confirm_decode(),
+				"calidad insuficiente bloquea el nivel siguiente", failures)
+			_check(decode_system.copy_level(0) == 1,
+				"el nivel no sube cuando falla la calidad", failures)
+
 	# Hito 6: ciclo diario, tarea, tienda y dron.
 	_check(cycle != null, "DailyCycle presente", failures)
 	_check(cycle_console != null, "terminal del ciclo presente", failures)
