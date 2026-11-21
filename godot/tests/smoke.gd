@@ -614,6 +614,10 @@ func _run() -> void:
 
 		var disk := signals.export_copy(0)
 		_check(int(disk.get("value", 0)) > 0, "exportar a disco calcula el valor", failures)
+		var spawned_disk := main.find_child("ExportedDisk0", true, false) as DiskMedia
+		_check(spawned_disk != null and spawned_disk.disk_index == 0
+				and spawned_disk.global_position.distance_to(Vector3(-8.0, 0.95, -12.0)) < 1.0,
+			"export_copy crea el disco físico sobre MesaDiscos sin instanciarlo desde el test", failures)
 		var earned := signals.sell_disk(signals.disk_count() - 1)
 		_check(earned == int(disk.get("value", 0)) and signals.credits == earned,
 			"vender el disco paga créditos", failures)
@@ -927,6 +931,18 @@ func _run() -> void:
 			_check(player.has_method("_can_recapture_mouse")
 					and player.call("_can_recapture_mouse") == true,
 				"sin dial agarrado un clic sí puede recapturar", failures)
+
+			# Fix final: Esc con dial agarrado suelta y deja el ratón listo para recapturar.
+			# En headless el modo de ratón no es observable: se usa el predicado del jugador.
+			dial.activate()
+			var cancel := InputEventAction.new()
+			cancel.action = "ui_cancel"
+			cancel.pressed = true
+			player._unhandled_input(cancel)
+			_check(dial.get("grabbed") != true
+					and player.has_method("_can_recapture_mouse")
+					and player.call("_can_recapture_mouse") == true,
+				"Esc con dial agarrado suelta y recaptura", failures)
 
 		# Fase B de la estación física: Coordenadas con perillas y pulsador de ping.
 		var coordinates := (panels[0] as Node3D).get_node_or_null("CoordinatesPanel") as CoordinatesPanel

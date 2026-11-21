@@ -37,7 +37,7 @@ Fuera:
 ## 4. Criterios de aceptación
 
 - [x] Con E se agarra un dial y el movimiento circular del ratón lo gira en ambos sentidos, de 0 a max, sin spamear E. Evidencia: smoke «E captura el dial», «el arrastre angular mueve el dial», «el arrastre no salta al cruzar el eje -X».
-- [x] La cámara no gira mientras se manipula un dial; E/Esc sueltan y devuelven el control. Evidencia: smoke «arrastrar el dial no gira la cámara», «release() suelta el dial», «ui_cancel» y `_can_recapture_mouse()`.
+- [x] La cámara no gira mientras se manipula un dial; E/Esc sueltan y devuelven el control. Evidencia: smoke «arrastrar el dial no gira la cámara», «release() suelta el dial», «Esc con dial agarrado suelta y recaptura» y `_can_recapture_mouse()`.
 - [x] La rueda ajusta fino y el prompt dice qué hace cada dial. Evidencia: smoke «la rueda gira la perilla» y `RotaryKnob.purpose` en el prompt.
 - [x] Procesado muestra barra/LED/estado del progreso y motivos de fallo. Evidencia: smoke «el progreso del disco avanza al procesar», `progress()`, `status_text()` y LED LOCK.
 - [x] Existe un disco físico con placa visible; se puede coger, insertar y retirar. Evidencia: smoke «la etiqueta del disco muestra id, nivel y valor», «insert guarda el disco», «eject devuelve el disco».

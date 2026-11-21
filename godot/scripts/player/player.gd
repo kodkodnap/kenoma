@@ -69,6 +69,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("ui_cancel"):
 		if _mouse_look_blocked():
 			current_interactable.call("release")
+			return
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	elif event is InputEventMouseButton and event.pressed and _can_recapture_mouse() \
 			and Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:

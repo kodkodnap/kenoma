@@ -2,6 +2,7 @@ extends Node3D
 ## Escena principal: conecta jugador, HUD, energía, máquina de prueba y prototipos.
 
 const TEST_ITEM := preload("res://scenes/items/test_item.tscn")
+const DISK_MEDIA := preload("res://scenes/items/disk_media.tscn")
 const TEST_PANEL := preload("res://scenes/ui/test_panel.tscn")
 const SIGNAL_CONSOLE := preload("res://scenes/ui/signal_console.tscn")
 const SIGNAL_CATALOG := "res://data/signals/catalog.json"
@@ -35,6 +36,7 @@ func _ready() -> void:
 
 	signals.setup(SignalSystem.load_catalog(SIGNAL_CATALOG))
 	signals.configure_balance(load("res://data/balance.tres") as GameBalance)
+	signals.disk_exported.connect(_spawn_exported_disk)
 	signal_console = SIGNAL_CONSOLE.instantiate() as SignalConsole
 	signal_console.name = "SignalConsole"
 	add_child(signal_console)
@@ -63,6 +65,21 @@ func _ready() -> void:
 	var director := EventDirector.new()
 	director.name = "EventDirector"
 	add_child(director)
+
+
+## Cada copia exportada deja su disco físico sobre la mesa de discos de Signal Processing.
+func _spawn_exported_disk(index: int) -> void:
+	var media := DISK_MEDIA.instantiate() as DiskMedia
+	media.name = "ExportedDisk%d" % index
+	add_child(media)
+	media.setup(signals, index)
+	var spawn_at := Vector3(-8.0, 0.95, -12.0)
+	if base != null:
+		var table := base.get_node_or_null("MesaDiscos") as Node3D
+		if table != null:
+			spawn_at = table.global_position + Vector3(0.0, 0.15, 0.0)
+	media.global_position = spawn_at
+	media.freeze = true
 
 
 ## Engancha el breaker del sótano y los tres transformadores exteriores.

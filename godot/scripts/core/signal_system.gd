@@ -8,6 +8,7 @@ signal download_progress(value: float)
 signal download_completed(copy: Dictionary)
 signal playback_changed(playing: bool)
 signal copy_updated(copy: Dictionary)
+signal disk_exported(index: int)
 signal credits_changed(value: int)
 signal error_raised(message: String)
 
@@ -376,6 +377,7 @@ func export_copy(index: int) -> Dictionary:
 	}
 	disks.append(disk)
 	_status = "Disco exportado: %s (%d créditos)" % [copy["def"].display_name, int(disk["value"])]
+	disk_exported.emit(disks.size() - 1)
 	return disk
 
 
