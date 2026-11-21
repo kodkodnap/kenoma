@@ -69,13 +69,15 @@ Presupuesto de escena: **< 150k triángulos visibles, < 250 draw calls, 60 FPS**
 | Jugador | `scenes/player/player.tscn` | 0 | provisional | Cápsula invisible |
 | Máquina de prueba | `scenes/machines/test_machine.tscn` | < 500 | prototipo | Se rehace en hito 2/3 |
 | Consola de Descargas | `scripts/machines/downloads_panel.gd` | < 15k | hecho (5.5-A) | Primitivas procedurales: chasis, CRT, vúmetro, lámpara y controles |
+| Consola de Coordinates | `scripts/machines/coordinates_panel.gd` + `assets/models/coordinates-console.glb` | 13.000 | hecho (5.5-B) | Gabinete GLB de Meshy (desde la imagen Nano Banana del usuario, crudo en `references/`; fuente `blender/coordinates-console.blend`): 1,24×1,58×1,13 m, origen en la base. Pantalla CRT viva curva (malla 18×12, `SubViewport` 720×480 + `CoordinatesScreen`) sobre el cristal horneado; perillas AZ/EL y ping como áreas invisibles alineadas con los mandos del modelo; medidores, joystick e interruptores decorativos |
+| Consola de Procesado | `assets/models/signal-processing-console.glb` | 2.960 | hecho (5.5-D) | GLB exportado desde `blender/signal_console.blend` con `blender/export_processing_console.py`: 1,20×0,62×0,79 m, 74 mallas, 86 nodos. Se excluyen los tres planos de CRT y todos los objetos de texto para no importar contenido literal; el cristal y las etiquetas se regeneran en Godot. Nodos de alineación: `SIG_dial_freq` (Blender -0,020/-0,204/0,625), `SIG_jog_tune` (0,160/-0,204/0,625), `SIG_slot_housing` (0,000/0,246/0,759) |
 
 ### 5.2 Assets objetivo
 
 | Asset | Hito | Fuente | Tris | Estado |
 |---|---:|---|---:|---|
 | Base modular (paredes, puertas, ventanas) | 3 | Propio / Poly Haven | < 30k | pendiente |
-| Panel de señal (4 variantes) | 5 | Propio | < 15k | 1 de 4 (Descargas, 5.5-A) |
+| Panel de señal (4 variantes) | 5 | Propio | < 15k | 3 de 4 (Descargas 5.5-A, Coordinates 5.5-B, Procesado 5.5-D) |
 | Servidor (30 + 24) | 3/8 | Propio | < 8k | pendiente |
 | Transformador | 4 | Propio | < 15k | pendiente |
 | Breaker | 4 | Propio | < 8k | pendiente |

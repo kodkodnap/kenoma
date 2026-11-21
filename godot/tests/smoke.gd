@@ -627,9 +627,9 @@ func _run() -> void:
 
 		var art := SignalArt.texture_for(relay)
 		_check(art is ImageTexture and art.get_width() == 64, "la señal genera su imagen", failures)
-		_check(console.tab_count() == 3, "tres paneles siguen en terminal", failures)
-		console.open_tab(1)
-		_check(console.is_open() and console.current_tab() == 1,
+		_check(console.tab_count() == 2, "dos paneles siguen en terminal", failures)
+		console.open_tab(0)
+		_check(console.is_open() and console.current_tab() == 0,
 			"la consola abre Reproducción", failures)
 		console.close()
 		_check(not console.is_open(), "la consola se cierra", failures)
@@ -713,23 +713,52 @@ func _run() -> void:
 			_check(signals.saved_count() == saved_before + 1,
 				"el pulsador guarda la copia en la base", failures)
 
-		var opener := (panels[0] as Node3D).get_node_or_null("SignalPanelInteract") as Interactable
-		_check(opener != null, "el panel tiene interactuable", failures)
-		if opener != null:
-			_stand_and_aim(player, opener, 1.3, 0.05)
-			for i in 4:
+		# Fase B de la estación física: Coordenadas con perillas y pulsador de ping.
+		var coordinates := (panels[0] as Node3D).get_node_or_null("CoordinatesPanel") as CoordinatesPanel
+		_check(coordinates != null, "panel de Coordenadas físico", failures)
+		_check(panels[0].get_node_or_null("SignalPanelInteract") == null,
+			"el panel físico no abre el terminal", failures)
+		if coordinates != null:
+			_check(coordinates.get_azimuth_knob() != null
+					and coordinates.get_elevation_knob() != null
+					and coordinates.get_ping_button() != null,
+				"el panel tiene perillas y pulsador de ping", failures)
+			_check(coordinates.find_child("CrtScreen", true, false) != null,
+				"el panel tiene CRT", failures)
+			var az := coordinates.get_azimuth_knob()
+			var el := coordinates.get_elevation_knob()
+			var ping := coordinates.get_ping_button()
+			if az != null and el != null and ping != null:
+				signals.select_by_id(&"relay_hum")
+				signals.set_azimuth(relay.azimuth)
+				signals.set_elevation(relay.elevation)
+				coordinates.sync_knobs()
+				_stand_and_aim(player, ping, 1.3, 0.05)
+				for i in 4:
+					await physics_frame
+				_check(player.current_interactable == ping,
+					"el raycast enfoca el pulsador de ping", failures)
+				Input.action_press("interact")
 				await physics_frame
-			_check(player.current_interactable == opener,
-				"el raycast enfoca el panel de señales", failures)
-			Input.action_press("interact")
-			await physics_frame
-			Input.action_release("interact")
-			await physics_frame
-			_check(console.is_open(), "E abre la estación de señales", failures)
-			console.close()
-
+				Input.action_release("interact")
+				await physics_frame
+				_check(signals.selected_def == relay,
+					"el ping fija portadora con azimut y elevación alineados", failures)
 		_check(power.is_circuit_powered(PowerSystem.Circuit.CALCULATIONS),
 			"la estación no altera la energía", failures)
+
+		# Fase D: contrato del modelo exportado desde Blender.
+		var processing_model := load("res://assets/models/signal-processing-console.glb") as PackedScene
+		_check(processing_model != null, "modelo de Procesado importado", failures)
+		if processing_model != null:
+			var processing_model_inst := processing_model.instantiate()
+			_check(processing_model_inst.find_child("SIG_dial_freq", true, false) != null,
+				"rueda central exportada", failures)
+			_check(processing_model_inst.find_child("SIG_slot_housing", true, false) != null,
+				"ranura exportada", failures)
+			_check(processing_model_inst.find_child("SIG_crt_screen", true, false) == null,
+				"sin CRT literal en el GLB", failures)
+			processing_model_inst.free()
 
 	# Hito 6: ciclo diario, tarea, tienda y dron.
 	_check(cycle != null, "DailyCycle presente", failures)
