@@ -59,16 +59,23 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.is_action_pressed("drop"):
 			drop_held(0.0)
 			return
-	if event is InputEventMouseMotion and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
+	if event is InputEventMouseMotion and not _mouse_look_blocked() \
+			and Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED:
 		rotate_y(-event.relative.x * mouse_sensitivity)
 		_pitch = clampf(_pitch - event.relative.y * mouse_sensitivity, -1.45, 1.45)
 		head.rotation.x = _pitch
 	elif event.is_action_pressed("flashlight"):
 		_toggle_flashlight()
 	elif event.is_action_pressed("ui_cancel"):
+		if _mouse_look_blocked():
+			current_interactable.call("release")
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	elif event is InputEventMouseButton and event.pressed and Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+
+func _mouse_look_blocked() -> bool:
+	return current_interactable != null and current_interactable.get("grabbed") == true
 
 
 func _physics_process(delta: float) -> void:

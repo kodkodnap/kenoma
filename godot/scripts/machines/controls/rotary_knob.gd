@@ -5,17 +5,24 @@ extends Interactable
 
 signal value_changed(new_value: float)
 
+const ANGLE_MIN: float = -2.2
+const ANGLE_MAX: float = 2.2
+
 @export var min_value: float = 0.0
 @export var max_value: float = 100.0
 @export var step: float = 1.0
 @export var start_value: float = 0.0
 @export var label_text: String = ""
 @export var value_suffix: String = ""
+@export var purpose: String = ""
 
 var value: float = 0.0
+var grabbed: bool = false
 
 var _pivot: Node3D
 var _label: Label3D
+var _drag_angle: float = 0.0
+var _drag_started: bool = false
 
 
 func _ready() -> void:
@@ -31,21 +38,61 @@ func turn(direction: int) -> void:
 	value_changed.emit(value)
 
 
+func turn_by_angle(delta: float) -> void:
+	var ratio_delta := delta / (ANGLE_MAX - ANGLE_MIN)
+	sync_value(value + ratio_delta * (max_value - min_value))
+	value_changed.emit(value)
+
+
+func grab() -> void:
+	if grabbed or not enabled:
+		return
+	grabbed = true
+	_drag_started = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+
+
+func release() -> void:
+	if not grabbed:
+		return
+	grabbed = false
+	_drag_started = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+
+
 func sync_value(new_value: float) -> void:
 	value = clampf(new_value, min_value, max_value)
 	if _pivot != null:
 		var ratio := inverse_lerp(min_value, max_value, value)
-		_pivot.rotation.z = lerpf(-2.2, 2.2, ratio)
+		_pivot.rotation.z = lerpf(ANGLE_MIN, ANGLE_MAX, ratio)
 	prompt = "%s · %s%s · rueda" % [label_text, _value_text(), value_suffix]
 
 
 func activate() -> void:
-	if enabled:
-		turn(1)
+	if not enabled:
+		return
+	if grabbed:
+		release()
+	else:
+		grab()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not focused or not enabled:
+	if not enabled:
+		return
+	if grabbed and event is InputEventMouseMotion:
+		var camera := get_viewport().get_camera_3d()
+		if camera != null:
+			var center := camera.unproject_position(global_position)
+			var pointer: Vector2 = event.position
+			var angle: float = (pointer - center).angle()
+			if _drag_started:
+				turn_by_angle(angle - _drag_angle)
+			_drag_angle = angle
+			_drag_started = true
+			get_viewport().set_input_as_handled()
+		return
+	if not focused:
 		return
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
@@ -57,6 +104,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_focus_changed(focused: bool) -> void:
+	if not focused:
+		release()
 	if _label == null:
 		return
 	_label.modulate = Color(1.0, 0.78, 0.36) if focused else Color(0.82, 0.79, 0.66)

@@ -713,6 +713,47 @@ func _run() -> void:
 			_check(signals.saved_count() == saved_before + 1,
 				"el pulsador guarda la copia en la base", failures)
 
+			# Hito 5.6: mandos reales compartidos, arrastre angular del dial.
+			var dial := downloads.get_knob(0)
+			_stand_and_aim(player, dial, 1.1, 0.05)
+			for i in 4:
+				await physics_frame
+			_check(player.current_interactable == dial,
+				"el raycast enfoca el dial antes de agarrarlo", failures)
+			dial.activate()
+			_check(dial.get("grabbed") == true
+					and Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE,
+				"E captura el dial y suelta el ratón", failures)
+
+			var dial_center := Vector2.ZERO
+			var dial_camera := dial.get_viewport().get_camera_3d()
+			if dial_camera != null:
+				dial_center = dial_camera.unproject_position(dial.global_position)
+			var value_before_drag := dial.value
+			var motion_left := InputEventMouseMotion.new()
+			motion_left.position = dial_center + Vector2(-120.0, 0.0)
+			motion_left.relative = Vector2(120.0, 0.0)
+			var motion_right := InputEventMouseMotion.new()
+			motion_right.position = dial_center + Vector2(120.0, 0.0)
+			motion_right.relative = Vector2(120.0, 0.0)
+			dial.call("_unhandled_input", motion_right)
+			dial.call("_unhandled_input", motion_left)
+			_check(absf(dial.value - value_before_drag) > 0.25,
+				"el arrastre angular mueve el dial", failures)
+
+			var yaw_before_drag := player.rotation.y
+			player._unhandled_input(motion_left)
+			_check(is_equal_approx(player.rotation.y, yaw_before_drag)
+					and player.has_method("_mouse_look_blocked")
+					and player.call("_mouse_look_blocked") == true,
+				"arrastrar el dial no gira la cámara", failures)
+
+			var release_ok := dial.has_method("release")
+			if release_ok:
+				dial.call("release")
+			_check(release_ok and dial.get("grabbed") != true,
+				"release() suelta el dial", failures)
+
 		# Fase B de la estación física: Coordenadas con perillas y pulsador de ping.
 		var coordinates := (panels[0] as Node3D).get_node_or_null("CoordinatesPanel") as CoordinatesPanel
 		_check(coordinates != null, "panel de Coordenadas físico", failures)
