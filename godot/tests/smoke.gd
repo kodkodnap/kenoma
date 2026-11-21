@@ -798,6 +798,32 @@ func _run() -> void:
 			_check(decode_system.copy_level(0) == 1,
 				"el nivel no sube cuando falla la calidad", failures)
 
+			# Fase D: panel físico con perilla, pulsador y CRT vivo.
+			decode_system.downloads[0]["quality"] = 0.9
+			var panel_root := Node3D.new()
+			root.add_child(panel_root)
+			var processing := ProcessingPanel.new()
+			panel_root.add_child(processing)
+			processing.setup(decode_system)
+			_check(processing.get_decode_knob() != null
+					and not processing.get_decode_knob().visible,
+				"perilla de fase invisible sobre el modelo", failures)
+			_check(processing.get_confirm_button() != null
+					and not processing.get_confirm_button().visible,
+				"pulsador de confirmar invisible sobre el modelo", failures)
+			_check(processing.get_crt() != null, "el panel tiene CRT vivo", failures)
+			_check(not processing.is_locked(), "el panel arranca sin bloqueo", failures)
+			var phase_knob := processing.get_decode_knob()
+			phase_knob.sync_value(0.5)
+			await process_frame
+			await process_frame
+			_check(is_equal_approx(decode_system.decode_tuning, 0.5),
+				"girar la perilla cambia la fase en el mismo frame", failures)
+			_check(is_equal_approx(processing.get_crt().stability, 1.0),
+				"la onda del CRT se estabiliza al girar la perilla", failures)
+			processing.get_confirm_button().activate()
+			_check(processing.is_locked(), "confirmar bloquea el panel", failures)
+
 	# Hito 6: ciclo diario, tarea, tienda y dron.
 	_check(cycle != null, "DailyCycle presente", failures)
 	_check(cycle_console != null, "terminal del ciclo presente", failures)
