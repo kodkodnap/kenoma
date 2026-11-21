@@ -118,6 +118,9 @@ Data (Resources)
 | `PowerConsumer` | Consumo y estado de energía; lo enchufa `PowerSystem`. | hecho (hito 4) |
 | `ScreenPanel` | Base de paneles con SubViewport y controles. | hecho (hito 2) |
 | `RotaryKnob` / `ToggleSwitch` / `Lever` | Controles físicos reutilizables con placa, escala, guarda y señal propia. | hecho (hito 5.5-A) |
+| `RotaryKnob` (arrastre angular) | E agarra/suelta, ratón = giro continuo en ambos sentidos, rueda = `step`, cámara bloqueada; expone `purpose`. | hecho (hito 5.6) |
+| `DiskMedia` | Disco `Grabbable` con `disk_index` y placa `Label3D` (señal, nivel, valor). | hecho (hito 5.6) |
+| `DiskDock` | Ranura `Area3D` con `insert`/`eject`, señales `disk_inserted`/`disk_ejected`; congela y oculta el disco insertado. | hecho (hito 5.6) |
 | `DownloadsPanel` | Consola física de descargas: chasis, cubierta, CRT, vúmetro, 6 perillas, detector y palanca. | hecho (hito 5.5-A) |
 | `CrtScreen` | `Control` que dibuja rejilla, traza de fósforo, barrido y viñeta del CRT. | hecho (hito 5.5-A) |
 | `ProcessingPanel` | Consola física de Procesado: GLB horneado, CRT vivo, perilla FASE y pulsador CONFIRMAR invisibles, LED LOCK. | hecho (hito 5.5-D) |
@@ -137,8 +140,8 @@ Data (Resources)
 | Clase | Responsabilidad | Estado |
 |---|---|---|
 | `Level` | Geometría, zonas, spawns, POIs. | prototipo |
-| `BaseLayout` | Plano puro de Alpha Root Base: 22 salas, puertas, plataformas, sin escena. | hecho (hito 3) |
-| `BaseBuilder` | Construye la base: MultiMesh por material, colisiones en un `StaticBody3D`, luces y props. | hecho (hito 3) |
+| `BaseLayout` | Plano puro de Alpha Root Base: 22 salas, puertas, plataformas y huecos de ventana, sin escena. | hecho (hito 5.6) |
+| `BaseBuilder` | Construye la base: MultiMesh por material, colisiones en un `StaticBody3D`, luces y props; ventanal de 10 m y nueve detalles en `signal`. | hecho (hito 5.6) |
 | `Door` | Puertas, cerraduras, breaker de Utilities. | pendiente |
 | `WeatherSystem` | Lluvia, niebla, tormenta, nieve, rayos. | pendiente |
 | `EntityDef` | Datos de entidad. | hecho (hito 2) |
@@ -182,6 +185,7 @@ Data (Resources)
 | `EventDirector` | `event_started(id)` | UI, audio, mundo |
 | `EventDirector` | `event_finished(id)` | UI, guardado |
 | `Inventory` | `changed()` | HUD, paneles |
+| `DiskDock` | `disk_inserted(disk)` / `disk_ejected(disk)` | `ProcessingPanel`, `main.gd` (terminal) |
 | `Economy` | `points_changed(value)` | HUD, tienda |
 
 Regla: una señal no transporta nodos si se puede transportar un id o un dato serializable.
@@ -278,6 +282,9 @@ consola en pantalla. La consola aporta 102 mallas; el batido estático por mater
 perillas, la aguja del vúmetro y la palanca conservan sus nodos porque se mueven.
 Medido (2026-11-21, consola de Procesado): 12 mallas / ~2.960 tris + CRT 460 tris; el GLB se fusiona
 por material para no añadir más de ~12 draws, con el escenario por debajo de 250.
+Medido (2026-11-21, sala `signal` con ventanal): **244 draw calls / 52266 triángulos** en el smoke
+(límites 250 / 150000). El cristal, los marcos, el fondo frío y los nueve detalles van en los batches
+`glass`, `cold` y `light`, sin mallas sueltas nuevas.
 
 Regla: la geometría fija de una máquina se construye dentro de `MachineMesh.begin_batch(parent)` y
 `end_batch(parent)`. Las piezas que animan un pivote no entran en el lote.
@@ -325,6 +332,7 @@ Cada hito añade sus comprobaciones al smoke antes de implementar (TDD).
 | SignalSystem / SignalConsole | hecho | 8 señales, catálogo JSON, cadena y venta; terminal reducida a Reproducción |
 | DailyCycle / CycleConsole | hecho | 75 min/día, tarea, tienda, dron, multa y bonus; snapshot en memoria |
 | Estación física (fases A, B y D) | hecho | Descargas, Coordinates y Procesado como consolas físicas; Procesado con FASE→LOCK→CONFIRMAR; terminal de una pestaña; 281 checks |
+| Sala de señales, mandos y disco (5.6) | hecho | Dial por arrastre angular con cámara bloqueada, disco con placa y dos ranuras, Procesado con progreso, ventanal de 10 m y 9 detalles; 334 checks, 244 draws / 52266 tris y captura Forward+ |
 | Servidores, consola y guardado | pendiente | Hitos 8 y 15 |
 
 ## 12. Cómo añadir un sistema

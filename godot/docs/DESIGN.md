@@ -7,8 +7,8 @@
 > nombres, reglas y soluciones. No se copian assets, código, textos, audio ni interfaces. El catálogo
 > completo está en [`ORIGINAL_FEATURES.md`](ORIGINAL_FEATURES.md).
 >
-> Estado: **hitos 0–2 cerrados** (documentación, jugador e interacción/inventario). El hito 3 construye
-> la Alpha Root Base con placeholders.
+> Estado: **hitos 0–6 y 5.6 cerrados**. La Alpha Root Base es recorrible y la estación de señales
+> tiene consolas físicas, discos y sala propia. Los hitos 7–15 siguen en el backlog.
 
 ## 1. Visión
 
@@ -122,6 +122,11 @@ rehacerlo por reflejo.
   Los niveles siguen `PROCESS_THRESHOLDS`. Los textos del `.blend` no se importan: las etiquetas y el
   CRT se regeneran como contenido original de Kenoma.
 - Venta: caja de discos al dron; copias y señales ya vendidas valen cero.
+- Los diales se operan por arrastre angular: E agarra y suelta, el ratón los gira en ambos sentidos con
+  la cámara bloqueada, la rueda hace ajuste fino y cada uno muestra su propósito en el prompt.
+- El disco exportado es un objeto físico con placa visible (señal, nivel, valor): se coge, se inserta
+  en la bandeja de Procesado para trabajar y en la ranura de la terminal para vender; placa y progreso
+  siguen al disco insertado.
 
 Los valores exactos están en `ORIGINAL_FEATURES.md` §2 y se implementan en `data/signals/`.
 
@@ -184,6 +189,7 @@ señales, tareas, flags, decisiones y semilla. Nunca guarda el árbol de escena.
 | Agacharse | Ctrl | Cambia cápsula y velocidad |
 | Mirar | Ratón | Sensibilidad configurable |
 | Interactuar | E / clic izquierdo | Raycast 2,4 m; mantener para acciones largas |
+| Perilla (dial) | E + ratón / rueda | E agarra y suelta; el arrastre circular gira en ambos sentidos con la cámara bloqueada, la rueda es ajuste fino; Esc suelta |
 | Agarrar / soltar | E / clic derecho | Objetos físicos; rueda para distancia |
 | Linterna | F | Batería limitada; la recarga llega con los ítems del hito 11. |
 | Inventario | Tab | Rejilla/volumen |
@@ -250,6 +256,7 @@ vive fuera de las escenas, en `scripts/core/`, y se prueba sin render.
 | 4 | Energía: transformadores, breaker, apagones | **cerrado** |
 | 5 | Estación de señales completa | **cerrado** |
 | 6 | Ciclo diario, dron, cintas, tienda | **cerrado** |
+| 5.6 | Sala de señales, mandos reales y disco físico | **cerrado** |
 | 7 | Mapa exterior a escala, 24 platos, radares, torre | pendiente |
 | 8 | Servidores, consola, hashcodes, reparación | pendiente |
 | 9 | Estadísticas, dificultad y ajustes | pendiente |

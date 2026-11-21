@@ -36,14 +36,14 @@ Fuera:
 
 ## 4. Criterios de aceptación
 
-- [ ] Con E se agarra un dial y el movimiento circular del ratón lo gira en ambos sentidos, de 0 a max, sin spamear E.
-- [ ] La cámara no gira mientras se manipula un dial; E/Esc sueltan y devuelven el control.
-- [ ] La rueda ajusta fino y el prompt dice qué hace cada dial.
-- [ ] Procesado muestra barra/LED/estado del progreso y motivos de fallo.
-- [ ] Existe un disco físico con placa visible; se puede coger, insertar y retirar.
-- [ ] Procesar y exportar escriben en el disco insertado; el terminal lo acepta para vender.
-- [ ] La sala tiene ventanal gigante visible y al menos 6 detalles nuevos (tarima, arco, radar, mesa, papeles, cableado).
-- [ ] Smoke ≥ 281 checks, 0 fallos; draws < 250 y tris < 150000; captura Forward+ nueva.
+- [x] Con E se agarra un dial y el movimiento circular del ratón lo gira en ambos sentidos, de 0 a max, sin spamear E. Evidencia: smoke «E captura el dial», «el arrastre angular mueve el dial», «el arrastre no salta al cruzar el eje -X».
+- [x] La cámara no gira mientras se manipula un dial; E/Esc sueltan y devuelven el control. Evidencia: smoke «arrastrar el dial no gira la cámara», «release() suelta el dial», «ui_cancel» y `_can_recapture_mouse()`.
+- [x] La rueda ajusta fino y el prompt dice qué hace cada dial. Evidencia: smoke «la rueda gira la perilla» y `RotaryKnob.purpose` en el prompt.
+- [x] Procesado muestra barra/LED/estado del progreso y motivos de fallo. Evidencia: smoke «el progreso del disco avanza al procesar», `progress()`, `status_text()` y LED LOCK.
+- [x] Existe un disco físico con placa visible; se puede coger, insertar y retirar. Evidencia: smoke «la etiqueta del disco muestra id, nivel y valor», «insert guarda el disco», «eject devuelve el disco».
+- [x] Procesar y exportar escriben en el disco insertado; el terminal lo acepta para vender. Evidencia: smoke «la placa del disco refleja el nivel procesado», «activar la ranura inserta el disco sostenido», «vender en la terminal paga créditos».
+- [x] La sala tiene ventanal gigante visible y al menos 6 detalles nuevos (tarima, arco, radar, mesa, papeles, cableado). Evidencia: smoke «ventanal de señales de al menos 8 m en z=-18», «detalle de la sala de señales con al menos 6 nodos» (9 `Marker3D`) y captura `docs/captures/06_sala_senales.png`.
+- [x] Smoke ≥ 281 checks, 0 fallos; draws < 250 y tris < 150000; captura Forward+ nueva. Evidencia: `OK=334`, `FALLO=0`, `ERRORS=0`, `EXIT=0`; 244 draws y 52266 tris; captura Forward+ a 1280×720.
 
 ## 5. Riesgos
 
@@ -60,3 +60,14 @@ $GODOT = "C:/Users/ibane/Downloads/Godot_v4.7.2-stable_win64.exe/Godot_v4.7.2-st
 & $GODOT --headless --path godot --script res://tests/smoke.gd
 python C:/Users/ibane/.agents/skills/godot-nodes-scenes/scripts/check_godot_project.py godot
 ```
+
+## 7. Cierre (Task 6, 2026-11-21)
+
+Los ocho criterios quedan verificados con `OK=334`, `FALLO=0`, `ERRORS=0`, `EXIT=0` en HEAD `083d41b`
+(`--headless --path godot --script res://tests/smoke.gd`), con presupuesto de 244 draws y 52266
+triángulos, por debajo de los límites de 250 y 150000. Las pruebas de lógica y de entrada se ejecutan
+en headless; la **verificación visual real** se documenta con la captura
+`docs/captures/06_sala_senales.png`: render Forward+ (Vulkan, GTX 1050) a 1280×720 donde se ven el
+ventanal de 10 m, las consolas en arco y los detalles de la sala. El modo de ratón y el giro de cámara
+en una partida real no son observables en headless y quedan comprobados por el código y la captura.
+Los hallazgos Minor diferidos están registrados en el ledger del SDD.

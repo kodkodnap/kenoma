@@ -19,6 +19,7 @@
 | 5.5 | Estación física (fases A, B y D) | **hecho** | Smoke (281 checks): Descargas, Coordinates y Procesado físicos (FASE → LOCK) |
 | 5.5 C y E | Playback y retirada del overlay | pendiente | Smoke + operación real de cada máquina |
 | 6 | Ciclo diario y dron | **hecho** | Smoke (281 checks acumulados) + día completo |
+| 5.6 | Sala de señales, mandos y disco | **hecho** | Smoke (334 checks) + captura Forward+ de la sala |
 | 7 | Mapa exterior a escala | pendiente | Smoke + recorrido |
 | 8 | Servidores, consola y hashcodes | pendiente | Smoke |
 | 9 | Estadísticas y dificultad | pendiente | Smoke |
@@ -29,9 +30,9 @@
 | 14 | Tier 4 | pendiente | Smoke |
 | 15 | Guardado, menús y pulido | pendiente | Smoke + partida completa |
 
-> El smoke crece por acumulación: hoy son **281 comprobaciones** (0 fallos, `SMOKE OK: hitos 0, 1,
-> 2, 3, 4, 5 y 6`) y cubren los hitos 0–6 más las fases A, B y D de 5.5. Los conteos de los hitos 4 y 5
-> son los de su cierre; los de 5.5 y 6 se han corregido al total real.
+> El smoke crece por acumulación: hoy son **334 comprobaciones** (0 fallos, `SMOKE OK: hitos 0, 1,
+> 2, 3, 4, 5 y 6`) y cubren los hitos 0–6, las fases A, B y D de 5.5 y el hito 5.6. Los conteos de los
+> hitos 4, 5 y 5.5 son los de su cierre; el total actual se ha corregido al número real de checks.
 
 ---
 
@@ -455,6 +456,49 @@ dron, multa y bonus jugables desde la terminal.
   créditos. El guardado en disco llega en el hito 15.
 - Diferido a hitos posteriores: saco/caja de discos y zip drive físicos, estación de bobinas y cintas
   A/B, favoritos de tienda y recuperación de stamina al dormir (hito 9).
+
+---
+
+## Hito 5.6 — Sala de señales, mandos reales y disco físico
+
+**Estado: hecho (2026-11-21).** Smoke con 334 comprobaciones en verde, 0 fallos; captura Forward+ de la
+sala (`docs/captures/06_sala_senales.png`).
+
+### Entregables
+
+- `RotaryKnob` con arrastre angular: E agarra y suelta, el ratón gira el dial en ambos sentidos, la
+  rueda ajusta fino (`step`), la cámara queda bloqueada mientras se manipula y `purpose` aparece en el
+  prompt.
+- `DiskMedia` (`ItemDef` + `Grabbable`) con placa `Label3D` de señal, nivel y valor y LED de señal;
+  `DiskDock` con `insert`/`eject` y señales `disk_inserted`/`disk_ejected`.
+- Procesado con bandeja en la ranura: barra de progreso, estado y motivos de fallo; FASE y CONFIRMAR
+  operan sobre el disco insertado, no sobre la última copia guardada.
+- Terminal con ranura de venta: insertar el disco paga créditos y lo expulsa; un disco ya vendido no
+  paga dos veces.
+- Sala `signal` con ventanal de 10 m en z=-18, cristal semitransparente con marcos y fondo frío, y
+  nueve detalles (`SignalWindow`, tarima baja, arco de consolas, radar de pared, mesa de discos,
+  papeles, cableado y lámparas ámbar/azul).
+
+### Criterio de aceptación
+
+- [x] E agarra un dial, el arrastre circular lo gira en ambos sentidos y E/Esc lo suelta sin spamear.
+- [x] La cámara no gira con un dial agarrado; la rueda ajusta fino y el prompt dice el propósito.
+- [x] Procesado muestra progreso y motivos de fallo; el disco insertado es la fuente de verdad.
+- [x] El disco físico se coge, se inserta y se retira; la terminal lo vende por ranura.
+- [x] Ventanal de 10 m visible y al menos seis detalles nuevos (hay nueve).
+- [x] Smoke 334 checks, 0 fallos; 244 draws y 52266 tris (límites 250 / 150000) y captura Forward+.
+
+### Notas de implementación
+
+- El hueco de ventana es un dato en `ROOMS.signal.windows` y se fusiona con el mismo patrón que las
+  puertas en `collect_walls()`; `BaseBuilder` genera antepecho, dintel, marco y cristal con
+  `MachineMaterials.glass()` y fondo frío en el batch `cold`.
+- La pared z=-18 se declara `side="north"` en `base_layout.gd` (donde `south` es z + d = -2): se
+  conserva la coordenada del brief aunque su etiqueta diga «sur».
+- Los marcadores `SignalPanel1..4` no se movieron ni reordenaron; Reproducción sigue en la terminal.
+- Presupuesto: 241 → 244 draws y 51798 → 52266 tris respecto al cierre anterior.
+- Verificación visual real: `docs/captures/06_sala_senales.png`, 1280×720 en Vulkan Forward+ (GTX
+  1050), con el ventanal y las consolas en cuadro.
 
 ---
 

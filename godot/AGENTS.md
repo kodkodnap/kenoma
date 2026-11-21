@@ -122,6 +122,12 @@ resumida en `docs/ORIGINAL_FEATURES.md`.
   Procesado usa `signal-processing-console.glb` (12 mallas, ~3,4k tris), `CrtScreen` vivo y controles
   invisibles FASE/CONFIRMAR: girar FASE cambia la estabilidad de la onda en tiempo real, LOCK se
   enciende al confirmar y se habilita exportar la copia. No se importan textos ni audio del `.blend`.
+- **Hito 5.6 cerrado (2026-11-21):** dial con arrastre angular (E agarra/suelta, rueda ajusta, cámara
+  bloqueada y propósito en el prompt), disco físico `DiskMedia` con placa y bandeja `DiskDock`,
+  Procesado con progreso y motivos de fallo sobre el disco insertado, terminal que vende por ranura,
+  y sala `signal` con ventanal de 10 m en z=-18 y nueve detalles. Smoke 334 checks; 244 draws /
+  52266 tris; captura Forward+ `docs/captures/06_sala_senales.png`. Los minors quedan en el ledger
+  del SDD.
 - `TestMachine` sigue como prototipo de la base de máquina.
 - La versión web (Three.js) de ESTATICA, en la raíz, está deprecada: no se desarrolla ni se modifica.
 - Repositorio: `C:\Users\ibane\Documents\proyecto_personal\estatica`; proyecto Godot en `godot/`.

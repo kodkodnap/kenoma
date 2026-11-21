@@ -73,6 +73,7 @@ Presupuesto de escena: **< 150k triángulos visibles, < 250 draw calls, 60 FPS**
 | Consola de Procesado | `scripts/machines/processing_panel.gd` + `assets/models/signal-processing-console.glb` | 2.960 + CRT 460 tris | hecho (5.5-D) | GLB exportado desde `blender/signal_console.blend` con `blender/export_processing_console.py`: 1,20×0,62×0,79 m, 12 mallas fusionadas por material (antes 74), 16 nodos. Se excluyen los tres planos de CRT y todos los objetos de texto para no importar contenido literal; el cristal y las etiquetas se regeneran en Godot. `CrtScreen` vivo en `SubViewport` 640×360 pegado al bisel `SIG_crt_bezel`; perilla FASE y pulsador CONFIRMAR invisibles sobre `SIG_dial_freq`/`SIG_slot_housing`,LED LOCK propio. El resto de diales, interruptores y EMF horneados quedan decorativos |
 | Disco de señal | `scenes/items/disk_media.tscn` + `scripts/items/disk_media.gd` | < 100 | hecho (5.6) | Primitivas procedurales: caja 0,24×0,02×0,16 m, ranura, LED emisivo y placa `Label3D` con id, nivel y valor; `ItemDef` en `data/items/disk.tres`,Extiende `Grabbable` |
 | Bandeja de discos | `scripts/interaction/disk_dock.gd` | 0 | hecho (5.6) | `Area3D` con forma de detección; guarda un `DiskMedia`, lo oculta al insertar y emite `disk_inserted`/`disk_ejected` |
+| Sala `signal` (ventanal y detalle) | `scripts/world/base_layout.gd` + `base_builder.gd` | +468 | hecho (5.6) | Ventanal de 10 m en z=-18: cristal `MachineMaterials.glass()`, marcos metálicos y fondo frío; 9 `Marker3D` en `signal_room_detail` (tarima, arco, radar, mesa, papeles, cableado y lámparas ámbar/azul) |
 
 ### 5.2 Assets objetivo
 
@@ -130,6 +131,8 @@ Cada asset de terceros se registra con autor, URL y licencia. Si la licencia no 
 ## 9. Verificación
 
 - [x] El modelo se ve bien a escala 1:1 (`docs/captures/05_procesado.png`).
+- [x] La sala de señales se ve en Forward+ con el ventanal de 10 m y las consolas
+      (`docs/captures/06_sala_senales.png`).
 - [x] El origen y la colisión son correctos.
 - [x] No supera el presupuesto.
 - [x] Las partes móviles están separadas.
