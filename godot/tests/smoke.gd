@@ -951,6 +951,27 @@ func _run() -> void:
 			var processing := ProcessingPanel.new()
 			panel_root.add_child(processing)
 			processing.setup(decode_system)
+
+			# Hito 5.6: la máquina sólo opera sobre el disco insertado en su bandeja.
+			var processing_dock: Node = processing.get("disk_dock") as Node
+			_check(processing_dock != null, "Procesado tiene bandeja de disco", failures)
+			_check(_call_string(processing, "status_text").contains("DISCO"),
+				"sin disco el estado avisa de DISCO", failures)
+			processing.get_confirm_button().activate()
+			_check(not processing.is_locked(), "sin disco confirmar no bloquea", failures)
+			var inserted_media: Node = null
+			if processing_dock != null:
+				var exported: Dictionary = decode_system.export_copy(0)
+				_check(not exported.is_empty(), "la copia se exporta a disco para procesarla", failures)
+				var media_scene := load("res://scenes/items/disk_media.tscn") as PackedScene
+				inserted_media = media_scene.instantiate()
+				panel_root.add_child(inserted_media)
+				inserted_media.call("setup", decode_system, decode_system.disk_count() - 1)
+				await process_frame
+				processing_dock.call("insert", inserted_media)
+				_check(processing_dock.get("disk") == inserted_media,
+					"el disco queda insertado en la bandeja del panel", failures)
+
 			_check(processing.get_decode_knob() != null
 					and not processing.get_decode_knob().visible,
 				"perilla de fase invisible sobre el modelo", failures)
@@ -969,9 +990,37 @@ func _run() -> void:
 				"la onda del CRT se estabiliza al girar la perilla", failures)
 			processing.get_confirm_button().activate()
 			_check(processing.is_locked(), "confirmar enciende el LED LOCK", failures)
+			_check(_call_float(processing, "progress") > 0.0,
+				"el progreso del disco avanza al procesar", failures)
+			if inserted_media != null:
+				var plate: Label3D = inserted_media.get("label") as Label3D
+				_check(plate != null and plate.text.contains("NIVEL 2"),
+					"la placa del disco refleja el nivel procesado", failures)
 			processing.get_confirm_button().activate()
 			_check(decode_system.copy_level(0) == 3,
 				"el panel permite procesar los tres niveles", failures)
+
+			# Retirar el disco devuelve el panel al estado sin disco.
+			if processing_dock != null:
+				processing_dock.call("eject")
+			_check(is_equal_approx(_call_float(processing, "progress"), 0.0)
+					and _call_string(processing, "status_text").contains("DISCO")
+					and not processing.is_locked(),
+				"retirar el disco devuelve el panel a sin disco", failures)
+			processing.get_confirm_button().activate()
+			_check(not processing.is_locked()
+					and _call_string(processing, "status_text").contains("DISCO"),
+				"confirmar sin disco falla con motivo DISCO", failures)
+
+			# La bandeja inserta el disco sostenido: al cogerlo se pierde el foco.
+			if processing_dock != null and inserted_media != null:
+				player.grab(inserted_media)
+				_check(player.held == inserted_media, "el jugador sostiene el disco", failures)
+				processing_dock.call("activate")
+				_check(processing_dock.get("disk") == inserted_media and player.held == null,
+					"activar la bandeja inserta el disco sostenido", failures)
+				processing_dock.call("eject")
+				inserted_media.queue_free()
 
 		# Fase D: la fase objetivo pertenece a la copia que se va a procesar.
 		var mismatch_system := SignalSystem.new()
@@ -1166,6 +1215,18 @@ func _check(condition: bool, label: String, failures: Array[String]) -> void:
 		print("OK  " + label)
 	else:
 		failures.append(label)
+
+
+func _call_float(object: Object, method: String) -> float:
+	if object == null or not object.has_method(method):
+		return -1.0
+	return float(object.call(method))
+
+
+func _call_string(object: Object, method: String) -> String:
+	if object == null or not object.has_method(method):
+		return ""
+	return String(object.call(method))
 
 
 func _number(object: Object, property: StringName, fallback: float) -> float:

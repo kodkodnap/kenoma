@@ -22,11 +22,16 @@ var _viewport: SubViewport
 var _screen: CrtScreen
 var _screen_material: StandardMaterial3D
 var _status_label: Label
+var _progress_label: Label
 var _decode_knob: RotaryKnob
 var _confirm_button: PushButton
 var _lock_material: StandardMaterial3D
 var _locked: bool = false
 var _time: float = 0.0
+var _progress: float = 0.0
+var _status_text: String = "SIN DISCO · INSERTA UNO PARA PROCESAR"
+
+var disk_dock: DiskDock
 
 
 func _ready() -> void:
@@ -36,6 +41,8 @@ func _ready() -> void:
 	_build_controls()
 	_build_lock_led()
 	_build_collision()
+	_build_disk_dock()
+	_refresh_status()
 
 
 func setup(system: SignalSystem) -> void:
@@ -58,14 +65,23 @@ func is_locked() -> bool:
 	return _locked
 
 
+func progress() -> float:
+	return _progress
+
+
+func status_text() -> String:
+	return _status_text
+
+
 func _process(delta: float) -> void:
 	_time += delta
 	if _system != null and _decode_knob != null:
 		# Sondear el valor también cubre sync_value() programático, que no emite.
 		_system.set_decode_tuning(_decode_knob.value)
 		if _screen != null:
-			_screen.stability = _system.decode_stability()
-			_screen.signal_level = 1.0
+			# La onda sigue la fase de la copia del disco insertado, no la última guardada.
+			_screen.stability = _disk_stability()
+			_screen.signal_level = 1.0 if disk_dock != null and disk_dock.disk != null else 0.2
 			_screen.powered = true
 	if _screen_material != null:
 		_screen_material.emission_energy_multiplier = 1.0 + 0.04 * sin(_time * 27.0)
@@ -102,6 +118,14 @@ func _build_screen() -> void:
 	_status_label.add_theme_font_size_override("font_size", 15)
 	_status_label.add_theme_color_override("font_color", CrtScreen.GREEN)
 	_viewport.add_child(_status_label)
+
+	_progress_label = Label.new()
+	_progress_label.name = "Progress"
+	_progress_label.text = "PROCESO 0%"
+	_progress_label.position = Vector2(18, 330)
+	_progress_label.add_theme_font_size_override("font_size", 14)
+	_progress_label.add_theme_color_override("font_color", CrtScreen.GREEN)
+	_viewport.add_child(_progress_label)
 
 	var quad := QuadMesh.new()
 	quad.size = Vector2(0.46, 0.26)
@@ -199,13 +223,128 @@ func _build_collision() -> void:
 	body.add_child(shape)
 
 
+func _build_disk_dock() -> void:
+	disk_dock = DiskDock.new()
+	disk_dock.name = "DiskDock"
+	# Ranura del modelo: el pulsador CONFIRMAR queda unos centímetros por encima.
+	disk_dock.position = _node_pos("SIG_slot_housing", FALLBACK_SLOT) + Vector3(0.0, -0.07, 0.0)
+	disk_dock.prompt = "Insertar o retirar disco"
+	add_child(disk_dock)
+	disk_dock.activated.connect(_on_dock_activated)
+	disk_dock.disk_inserted.connect(_on_disk_inserted)
+	disk_dock.disk_ejected.connect(_on_disk_ejected)
+
+
+func _on_dock_activated(_source: Interactable) -> void:
+	# El jugador limpia el foco al coger un Grabbable, así que el dock no puede
+	# ver el disco sostenido: se lo pedimos al jugador directamente.
+	var players := get_tree().get_nodes_in_group("player")
+	if players.is_empty():
+		return
+	var player: Node = players[0]
+	var held: Variant = player.get("held")
+	if held is DiskMedia:
+		player.call("drop_held", 0.0)
+		disk_dock.insert(held)
+
+
+func _on_disk_inserted(_disk: DiskMedia) -> void:
+	_locked = false
+	_lock_material.emission_energy_multiplier = 0.12
+	_refresh_status()
+
+
+func _on_disk_ejected(_disk: DiskMedia) -> void:
+	_locked = false
+	_lock_material.emission_energy_multiplier = 0.12
+	_refresh_status()
+
+
+func _disk_copy_index() -> int:
+	if _system == null or disk_dock == null or disk_dock.disk == null:
+		return -1
+	var index := disk_dock.disk.disk_index
+	var disks: Array = _system.disks
+	if index < 0 or index >= disks.size():
+		return -1
+	return int((disks[index] as Dictionary).get("copy_index", -1))
+
+
+func _disk_stability() -> float:
+	if _system == null:
+		return 0.0
+	var copy_index := _disk_copy_index()
+	if copy_index < 0 or copy_index >= _system.downloads.size():
+		return 0.0
+	var def: SignalDef = (_system.downloads[copy_index] as Dictionary).get("def") as SignalDef
+	if def == null:
+		return 0.0
+	return clampf(1.0 - absf(_system.decode_tuning - def.decode_target)
+			* _system.decode_sensitivity, 0.0, 1.0)
+
+
+func _refresh_status() -> void:
+	var disk: DiskMedia = disk_dock.disk if disk_dock != null else null
+	var copy_index := _disk_copy_index()
+	if disk == null:
+		_progress = 0.0
+		_status_text = "SIN DISCO · INSERTA UNO PARA PROCESAR"
+	elif copy_index < 0:
+		_progress = 0.0
+		_status_text = "DISCO SIN DATOS · NO SE PUEDE PROCESAR"
+	else:
+		var level := _system.copy_level(copy_index) if _system != null else 0
+		_progress = float(level) / 3.0
+		_status_text = "DISCO INSERTADO · AJUSTA FASE Y CONFIRMA"
+	_apply_status()
+
+
+func _apply_status() -> void:
+	if _status_label != null:
+		_status_label.text = _status_text
+	if _progress_label != null:
+		_progress_label.text = "PROCESO %d%%" % int(round(_progress * 100.0))
+	if _screen != null:
+		_screen.progress = _progress
+
+
 func _on_confirm() -> void:
 	if _system == null:
 		return
-	if _system.confirm_decode():
-		_locked = true
-		_lock_material.emission_energy_multiplier = 2.8
-		_status_label.text = _system.status() + " · DISCO DISPONIBLE"
-		_confirm_button.flash()
+	var disk: DiskMedia = disk_dock.disk if disk_dock != null else null
+	if disk == null:
+		_status_text = "SIN DISCO · INSERTA UNO PARA PROCESAR"
+		_apply_status()
+		return
+	var copy_index := _disk_copy_index()
+	if copy_index < 0 or copy_index >= _system.downloads.size():
+		_status_text = "DISCO SIN DATOS · NO SE PUEDE PROCESAR"
+		_apply_status()
+		return
+	if _disk_stability() < _system.decode_ready_stability:
+		_status_text = "FASE INESTABLE · AJUSTA LA ONDA DEL DISCO"
+		_apply_status()
+		return
+	var next_level := _system.copy_level(copy_index) + 1
+	if next_level > 3:
+		_status_text = "DISCO AL NIVEL 3 · PROCESADO COMPLETO"
+		_apply_status()
+		return
+	# confirm_decode() cubre el caso normal; si el disco viene de otra copia, se procesa esa.
+	var done: bool
+	if copy_index == _system.last_saved_index():
+		done = _system.confirm_decode()
 	else:
-		_status_label.text = _system.status()
+		done = _system.process_copy(copy_index, next_level)
+	if not done:
+		_status_text = _system.status()
+		_apply_status()
+		return
+	_locked = true
+	_lock_material.emission_energy_multiplier = 2.8
+	if disk.signals == _system:
+		disk.refresh_label()
+	_progress = float(next_level) / 3.0
+	_status_text = "DISCO PROCESADO · NIVEL %d/3" % next_level
+	_apply_status()
+	_confirm_button.flash()
