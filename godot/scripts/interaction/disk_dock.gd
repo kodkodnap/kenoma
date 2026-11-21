@@ -6,6 +6,7 @@ signal disk_inserted(disk: DiskMedia)
 signal disk_ejected(disk: DiskMedia)
 
 var disk: DiskMedia = null
+var _interactable_layer: int = 2
 
 
 func _ready() -> void:
@@ -19,9 +20,13 @@ func _ready() -> void:
 
 
 func insert(value: DiskMedia) -> void:
-	if value == null or disk != null or value == disk:
+	if value == null or disk != null or value == disk or value.held_by != null:
 		return
 	disk = value
+	if disk.interactable != null:
+		_interactable_layer = disk.interactable.collision_layer
+		disk.interactable.enabled = false
+		disk.interactable.collision_layer = 0
 	disk.freeze = true
 	disk.visible = false
 	disk_inserted.emit(disk)
@@ -34,6 +39,9 @@ func eject() -> DiskMedia:
 	disk = null
 	ejected.freeze = false
 	ejected.visible = true
+	if ejected.interactable != null:
+		ejected.interactable.collision_layer = _interactable_layer
+		ejected.interactable.enabled = true
 	disk_ejected.emit(ejected)
 	return ejected
 

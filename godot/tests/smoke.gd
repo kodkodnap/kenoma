@@ -617,6 +617,7 @@ func _run() -> void:
 			if disk_scene != null and dock_script != null:
 				var media: Node = disk_scene.instantiate()
 				main.add_child(media)
+				media.global_position = Vector3(40.0, 8.0, 40.0)
 				media.call("setup", signals, disk_index)
 				await process_frame
 				_check(int(media.get("disk_index")) == disk_index,
@@ -635,9 +636,24 @@ func _run() -> void:
 				var eject_events: Array[int] = []
 				dock.connect("disk_inserted", func(_d: Node) -> void: insert_events.append(1))
 				dock.connect("disk_ejected", func(_d: Node) -> void: eject_events.append(1))
+				var disk_interact: Interactable = media.get("interactable") as Interactable
+				var original_layer := disk_interact.collision_layer if disk_interact != null else 0
 				dock.call("insert", media)
 				_check(dock.get("disk") == media and not media.visible and insert_events.size() == 1,
 					"insert guarda el disco y lo oculta", failures)
+				# Fix round 1: insertado no debe ser cogible ni enfocable por el raycast.
+				_check(disk_interact != null and not disk_interact.enabled
+						and disk_interact.collision_layer == 0,
+					"disco insertado deja de ser enfocable", failures)
+				await physics_frame
+				var ray := PhysicsRayQueryParameters3D.create(
+					media.global_position + Vector3.UP,
+					media.global_position - Vector3.UP, 2)
+				ray.collide_with_areas = true
+				ray.collide_with_bodies = false
+				var ray_hit := player.get_world_3d().direct_space_state.intersect_ray(ray)
+				_check((ray_hit.get("collider") as Object) != disk_interact,
+					"el raycast no enfoca el disco insertado", failures)
 				dock.call("insert", media)
 				_check(insert_events.size() == 1 and dock.get("disk") == media,
 					"doble insert no duplica", failures)
@@ -645,6 +661,14 @@ func _run() -> void:
 				_check(ejected == media and dock.get("disk") == null
 						and media.visible and eject_events.size() == 1,
 					"eject devuelve el disco y vacía la bandeja", failures)
+				_check(disk_interact != null and disk_interact.enabled
+						and disk_interact.collision_layer == original_layer,
+					"el disco expulsado vuelve a ser enfocable", failures)
+				# Fix round 1: un disco agarrado no se inserta (flotaría sin colisionar).
+				media.call("grab", player)
+				dock.call("insert", media)
+				_check(dock.get("disk") == null, "no se inserta un disco agarrado", failures)
+				media.call("release")
 				media.queue_free()
 				dock.queue_free()
 
