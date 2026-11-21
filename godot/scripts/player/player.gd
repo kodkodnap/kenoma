@@ -70,12 +70,17 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _mouse_look_blocked():
 			current_interactable.call("release")
 		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	elif event is InputEventMouseButton and event.pressed and Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
+	elif event is InputEventMouseButton and event.pressed and _can_recapture_mouse() \
+			and Input.get_mouse_mode() == Input.MOUSE_MODE_VISIBLE:
 		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 
 func _mouse_look_blocked() -> bool:
 	return current_interactable != null and current_interactable.get("grabbed") == true
+
+
+func _can_recapture_mouse() -> bool:
+	return not _mouse_look_blocked()
 
 
 func _physics_process(delta: float) -> void:

@@ -754,6 +754,33 @@ func _run() -> void:
 			_check(release_ok and dial.get("grabbed") != true,
 				"release() suelta el dial", failures)
 
+			# Fix round 1: el arrastre no salta al cruzar el eje -X.
+			dial.sync_value(500.0)
+			dial.activate()
+			var wrap_up := InputEventMouseMotion.new()
+			wrap_up.position = dial_center + Vector2(-120.0, 10.0)
+			var wrap_down := InputEventMouseMotion.new()
+			wrap_down.position = dial_center + Vector2(-120.0, -10.0)
+			dial.call("_unhandled_input", wrap_up)
+			dial.call("_unhandled_input", wrap_down)
+			_check(absf(dial.value - 500.0) < 100.0,
+				"el arrastre no salta al cruzar el eje -X", failures)
+			dial.call("release")
+
+			# Fix round 1: un clic no recaptura el ratón mientras se arrastra.
+			dial.activate()
+			var click := InputEventMouseButton.new()
+			click.button_index = MOUSE_BUTTON_LEFT
+			click.pressed = true
+			player._unhandled_input(click)
+			_check(player.has_method("_can_recapture_mouse")
+					and player.call("_can_recapture_mouse") == false,
+				"un clic no recaptura el ratón con el dial agarrado", failures)
+			dial.call("release")
+			_check(player.has_method("_can_recapture_mouse")
+					and player.call("_can_recapture_mouse") == true,
+				"sin dial agarrado un clic sí puede recapturar", failures)
+
 		# Fase B de la estación física: Coordenadas con perillas y pulsador de ping.
 		var coordinates := (panels[0] as Node3D).get_node_or_null("CoordinatesPanel") as CoordinatesPanel
 		_check(coordinates != null, "panel de Coordenadas físico", failures)

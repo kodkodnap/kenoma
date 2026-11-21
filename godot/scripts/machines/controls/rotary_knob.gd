@@ -87,7 +87,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			var pointer: Vector2 = event.position
 			var angle: float = (pointer - center).angle()
 			if _drag_started:
-				turn_by_angle(angle - _drag_angle)
+				turn_by_angle(wrapf(angle - _drag_angle, -PI, PI))
 			_drag_angle = angle
 			_drag_started = true
 			get_viewport().set_input_as_handled()
