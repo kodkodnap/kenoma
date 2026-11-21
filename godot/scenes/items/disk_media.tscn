@@ -1,0 +1,74 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/disk_media.gd" id="1_media"]
+[ext_resource type="Resource" path="res://data/items/disk.tres" id="2_item"]
+[ext_resource type="Script" path="res://scripts/interaction/interactable.gd" id="3_interactable"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_body"]
+size = Vector3(0.24, 0.02, 0.16)
+
+[sub_resource type="BoxMesh" id="BoxMesh_slot"]
+size = Vector3(0.1, 0.004, 0.03)
+
+[sub_resource type="BoxMesh" id="BoxMesh_led"]
+size = Vector3(0.018, 0.006, 0.012)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial_body"]
+albedo_color = Color(0.55, 0.57, 0.45, 1)
+metallic = 0.3
+roughness = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial_slot"]
+albedo_color = Color(0.1, 0.1, 0.12, 1)
+roughness = 0.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial_led"]
+albedo_color = Color(0.1, 0.5, 0.2, 1)
+emission_enabled = true
+emission = Color(0.1, 0.9, 0.3, 1)
+emission_energy_multiplier = 2.0
+
+[sub_resource type="BoxShape3D" id="BoxShape_collision"]
+size = Vector3(0.24, 0.02, 0.16)
+
+[sub_resource type="BoxShape3D" id="BoxShape_area"]
+size = Vector3(0.3, 0.12, 0.22)
+
+[node name="DiskMedia" type="RigidBody3D"]
+mass = 0.5
+script = ExtResource("1_media")
+item = ExtResource("2_item")
+
+[node name="Body" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_body")
+material_override = SubResource("StandardMaterial_body")
+
+[node name="Slot" type="MeshInstance3D" parent="."]
+position = Vector3(0, 0.012, 0)
+mesh = SubResource("BoxMesh_slot")
+material_override = SubResource("StandardMaterial_slot")
+
+[node name="Led" type="MeshInstance3D" parent="."]
+position = Vector3(0.09, 0.013, 0.055)
+mesh = SubResource("BoxMesh_led")
+material_override = SubResource("StandardMaterial_led")
+
+[node name="Label" type="Label3D" parent="."]
+position = Vector3(-0.085, 0.013, -0.055)
+rotation = Vector3(-1.5707963, 0, 0)
+text = "DISCO"
+font_size = 20
+pixel_size = 0.0008
+outline_size = 0
+modulate = Color(0.9, 0.9, 0.8, 1)
+shaded = true
+
+[node name="Collision" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape_collision")
+
+[node name="Interactable" type="Area3D" parent="."]
+script = ExtResource("3_interactable")
+prompt = "Coger disco"
+
+[node name="Collision" type="CollisionShape3D" parent="Interactable"]
+shape = SubResource("BoxShape_area")

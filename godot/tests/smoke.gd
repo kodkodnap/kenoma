@@ -604,6 +604,50 @@ func _run() -> void:
 		var copy_disk := signals.export_copy(0)
 		_check(int(copy_disk.get("value", -1)) == 0, "una copia vale 0", failures)
 
+		# Hito 5.6: disco físico y bandeja de señales.
+		if signals.disk_count() > 0:
+			var disk_index := 0
+			var disk_data: Dictionary = signals.disks[disk_index]
+			var def_id := str(disk_data.get("def_id", ""))
+			var expected_value := int(disk_data.get("value", 0))
+			var disk_scene := load("res://scenes/items/disk_media.tscn") as PackedScene
+			var dock_script: Variant = load("res://scripts/interaction/disk_dock.gd")
+			_check(disk_scene != null, "escena del disco físico cargada", failures)
+			_check(dock_script != null, "script de la bandeja cargado", failures)
+			if disk_scene != null and dock_script != null:
+				var media: Node = disk_scene.instantiate()
+				main.add_child(media)
+				media.call("setup", signals, disk_index)
+				await process_frame
+				_check(int(media.get("disk_index")) == disk_index,
+					"DiskMedia guarda el índice de disco", failures)
+				var plate: Label3D = media.get("label") as Label3D
+				_check(plate != null and plate.text.contains(def_id)
+						and plate.text.contains("NIVEL")
+						and plate.text.contains(str(expected_value)),
+					"la etiqueta del disco muestra id, nivel y valor", failures)
+
+				var dock := dock_script.new() as Node
+				main.add_child(dock)
+				await process_frame
+				_check(dock.get("disk") == null, "la bandeja arranca vacía", failures)
+				var insert_events: Array[int] = []
+				var eject_events: Array[int] = []
+				dock.connect("disk_inserted", func(_d: Node) -> void: insert_events.append(1))
+				dock.connect("disk_ejected", func(_d: Node) -> void: eject_events.append(1))
+				dock.call("insert", media)
+				_check(dock.get("disk") == media and not media.visible and insert_events.size() == 1,
+					"insert guarda el disco y lo oculta", failures)
+				dock.call("insert", media)
+				_check(insert_events.size() == 1 and dock.get("disk") == media,
+					"doble insert no duplica", failures)
+				var ejected: Node = dock.call("eject")
+				_check(ejected == media and dock.get("disk") == null
+						and media.visible and eject_events.size() == 1,
+					"eject devuelve el disco y vacía la bandeja", failures)
+				media.queue_free()
+				dock.queue_free()
+
 		var satellite := signals.select_by_id(&"silent_satellite")
 		_align_signal(signals, satellite)
 		_check(not signals.start_download(), "un satélite caído no descarga", failures)
