@@ -45,13 +45,15 @@ prototipos jugables. Se **conserva toda la lógica pura y la interacción físic
 overlays sobrantes.
 
 ### Entregables
-- **Nuevo `BaseLayout` + `BaseBuilder` (bloqueo jugable amplio, cero claustrofobia):**
-  - Planta Alta en voladizo sobre pilares (`y ≈ 4,5 m`) con **Sala de Control de Señales** de techo alto, ventanal panorámico inclinado de 3 paños mirando al claro nevado, desnivel amplio, mesa cálida con lámpara y consolas distribuidas sin apretar.
-  - **Pasillo principal de 3 m de ancho** hacia el ala trasera con luz tenue graduada (sin sentirse angosto).
-  - **Sala de Servidores** amplia y **Zona de Descanso / Dormitorio y Cocina** cálida en planta alta.
-  - **Núcleo amplio de escaleras** conectando Planta Alta ↔ Planta Baja ↔ Sótano.
-  - **Planta Baja:** Garaje amplio bajo el voladizo con portón enrollable hacia la nieve, acceso frontal y zona de entregas/plataforma.
-  - **Sótano técnico:** cuarto amplio de Breaker y Generador auxiliar.
+- **Nuevo `BaseLayout` + `BaseBuilder` (bloqueo jugable amplio, cero claustrofobia, apto para co-op):**
+  - Planta Alta en voladizo sobre pilares (`y ≈ 4,5 m`) con **Sala de Control de Señales** espaciosa de techo alto (≥ 4 m), ventanal panorámico inclinado de 3 paños mirando al claro nevado + visibilidad lateral hacia la terraza del dron, mesa cálida con lámpara y consolas distribuidas sin apretar.
+  - **Pasillo principal real de ≥ 3,5 m de ancho × 12–16 m de largo** hacia el ala trasera con luz tenue graduada (transición psicológica sin agobio).
+  - **Sala de Servidores** amplia y **cerrada con puerta + ventanuco** (para aislar el zumbido de racks).
+  - **Zona de Descanso / Dormitorio (litera) y Cocina** cálida con puerta propia + **Baño** adyacente.
+  - **Terraza exterior del Dron** sobre el garaje con barandilla, conectada al nivel superior.
+  - **Núcleo amplio abierto de escaleras** con barandillas (permite asomarse antes de bajar) conectando **Azotea** (parabólica), Planta Alta, Planta Baja y Sótano (y hueco reservado para posible montacargas/ascensor futuro).
+  - **Planta Baja:** Garaje amplio bajo el voladizo con portón enrollable hacia la nieve + **Vestíbulo de Entrada** amplio con taquillas y **Almacén amplio** de suministros + zona alternativa exterior de carga.
+  - **Sótano técnico:** único nivel sin ventanas, amplio, con Breaker y Generador auxiliar.
   - **Entorno inmediato:** claro nevado abierto delante de la base y ladera trasera, **sin vallas metálicas**, con iluminación inicial en hora azul / noche lunar fuera y tungsteno cálido dentro.
 - **Cierre de máquinas en la Sala de Señales:**
   - **Playback físico:** máquina dedicada con ranura de disco/reproducción y guardado en base de datos, retirando por completo el overlay `SignalConsole`.

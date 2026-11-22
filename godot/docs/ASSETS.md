@@ -1,9 +1,10 @@
 # Assets — Kenoma
 
-> Todo el arte es original. La dirección visual oficial está fijada en las dos imágenes de
-> referencia en `references/art-direction/`:
+> Todo el arte es original. La dirección visual y espacial oficial está fijada en `references/art-direction/`:
 > - [`../../references/art-direction/base-exterior.png`](../../references/art-direction/base-exterior.png)
 > - [`../../references/art-direction/base-interior-signal-room.png`](../../references/art-direction/base-interior-signal-room.png)
+> - [`../../references/art-direction/base-cutaway-3d.png`](../../references/art-direction/base-cutaway-3d.png)
+> - [`../../references/art-direction/base-floorplan-2d.png`](../../references/art-direction/base-floorplan-2d.png)
 >
 > **Flujo con OpenCode + Blender MCP:** En fases de arquitectura y mecánicas se usan placeholders
 > limpios en Godot con medidas y cotas reales. Cada objeto definitivo pendiente tiene abajo su

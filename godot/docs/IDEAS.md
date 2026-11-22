@@ -10,12 +10,15 @@
 | I-003 | 2026-11-01 | Flujo físico multi-máquina (nada de concentrar todo en una sola computadora) | en curso | Coordinates, Descargas, Procesado hechos; falta Playback físico + retirar overlay |
 | I-004 | 2026-11-01 | Catálogo procedural de 100+ señales deterministas por semilla/día | pendiente | Se añade cuando la base y mapa estén asentados |
 | I-005 | 2026-11-21 | **Dirección visual oficial:** PBR semi-realista estilizado (*Firewatch* + *Pacific Drive* + *Signalis*), brutalismo de los 80 en montaña nevada | decidido | Referencias en `references/art-direction/` (`base-exterior.png` y `base-interior-signal-room.png`) |
-| I-006 | 2026-11-21 | **Base en voladizo elevada** sobre pilares con garaje abajo y claro abierto sin vallas metálicas | pendiente (Hito 7) | Sustituye al plano cuadrado actual de 22 salas |
+| I-006 | 2026-11-21 | **Base en voladizo elevada** sobre pilares con garaje abajo y claro abierto sin vallas metálicas | en curso (Hito 7 prototipo caminable) | Sustituye al plano cuadrado actual de 22 salas |
 | I-007 | 2026-11-21 | **Espacios amplios + luz cálida interior** (sensación de refugio cómodo, cero claustrofobia y cero FNAF sin pistas) | decidido | Regla de diseño para arquitectura, iluminación y eventos |
 | I-008 | 2026-11-21 | **Snowcat de orugas** como vehículo principal en un valle alpino enorme (caminar zonas lejanas costaría 1–2 días) | pendiente (Hito 8) | Sustituye al concepto genérico de ATV |
 | I-009 | 2026-11-21 | **Impresora matricial física** en sala de señales para papel continuo (hashcodes, reportes, alertas) | pendiente (Hito 7/9) | Refuerza flujo multi-máquina tangible |
-| I-010 | 2026-11-21 | **Entregas flexibles de suministros:** plataforma en el edificio, con posible aleatorización a puerta exterior u otras zonas | pendiente (Hito 8) | Concepto abierto a definir al construir el exterior |
+| I-010 | 2026-11-21 | **Entregas configurables:** elegir en la tienda recibir en la terraza sobre el garaje o frente/lado del garaje (+ posible aleatoriedad futura) | pendiente (Hito 8) | Queda reflejado en `base-cutaway-3d.png` y `base-floorplan-2d.png` |
 | I-011 | 2026-11-21 | Pipeline de modelado definitivo vía **OpenCode + Blender MCP** desde especificaciones en `ASSETS.md` | decidido | Placeholders en Godot primero; modelos en `ASSETS.md` §6 |
+| I-012 | 2026-11-21 | **Multiplayer cooperativo online:** todo el juego jugable al 100% con amigos | decidido (arquitectura desde ya) | Espacios amplios multi-operador y lógica pura desacoplada en `scripts/core/`; netcode dedicado en fase posterior |
+| I-013 | 2026-11-21 | **Ascensor / montacargas o segunda escalera** entre niveles (garaje ↔ planta alta ↔ sótano) | pendiente (evaluar tras probar Hito 7) | Primero probar la fluidez con el núcleo de escaleras abierto |
+| I-014 | 2026-11-21 | **Intro fuera de la base (post-prototipado):** aparecer en la entrada al recinto llevando maletas y caminar hasta la estación | pendiente (post-prototipado) | Durante el prototipado actual el jugador aparece dentro de la Sala de Control de Señales |
 
 ## Descartadas
 

@@ -12,6 +12,7 @@
 4. **Una responsabilidad por clase.** Nada de scripts de 1.000 líneas.
 5. **Estado serializable.** El guardado reconstruye desde datos, nunca desde el árbol de escena.
 6. **Presupuesto medido.** Cada hito actualiza `perf_overlay` y la escena de debug.
+7. **Preparado para cooperativo online futuro.** El estado del mundo (`SignalSystem`, `PowerSystem`, `DailyCycle`) vive centralizado fuera del nodo `Player`; evitar asumir un único jugador global en código nuevo para facilitar la futura capa `MultiplayerPeer`/`MultiplayerSynchronizer`.
 
 ## 2. Estructura de carpetas
 

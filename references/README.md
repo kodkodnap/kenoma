@@ -15,6 +15,8 @@ references/
   art-direction/
     base-exterior.png              # Biblia visual exterior (voladizo, hora azul, garaje, snowcat)
     base-interior-signal-room.png  # Biblia visual interior (sala de mando, luz cálida, pasillo amplio)
+    base-cutaway-3d.png            # Corte isométrico 3D v2 de los 3 niveles + terraza dron + azotea
+    base-floorplan-2d.png          # Plano cenital 2D v2 de referencia espacial
   <maquina>/
     <maquina>-ref.png              # Imagen objetivo y prompt
     <maquina>-meshy.glb            # Salida cruda de Meshy, tal cual se descargó

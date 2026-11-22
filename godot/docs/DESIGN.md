@@ -7,8 +7,11 @@
 > contenido y giro propios**. No se copian assets, código, textos, audio ni interfaces literales del
 > original. El catálogo sistémico base está en [`ORIGINAL_FEATURES.md`](ORIGINAL_FEATURES.md).
 >
-> **Dirección visual maestra:** [`../../references/art-direction/base-exterior.png`](../../references/art-direction/base-exterior.png)
-> y [`../../references/art-direction/base-interior-signal-room.png`](../../references/art-direction/base-interior-signal-room.png).
+> **Dirección visual y arquitectónica maestra:**
+> - Exterior: [`../../references/art-direction/base-exterior.png`](../../references/art-direction/base-exterior.png)
+> - Interior Sala de Mando: [`../../references/art-direction/base-interior-signal-room.png`](../../references/art-direction/base-interior-signal-room.png)
+> - Corte 3D (3 niveles): [`../../references/art-direction/base-cutaway-3d.png`](../../references/art-direction/base-cutaway-3d.png)
+> - Plano 2D de flujo: [`../../references/art-direction/base-floorplan-2d.png`](../../references/art-direction/base-floorplan-2d.png)
 
 ## 1. Visión
 
@@ -35,8 +38,8 @@ transformadores, imprimir reportes y entregar tu trabajo.
 | Flujo multi-máquina separado (no todo en un solo PC) | Estilo PBR semi-realista estilizado (*Firewatch* + *Pacific Drive* + *Signalis*) |
 | Energía, breakers, transformadores y servidores | **Snowcat con orugas** para un valle nevado enorme (en vez de ATV) |
 | Estadísticas, dificultad y reglas de partida | **Impresora matricial física** para hashcodes, alertas y reportes |
-| Mapa continuo grande con platos y POIs | Espacios amplios, luz cálida interior y terror con indicios reales (anti-FNAF) |
-| Máquinas físicas con perillas, botones, discos y pantallas | Contenido, historia, señales, entidades, texto y audio 100% originales |
+| Mapa continuo grande con platos y POIs | Espacios amplios, luz cálida interior y terror psicológico con indicios (anti-FNAF) |
+| Máquinas físicas con perillas, botones, discos y pantallas | **Cooperativo online (100% jugable con amigos):** estaciones separadas y espacios amplios para varios operadores |
 
 ## 3. Pilares
 
@@ -86,18 +89,19 @@ La distribución anterior de 22 salas cuadradas (`Alpha Root Base` placeholder) 
 ### 6.2 Distribución interior (espaciosa, sin agobio)
 | Nivel | Zona | Rol y atmósfera |
 |---|---|---|
-| **Planta Alta (Voladizo)** | **Sala de Control de Señales** | Techo alto con vigas y bandejas portacables, gran ventanal panorámico hacia el claro y monte del radar, consolas curvas (Coordenadas, Descargas, Reproducción, Procesado), impresora matricial, mesa cálida de madera sobre alfombra gastada con lámpara de escritorio y desnivel amplio de acceso. |
-| **Planta Alta (Cuerpo interior)** | **Pasillo principal (3 m de ancho)** | Parte desde la derecha de la sala de mando con iluminación tenue y caída progresiva a sombra; ancho y despejado para no resultar claustrofóbico. |
-| **Planta Alta (Alas)** | **Sala de Servidores** | Estancia amplia para racks con LEDs verde/rojo y consola de diagnóstico/hashcodes. |
-| **Planta Alta (Alas)** | **Zona de Descanso / Dormitorio y Cocina** | Espacio amplio y cálido (cama, cafetera, nevera, microondas, mesa) — verdadero refugio personal. |
-| **Conexión vertical** | **Núcleo de escalera / montacargas amplio** | Conecta cómodamente Planta Alta, Planta Baja y Sótano. |
-| **Planta Baja** | **Garaje del Snowcat & Carga** | Estancia grande para aparcar/revisar el snowcat, workbench y recepción de entregas. |
-| **Planta Baja** | **Acceso / Vestíbulo frío** | Transición exterior-interior con taquillas/equipo de campo. |
-| **Sótano** | **Cuarto de Energía y Breaker** | Subsuelo técnico amplio con el cuadro de breakers y generador auxiliar (zona fría/industrial, no laberíntica). |
+| **Planta Alta (Voladizo)** | **Sala de Control de Señales** | Techo alto (≥ 4 m) con vigas y bandejas portacables, gran ventanal panorámico hacia el claro y monte del radar (con visibilidad lateral hacia la terraza del dron), consolas curvas (Coordenadas, Descargas, Reproducción, Procesado), impresora matricial, mesa cálida de madera sobre alfombra gastada y puerta ancha a la derecha hacia el pasillo. |
+| **Planta Alta (Voladizo / Techo Garaje)** | **Terraza de Entregas del Dron** | Terraza exterior plana sobre el garaje con barandilla y plataforma de aterrizaje, accesible desde la planta alta. |
+| **Planta Alta (Cuerpo interior)** | **Pasillo principal (≥ 3,5 m de ancho)** | Recorrido real y amplio (12–16 m) desde la Sala de Mando hacia las alas traseras, con iluminación tenue gradual hacia sombra (transición psicológica sin agobio). |
+| **Planta Alta (Alas)** | **Sala de Servidores (cerrada)** | Estancia amplia cerrada con puerta (y ventanuco al pasillo) para aislar el zumbido de los ventiladores de racks respecto al silencio del pasillo. |
+| **Planta Alta (Alas)** | **Zona de Descanso / Dormitorio, Cocina y Baño** | Rincón cálido y acogedor con puerta propia (literas para cooperativo, cocinita de madera, mesita) + baño adyacente. |
+| **Conexión vertical** | **Núcleo abierto de escaleras (+ hueco para ascensor futuro)** | Escalera amplia abierta con barandilla (permite asomarse antes de bajar) conectando Azotea (parabólica), Planta Alta, Planta Baja y Sótano; previsión de montacargas/ascensor a futuro. |
+| **Planta Baja** | **Garaje del Snowcat & Taller** | Estancia amplia bajo el voladizo para aparcar/reparar el snowcat, workbench y salida directa al claro. |
+| **Planta Baja** | **Vestíbulo de Entrada & Almacén amplio** | Recibidor generoso junto a la entrada peatonal con taquillas y almacén amplio para cajas, repuestos y suministros; zona alternativa exterior de entregas junto al garaje. |
+| **Sótano** | **Cuarto de Energía y Breaker** | Subsuelo técnico amplio y único espacio sin ventanas al exterior; alberga generadores auxiliares y cuadro principal de breakers. |
 
 ### 6.3 Reglas arquitectónicas de la base
-- **Espacio generoso:** pasillos de ≥ 3 m de ancho, techos altos (≥ 3,5–4 m en salas principales), ningún botón ni consola obliga a agacharse o meterse en huecos apretados.
-- **Luz cálida como ancla:** en las zonas de trabajo y vida hay luz tungsteno/ámbar acogedora; la tensión viene de la escala del edificio, los pasillos largos hacia zonas técnicas y el exterior frío visible por los cristales.
+- **Espacio generoso (pensado para 1 o varios jugadores en co-op):** pasillos ≥ 3,5 m de ancho, techos ≥ 3,8–4,2 m en zonas clave, circulación cómoda alrededor de consolas, racks y vehículo.
+- **Luz cálida como ancla:** en las zonas de trabajo y vida hay luz tungsteno/ámbar acogedora; la tensión nace de la escala, el contraste con el pasillo largo/sótano y líneas de visión desde el ventanal elevado y escalera abierta.
 
 ## 7. Sistemas principales
 
@@ -111,7 +115,7 @@ La distribución anterior de 22 salas cuadradas (`Alpha Root Base` placeholder) 
 
 ### 7.2 Transporte y Entregas
 - **Snowcat de orugas:** vehículo físico principal en el garaje; imprescindible para recorrer el valle nevado, cargar cajas/discos o llegar a platos y estructuras lejanas.
-- **Entregas / Dron:** aterrizaje en plataforma del edificio, con posibilidad futura de entregas en puerta exterior u otras zonas del recinto/valle.
+- **Entregas / Dron:** en la tienda se podrá elegir el punto de entrega entre la **terraza exterior sobre el garaje** (cómoda desde planta alta) o la **zona exterior frente/al lado del garaje** (cómoda para cargar directo al snowcat), con posibilidad de eventos o entregas aleatorias en otras zonas del mapa.
 
 ### 7.3 Energía, Servidores, Stats y Eventos
 - **Energía (`PowerSystem`):** 3 transformadores en el valle, breaker de 5 circuitos en sótano, redistribución de carga y apagones reparables.

@@ -95,13 +95,13 @@ func _run() -> void:
 	_check(tired_speed < 5.0, "stamina baja bloquea correr", failures)
 
 	player.stamina = 40.0
-	_reset_player(player, Vector3(0.0, 0.05, 0.0))
+	_reset_player(player, Vector3(9.0, 0.05, 0.0))
 	for i in 30:
 		await physics_frame
 	_check(player.stamina > 40.0, "stamina se recupera al parar", failures)
 
 	player.stamina = 100.0
-	_reset_player(player, Vector3(0.0, 0.05, 0.0))
+	_reset_player(player, Vector3(9.0, 0.05, 0.0))
 	Input.action_press("crouch")
 	for i in 3:
 		await physics_frame
@@ -117,7 +117,7 @@ func _run() -> void:
 	var crouch_speed := await _measure_speed(player, "crouch")
 	_check(crouch_speed < 2.2, "agachado a ~1.5 m/s", failures)
 
-	_reset_player(player, Vector3(0.0, 0.05, 0.0))
+	_reset_player(player, Vector3(9.0, 0.05, 0.0))
 	for i in 5:
 		await physics_frame
 	var jump_start := player.global_position.y
@@ -128,12 +128,12 @@ func _run() -> void:
 		await physics_frame
 	_check(player.global_position.y > jump_start + 0.04, "el jugador salta", failures)
 
-	_reset_player(player, Vector3(25.0, 0.05, 6.0))
+	_reset_player(player, Vector3(14.5, 0.05, 4.0))
 	Input.action_press("move_right")
 	for i in 40:
 		await physics_frame
 	Input.action_release("move_right")
-	_check(player.global_position.x < 26.2, "el jugador no atraviesa la pared", failures)
+	_check(player.global_position.x < 16.2, "el jugador no atraviesa la pared", failures)
 
 	player.stamina = 42.0
 	hud._refresh_vitals()
@@ -157,7 +157,7 @@ func _run() -> void:
 	player.battery = 1.0
 	light.visible = true
 
-	_reset_player(player, Vector3(0.0, 0.05, 6.0))
+	_reset_player(player, Vector3(9.0, 0.05, 2.0))
 	for i in 2:
 		await physics_frame
 
@@ -257,8 +257,8 @@ func _run() -> void:
 
 	# Hito 2: agarrar, rotar, soltar y lanzar.
 	_check(test_item.item == item_def, "el ítem de prueba referencia su ItemDef", failures)
-	_reset_player(player, Vector3(0.0, 0.05, 0.0))
-	_stand_and_aim(player, test_item.interactable, 1.2)
+	_reset_player(player, Vector3(12.0, 0.05, 3.2))
+	_stand_and_aim(player, test_item.interactable, 1.2, 0.05)
 	for i in 3:
 		await physics_frame
 	_check(player.current_interactable == test_item.interactable,
@@ -339,17 +339,15 @@ func _run() -> void:
 	director.finish_current()
 	_check(director.active_event == null, "EventDirector cierra el evento", failures)
 
-	# Hito 3: Alpha Root Base, zonas, props, recorrido y presupuesto.
-	_check(base != null, "Base de Alpha Root presente", failures)
+	# Hito 3 / Prototipo Base Kenoma: zonas, props, recorrido y presupuesto.
+	_check(base != null, "Base Kenoma presente", failures)
 	if base != null:
 		var zones_variant: Variant = base.get("zones")
 		var zones: Dictionary = zones_variant if zones_variant is Dictionary else {}
 		var required_zones := [
-			&"entrance", &"reception", &"utility", &"lobby", &"loading", &"garage",
-			&"break_room", &"signal", &"server_room", &"stairwell",
-			&"basement_hall", &"breaker", &"crematory", &"lockers", &"transformer",
-			&"basement_storage", &"upper_hall", &"dorm", &"bath", &"storage",
-			&"balcony", &"roof_access", &"roof",
+			&"signal", &"drone_terrace", &"upper_hall", &"server_room", &"living", &"bath",
+			&"garage", &"lobby", &"storage_ground", &"stairwell", &"power_room",
+			&"entrance", &"alt_drop_zone", &"roof_access", &"roof",
 		]
 		var missing: Array[String] = []
 		var unlit: Array[String] = []
@@ -361,7 +359,7 @@ func _run() -> void:
 				unlit.append(String(id))
 		_check(missing.is_empty(), "zonas requeridas presentes " + str(missing), failures)
 		_check(unlit.is_empty(), "todas las zonas tienen luz " + str(unlit), failures)
-		_check(int(base.get("room_count")) >= 20, "la base tiene al menos 20 habitaciones", failures)
+		_check(int(base.get("room_count")) >= 11, "la base tiene al menos 11 zonas arquitectónicas", failures)
 
 		_check(get_nodes_in_group("server_placeholder").size() == 30,
 			"30 servidores placeholder", failures)
@@ -378,8 +376,10 @@ func _run() -> void:
 		_check(get_nodes_in_group("radio_tower").size() == 1,
 			"torre de radio presente", failures)
 		_check(get_nodes_in_group("breaker").size() == 1, "breaker presente", failures)
-		_check(get_nodes_in_group("crematory").size() == 1, "crematorio presente", failures)
 		_check(get_nodes_in_group("lockers").size() == 1, "taquillas presentes", failures)
+		_check(get_nodes_in_group("snowcat_placeholder").size() == 1, "snowcat placeholder presente", failures)
+		_check(get_nodes_in_group("printer_placeholder").size() == 1, "impresora matricial placeholder presente", failures)
+		_check(get_nodes_in_group("drone_pad").size() == 1, "plataforma de dron en terraza presente", failures)
 
 		var breaker := base.get_node_or_null("Breaker") as Node3D
 		_check(breaker != null and breaker.global_position.y < -3.0,
@@ -393,12 +393,12 @@ func _run() -> void:
 		_check(base.get_node_or_null("RoofRamp") is StaticBody3D,
 			"rampa al tejado presente", failures)
 
-		# Hito 5.6 Task 5: ventanal y vida en Signal Processing.
+		# Ventanal panorámico en voladizo y detalle de la Sala de Control de Señales.
 		var signal_window := base.get_node_or_null("SignalWindow") as Node3D
 		_check(signal_window != null
-				and float(signal_window.get_meta("width", 0.0)) >= 8.0
-				and absf(signal_window.global_position.z - (-18.0)) < 0.5,
-			"ventanal de señales de al menos 8 m en z=-18", failures)
+				and float(signal_window.get_meta("width", 0.0)) >= 12.0
+				and absf(signal_window.global_position.z - (-24.0)) < 0.5,
+			"ventanal panorámico de al menos 12 m en z=-24", failures)
 		_check(get_nodes_in_group("signal_room_detail").size() >= 6,
 			"detalle de la sala de señales con al menos 6 nodos", failures)
 		_check(get_nodes_in_group("signal_panel").size() == 4,
@@ -409,46 +409,56 @@ func _run() -> void:
 		_check(int(window_budget.get("triangles", 0)) < 150000,
 			"presupuesto del ventanal: menos de 150k triángulos", failures)
 
-		# Recorrido real: pasillo y entrada a Signal Processing.
-		_reset_player(player, Vector3(0.0, 0.05, 0.0))
+		# Recorrido real: pasillo principal y entrada a la Sala de Control de Señales.
+		_reset_player(player, Vector3(-6.0, 4.25, -8.0))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_forward")
 		for i in 70:
 			await physics_frame
 		Input.action_release("move_forward")
-		_check(player.global_position.z < -3.0,
-			"se entra al Signal Processing desde el pasillo", failures)
+		_check(player.global_position.z < -11.0,
+			"se entra a la sala de señales desde el pasillo principal", failures)
 
-		_reset_player(player, Vector3(-24.0, 0.05, 0.0))
+		_reset_player(player, Vector3(-14.0, 4.25, -8.0))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_right")
 		for i in 70:
 			await physics_frame
 		Input.action_release("move_right")
-		_check(player.global_position.x > -20.0, "el pasillo central es recorrible", failures)
+		_check(player.global_position.x > -10.5, "el pasillo principal es recorrible", failures)
 
-		# Rampas: subir a la planta superior y bajar al sótano.
-		_reset_player(player, Vector3(25.0, 0.05, -1.0))
+		# Rampas: subir a la planta alta, bajar al sótano y subir al tejado.
+		_reset_player(player, Vector3(18.0, 0.05, 0.0))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_right")
-		for i in 140:
+		for i in 160:
 			await physics_frame
 		Input.action_release("move_right")
-		_check(player.global_position.y > 3.0,
+		_check(player.global_position.y > 3.5,
 			"la rampa sube a la planta superior (y=%.2f)" % player.global_position.y, failures)
 
-		_reset_player(player, Vector3(25.0, 0.05, 1.0))
+		_reset_player(player, Vector3(18.0, 0.05, -4.0))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_right")
-		for i in 140:
+		for i in 160:
 			await physics_frame
 		Input.action_release("move_right")
-		_check(player.global_position.y < -3.0,
+		_check(player.global_position.y < -3.5,
 			"la rampa baja al sótano (y=%.2f)" % player.global_position.y, failures)
+
+		_reset_player(player, Vector3(28.0, 4.25, 4.0))
+		for i in 2:
+			await physics_frame
+		Input.action_press("move_left")
+		for i in 160:
+			await physics_frame
+		Input.action_release("move_left")
+		_check(player.global_position.y > 7.8,
+			"la rampa sube al tejado (y=%.2f)" % player.global_position.y, failures)
 
 		var budget := _count_budget(main)
 		_check(int(budget.get("triangles", 0)) < 150000,
@@ -559,7 +569,7 @@ func _run() -> void:
 	if panel != null:
 		var switch := panel.get_switch(PowerSystem.Circuit.PLAYING)
 		var enabled_before := power.is_circuit_enabled(PowerSystem.Circuit.PLAYING)
-		_stand_and_aim(player, switch, 1.2, -3.95)
+		_stand_and_aim(player, switch, 1.2, -4.15)
 		for i in 4:
 			await physics_frame
 		_check(player.current_interactable == switch, "el raycast enfoca un breaker", failures)
@@ -633,7 +643,7 @@ func _run() -> void:
 		_check(int(disk.get("value", 0)) > 0, "exportar a disco calcula el valor", failures)
 		var spawned_disk := main.find_child("ExportedDisk0", true, false) as DiskMedia
 		_check(spawned_disk != null and spawned_disk.disk_index == 0
-				and spawned_disk.global_position.distance_to(Vector3(-8.0, 0.95, -12.0)) < 1.0,
+				and spawned_disk.global_position.distance_to(Vector3(-2.5, 5.15, -17.5)) < 1.0,
 			"export_copy crea el disco físico sobre MesaDiscos sin instanciarlo desde el test", failures)
 		var earned := signals.sell_disk(signals.disk_count() - 1)
 		_check(earned == int(disk.get("value", 0)) and signals.credits == earned,
@@ -842,7 +852,7 @@ func _run() -> void:
 				_check(absf(seat.y) < 0.006 and seat.z > 0.02 and seat.z < 0.33,
 					"la perilla se apoya en la cubierta", failures)
 				signals.select_by_id(&"relay_hum")
-				_stand_and_aim(player, knob, 1.1, 0.05)
+				_stand_and_aim(player, knob, 1.1, 4.25)
 				for i in 4:
 					await physics_frame
 				_check(player.current_interactable == knob,
@@ -883,7 +893,7 @@ func _run() -> void:
 
 			# Hito 5.6: mandos reales compartidos, arrastre angular del dial.
 			var dial := downloads.get_knob(0)
-			_stand_and_aim(player, dial, 1.1, 0.05)
+			_stand_and_aim(player, dial, 1.1, 4.25)
 			for i in 4:
 				await physics_frame
 			_check(player.current_interactable == dial,
@@ -981,7 +991,7 @@ func _run() -> void:
 				signals.set_azimuth(relay.azimuth)
 				signals.set_elevation(relay.elevation)
 				coordinates.sync_knobs()
-				_stand_and_aim(player, ping, 1.3, 0.05)
+				_stand_and_aim(player, ping, 1.3, 4.25)
 				for i in 4:
 					await physics_frame
 				_check(player.current_interactable == ping,
@@ -1248,7 +1258,7 @@ func _run() -> void:
 		var terminal := base.get_node_or_null("MainComputer") as Interactable
 		_check(terminal != null, "la terminal física existe", failures)
 		if terminal != null:
-			_stand_and_aim(player, terminal, 1.3, 0.05)
+			_stand_and_aim(player, terminal, 1.3, 4.25)
 			for i in 4:
 				await physics_frame
 			_check(player.current_interactable == terminal,
@@ -1271,7 +1281,7 @@ func _align_signal(system: SignalSystem, def: SignalDef) -> void:
 
 
 func _measure_speed(player: Player, action: String) -> float:
-	_reset_player(player, Vector3(-24.0, 0.05, 0.0))
+	_reset_player(player, Vector3(-14.0, 4.25, -8.0))
 	for i in 2:
 		await physics_frame
 	Input.action_press("move_right")
