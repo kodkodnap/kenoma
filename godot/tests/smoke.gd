@@ -95,13 +95,13 @@ func _run() -> void:
 	_check(tired_speed < 5.0, "stamina baja bloquea correr", failures)
 
 	player.stamina = 40.0
-	_reset_player(player, Vector3(9.0, 0.05, 0.0))
+	_reset_player(player, Vector3(10.5, 0.05, 0.0))
 	for i in 30:
 		await physics_frame
 	_check(player.stamina > 40.0, "stamina se recupera al parar", failures)
 
 	player.stamina = 100.0
-	_reset_player(player, Vector3(9.0, 0.05, 0.0))
+	_reset_player(player, Vector3(10.5, 0.05, 0.0))
 	Input.action_press("crouch")
 	for i in 3:
 		await physics_frame
@@ -117,7 +117,7 @@ func _run() -> void:
 	var crouch_speed := await _measure_speed(player, "crouch")
 	_check(crouch_speed < 2.2, "agachado a ~1.5 m/s", failures)
 
-	_reset_player(player, Vector3(9.0, 0.05, 0.0))
+	_reset_player(player, Vector3(10.5, 0.05, 0.0))
 	for i in 5:
 		await physics_frame
 	var jump_start := player.global_position.y
@@ -128,12 +128,12 @@ func _run() -> void:
 		await physics_frame
 	_check(player.global_position.y > jump_start + 0.04, "el jugador salta", failures)
 
-	_reset_player(player, Vector3(14.5, 0.05, 4.0))
+	_reset_player(player, Vector3(17.5, 0.05, 4.5))
 	Input.action_press("move_right")
 	for i in 40:
 		await physics_frame
 	Input.action_release("move_right")
-	_check(player.global_position.x < 16.2, "el jugador no atraviesa la pared", failures)
+	_check(player.global_position.x < 19.2, "el jugador no atraviesa la pared", failures)
 
 	player.stamina = 42.0
 	hud._refresh_vitals()
@@ -157,7 +157,7 @@ func _run() -> void:
 	player.battery = 1.0
 	light.visible = true
 
-	_reset_player(player, Vector3(9.0, 0.05, 2.0))
+	_reset_player(player, Vector3(10.5, 0.05, 2.0))
 	for i in 2:
 		await physics_frame
 
@@ -257,7 +257,7 @@ func _run() -> void:
 
 	# Hito 2: agarrar, rotar, soltar y lanzar.
 	_check(test_item.item == item_def, "el ítem de prueba referencia su ItemDef", failures)
-	_reset_player(player, Vector3(12.0, 0.05, 3.2))
+	_reset_player(player, Vector3(14.0, 0.05, 3.7))
 	_stand_and_aim(player, test_item.interactable, 1.2, 0.05)
 	for i in 3:
 		await physics_frame
@@ -396,9 +396,9 @@ func _run() -> void:
 		# Ventanal panorámico en voladizo y detalle de la Sala de Control de Señales.
 		var signal_window := base.get_node_or_null("SignalWindow") as Node3D
 		_check(signal_window != null
-				and float(signal_window.get_meta("width", 0.0)) >= 12.0
-				and absf(signal_window.global_position.z - (-24.0)) < 0.5,
-			"ventanal panorámico de al menos 12 m en z=-24", failures)
+				and float(signal_window.get_meta("width", 0.0)) >= 15.0
+				and absf(signal_window.global_position.z - (-29.0)) < 0.5,
+			"ventanal panorámico de al menos 15 m en z=-29", failures)
 		_check(get_nodes_in_group("signal_room_detail").size() >= 6,
 			"detalle de la sala de señales con al menos 6 nodos", failures)
 		_check(get_nodes_in_group("signal_panel").size() == 4,
@@ -410,54 +410,54 @@ func _run() -> void:
 			"presupuesto del ventanal: menos de 150k triángulos", failures)
 
 		# Recorrido real: pasillo principal y entrada a la Sala de Control de Señales.
-		_reset_player(player, Vector3(-6.0, 4.25, -8.0))
+		_reset_player(player, Vector3(-7.5, 4.45, -9.5))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_forward")
 		for i in 70:
 			await physics_frame
 		Input.action_release("move_forward")
-		_check(player.global_position.z < -11.0,
+		_check(player.global_position.z < -13.0,
 			"se entra a la sala de señales desde el pasillo principal", failures)
 
-		_reset_player(player, Vector3(-14.0, 4.25, -8.0))
+		_reset_player(player, Vector3(-17.0, 4.45, -9.5))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_right")
 		for i in 70:
 			await physics_frame
 		Input.action_release("move_right")
-		_check(player.global_position.x > -10.5, "el pasillo principal es recorrible", failures)
+		_check(player.global_position.x > -13.5, "el pasillo principal es recorrible", failures)
 
 		# Rampas: subir a la planta alta, bajar al sótano y subir al tejado.
-		_reset_player(player, Vector3(18.0, 0.05, 0.0))
+		_reset_player(player, Vector3(21.5, 0.05, 0.0))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_right")
-		for i in 160:
+		for i in 200:
 			await physics_frame
 		Input.action_release("move_right")
-		_check(player.global_position.y > 3.5,
+		_check(player.global_position.y > 3.8,
 			"la rampa sube a la planta superior (y=%.2f)" % player.global_position.y, failures)
 
-		_reset_player(player, Vector3(18.0, 0.05, -4.0))
+		_reset_player(player, Vector3(21.5, 0.05, -4.5))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_right")
-		for i in 160:
+		for i in 200:
 			await physics_frame
 		Input.action_release("move_right")
-		_check(player.global_position.y < -3.5,
+		_check(player.global_position.y < -3.8,
 			"la rampa baja al sótano (y=%.2f)" % player.global_position.y, failures)
 
-		_reset_player(player, Vector3(28.0, 4.25, 4.0))
+		_reset_player(player, Vector3(33.5, 4.45, 4.8))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_left")
-		for i in 160:
+		for i in 200:
 			await physics_frame
 		Input.action_release("move_left")
-		_check(player.global_position.y > 7.8,
+		_check(player.global_position.y > 8.2,
 			"la rampa sube al tejado (y=%.2f)" % player.global_position.y, failures)
 
 		var budget := _count_budget(main)
@@ -569,7 +569,7 @@ func _run() -> void:
 	if panel != null:
 		var switch := panel.get_switch(PowerSystem.Circuit.PLAYING)
 		var enabled_before := power.is_circuit_enabled(PowerSystem.Circuit.PLAYING)
-		_stand_and_aim(player, switch, 1.2, -4.15)
+		_stand_and_aim(player, switch, 1.2, -4.35)
 		for i in 4:
 			await physics_frame
 		_check(player.current_interactable == switch, "el raycast enfoca un breaker", failures)
@@ -643,7 +643,7 @@ func _run() -> void:
 		_check(int(disk.get("value", 0)) > 0, "exportar a disco calcula el valor", failures)
 		var spawned_disk := main.find_child("ExportedDisk0", true, false) as DiskMedia
 		_check(spawned_disk != null and spawned_disk.disk_index == 0
-				and spawned_disk.global_position.distance_to(Vector3(-2.5, 5.15, -17.5)) < 1.0,
+				and spawned_disk.global_position.distance_to(Vector3(-2.8, 5.35, -20.5)) < 1.0,
 			"export_copy crea el disco físico sobre MesaDiscos sin instanciarlo desde el test", failures)
 		var earned := signals.sell_disk(signals.disk_count() - 1)
 		_check(earned == int(disk.get("value", 0)) and signals.credits == earned,
@@ -852,7 +852,7 @@ func _run() -> void:
 				_check(absf(seat.y) < 0.006 and seat.z > 0.02 and seat.z < 0.33,
 					"la perilla se apoya en la cubierta", failures)
 				signals.select_by_id(&"relay_hum")
-				_stand_and_aim(player, knob, 1.1, 4.25)
+				_stand_and_aim(player, knob, 1.1, 4.45)
 				for i in 4:
 					await physics_frame
 				_check(player.current_interactable == knob,
@@ -893,7 +893,7 @@ func _run() -> void:
 
 			# Hito 5.6: mandos reales compartidos, arrastre angular del dial.
 			var dial := downloads.get_knob(0)
-			_stand_and_aim(player, dial, 1.1, 4.25)
+			_stand_and_aim(player, dial, 1.1, 4.45)
 			for i in 4:
 				await physics_frame
 			_check(player.current_interactable == dial,
@@ -991,7 +991,7 @@ func _run() -> void:
 				signals.set_azimuth(relay.azimuth)
 				signals.set_elevation(relay.elevation)
 				coordinates.sync_knobs()
-				_stand_and_aim(player, ping, 1.3, 4.25)
+				_stand_and_aim(player, ping, 1.3, 4.45)
 				for i in 4:
 					await physics_frame
 				_check(player.current_interactable == ping,
@@ -1258,7 +1258,7 @@ func _run() -> void:
 		var terminal := base.get_node_or_null("MainComputer") as Interactable
 		_check(terminal != null, "la terminal física existe", failures)
 		if terminal != null:
-			_stand_and_aim(player, terminal, 1.3, 4.25)
+			_stand_and_aim(player, terminal, 1.3, 4.45)
 			for i in 4:
 				await physics_frame
 			_check(player.current_interactable == terminal,
@@ -1281,7 +1281,7 @@ func _align_signal(system: SignalSystem, def: SignalDef) -> void:
 
 
 func _measure_speed(player: Player, action: String) -> float:
-	_reset_player(player, Vector3(-14.0, 4.25, -8.0))
+	_reset_player(player, Vector3(-17.0, 4.45, -9.5))
 	for i in 2:
 		await physics_frame
 	Input.action_press("move_right")

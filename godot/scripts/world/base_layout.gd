@@ -1,122 +1,122 @@
 class_name BaseLayout
 extends RefCounted
-## Plano de la estación Kenoma. Datos puros: sin escena ni geometría.
-## Arquitectura en ladera con ala de mando en voladizo (y=4.2), garaje amplio
-## debajo (y=0.0), sótano técnico (y=-4.2) y núcleo abierto de escaleras.
+## Plano de la estación Kenoma (+20 % más ancho y amplio). Datos puros: sin escena ni geometría.
+## Arquitectura en ladera con ala de mando en voladizo (y=4.4), garaje amplio
+## debajo (y=0.0), sótano técnico (y=-4.4) y núcleo abierto de escaleras.
 
-const WALL_HEIGHT := 4.0
-const LEVEL_HEIGHT := 4.2
-const DOOR_WIDTH := 2.4
-const DOOR_HEIGHT := 2.8
-const SIGNAL_WINDOW_WIDTH := 15.0
+const WALL_HEIGHT := 4.2
+const LEVEL_HEIGHT := 4.4
+const DOOR_WIDTH := 2.8
+const DOOR_HEIGHT := 3.0
+const SIGNAL_WINDOW_WIDTH := 18.0
 
 ## Habitaciones. x/z son la esquina mínima; w/d el tamaño; y la altura del suelo.
 ## Las puertas/ventanas se expresan con side + at (x en muros norte/sur, z en este/oeste).
 const ROOMS := [
-	# --- PLANTA ALTA (y = 4.2): ALA EN VOLADIZO Y CUERPO PRINCIPAL ---
+	# --- PLANTA ALTA (y = 4.4): ALA EN VOLADIZO Y CUERPO PRINCIPAL ---
 	{
 		"id": "signal", "label": "SALA DE CONTROL DE SEÑALES",
-		"x": -16.0, "z": -24.0, "w": 18.0, "d": 14.0, "y": 4.2,
+		"x": -19.0, "z": -29.0, "w": 21.0, "d": 17.0, "y": 4.4,
 		"doors": [
-			{"side": "south", "at": -6.0, "width": 3.2, "height": 3.0},
-			{"side": "east", "at": -12.5, "width": 2.2, "height": 2.8},
+			{"side": "south", "at": -7.5, "width": 3.8, "height": 3.2},
+			{"side": "east", "at": -15.0, "width": 2.6, "height": 3.0},
 		],
 		"windows": [
-			{"side": "north", "at": -7.0, "width": SIGNAL_WINDOW_WIDTH,
-				"bottom": 1.0, "height": 2.6},
-			{"side": "east", "at": -18.0, "width": 5.2,
-				"bottom": 1.05, "height": 2.2},
-			{"side": "west", "at": -17.0, "width": 4.4,
-				"bottom": 1.5, "height": 1.3},
+			{"side": "north", "at": -8.5, "width": SIGNAL_WINDOW_WIDTH,
+				"bottom": 1.0, "height": 2.8},
+			{"side": "east", "at": -21.5, "width": 6.2,
+				"bottom": 1.05, "height": 2.3},
+			{"side": "west", "at": -20.5, "width": 5.4,
+				"bottom": 1.5, "height": 1.4},
 		],
 	},
 	{
 		"id": "drone_terrace", "label": "TERRAZA DEL DRON",
-		"x": 2.0, "z": -22.0, "w": 14.0, "d": 12.0, "y": 4.2,
+		"x": 2.0, "z": -26.5, "w": 17.0, "d": 14.5, "y": 4.4,
 		"doors": [], "walls": false, "ceiling": false,
 	},
 	{
 		"id": "upper_hall", "label": "PASILLO PRINCIPAL",
-		"x": -16.0, "z": -10.0, "w": 32.0, "d": 4.0, "y": 4.2,
+		"x": -19.0, "z": -12.0, "w": 38.0, "d": 5.0, "y": 4.4,
 		"doors": [
-			{"side": "north", "at": -6.0, "width": 3.2, "height": 3.0},
-			{"side": "north", "at": 7.0, "width": 2.4, "height": 2.8},
-			{"side": "south", "at": -10.5, "width": 2.2, "height": 2.8},
-			{"side": "south", "at": 4.0, "width": 2.2, "height": 2.8},
-			{"side": "south", "at": 13.0, "width": 1.8, "height": 2.8},
-			{"side": "east", "at": -8.0, "width": 3.6, "height": 3.4, "open": true},
+			{"side": "north", "at": -7.5, "width": 3.8, "height": 3.2},
+			{"side": "north", "at": 8.0, "width": 2.8, "height": 3.0},
+			{"side": "south", "at": -12.5, "width": 2.6, "height": 3.0},
+			{"side": "south", "at": 5.0, "width": 2.6, "height": 3.0},
+			{"side": "south", "at": 15.5, "width": 2.2, "height": 3.0},
+			{"side": "east", "at": -9.5, "width": 4.4, "height": 3.6, "open": true},
 		],
 		"windows": [
-			{"side": "north", "at": 12.2, "width": 3.6, "bottom": 1.1, "height": 2.0},
-			{"side": "south", "at": -5.5, "width": 2.8, "bottom": 1.45, "height": 1.2},
+			{"side": "north", "at": 14.2, "width": 4.4, "bottom": 1.1, "height": 2.2},
+			{"side": "south", "at": -6.5, "width": 3.4, "bottom": 1.45, "height": 1.3},
 		],
 	},
 	{
 		"id": "server_room", "label": "SALA DE SERVIDORES",
-		"x": -16.0, "z": -6.0, "w": 14.0, "d": 12.0, "y": 4.2,
-		"doors": [{"side": "north", "at": -10.5, "width": 2.2, "height": 2.8}],
-		"windows": [{"side": "north", "at": -5.5, "width": 2.8, "bottom": 1.45, "height": 1.2}],
+		"x": -19.0, "z": -7.0, "w": 17.0, "d": 14.5, "y": 4.4,
+		"doors": [{"side": "north", "at": -12.5, "width": 2.6, "height": 3.0}],
+		"windows": [{"side": "north", "at": -6.5, "width": 3.4, "bottom": 1.45, "height": 1.3}],
 	},
 	{
 		"id": "living", "label": "ZONA DE DESCANSO Y COCINA",
-		"x": -2.0, "z": -6.0, "w": 12.0, "d": 12.0, "y": 4.2,
-		"doors": [{"side": "north", "at": 4.0, "width": 2.2, "height": 2.8}],
+		"x": -2.0, "z": -7.0, "w": 14.0, "d": 14.5, "y": 4.4,
+		"doors": [{"side": "north", "at": 5.0, "width": 2.6, "height": 3.0}],
 	},
 	{
 		"id": "bath", "label": "BAÑO",
-		"x": 10.0, "z": -6.0, "w": 6.0, "d": 12.0, "y": 4.2,
-		"doors": [{"side": "north", "at": 13.0, "width": 1.8, "height": 2.8}],
+		"x": 12.0, "z": -7.0, "w": 7.0, "d": 14.5, "y": 4.4,
+		"doors": [{"side": "north", "at": 15.5, "width": 2.2, "height": 3.0}],
 	},
 
 	# --- PLANTA BAJA (y = 0.0): GARAJE SNOWCAT, VESTÍBULO Y ALMACÉN ---
 	{
 		"id": "garage", "label": "GARAJE DEL SNOWCAT",
-		"x": 2.0, "z": -22.0, "w": 14.0, "d": 16.0, "y": 0.0,
+		"x": 2.0, "z": -26.5, "w": 17.0, "d": 19.5, "y": 0.0,
 		"doors": [
-			{"side": "north", "at": 9.0, "width": 6.4, "height": 3.5},
-			{"side": "east", "at": -15.0, "width": 2.4, "height": 2.8},
-			{"side": "south", "at": 9.0, "width": 2.8, "height": 2.8},
+			{"side": "north", "at": 10.5, "width": 7.6, "height": 3.8},
+			{"side": "east", "at": -18.5, "width": 2.8, "height": 3.0},
+			{"side": "south", "at": 10.5, "width": 3.2, "height": 3.0},
 		],
 		"ceiling": false,
 	},
 	{
 		"id": "lobby", "label": "VESTÍBULO DE ENTRADA",
-		"x": 16.0, "z": -22.0, "w": 10.0, "d": 12.0, "y": 0.0,
+		"x": 19.0, "z": -26.5, "w": 12.0, "d": 14.5, "y": 0.0,
 		"doors": [
-			{"side": "north", "at": 21.0, "width": 3.4, "height": 3.0},
-			{"side": "west", "at": -15.0, "width": 2.4, "height": 2.8},
-			{"side": "east", "at": -16.0, "width": 2.4, "height": 2.8},
-			{"side": "south", "at": 21.0, "width": 6.0, "height": 3.4, "open": true},
+			{"side": "north", "at": 25.0, "width": 4.0, "height": 3.2},
+			{"side": "west", "at": -18.5, "width": 2.8, "height": 3.0},
+			{"side": "east", "at": -19.5, "width": 2.8, "height": 3.0},
+			{"side": "south", "at": 25.0, "width": 7.2, "height": 3.6, "open": true},
 		],
 	},
 	{
 		"id": "storage_ground", "label": "ALMACÉN DE SUMINISTROS",
-		"x": 2.0, "z": -6.0, "w": 14.0, "d": 12.0, "y": 0.0,
+		"x": 2.0, "z": -7.0, "w": 17.0, "d": 14.5, "y": 0.0,
 		"doors": [
-			{"side": "north", "at": 9.0, "width": 2.8, "height": 2.8},
-			{"side": "east", "at": -1.5, "width": 2.6, "height": 2.8},
+			{"side": "north", "at": 10.5, "width": 3.2, "height": 3.0},
+			{"side": "east", "at": -2.0, "width": 3.0, "height": 3.0},
 		],
 		"ceiling": false,
 	},
 	{
 		"id": "stairwell", "label": "ESCALERA CENTRAL",
-		"x": 16.0, "z": -10.0, "w": 14.0, "d": 16.0, "y": 0.0,
+		"x": 19.0, "z": -12.0, "w": 17.0, "d": 19.5, "y": 0.0,
 		"doors": [
-			{"side": "north", "at": 21.0, "width": 6.0, "height": 3.4, "open": true},
-			{"side": "west", "at": -1.5, "width": 2.6, "height": 2.8},
+			{"side": "north", "at": 25.0, "width": 7.2, "height": 3.6, "open": true},
+			{"side": "west", "at": -2.0, "width": 3.0, "height": 3.0},
 		],
 		"windows": [
-			{"side": "east", "at": -2.0, "width": 5.0, "bottom": 1.1, "height": 2.1},
+			{"side": "east", "at": -2.0, "width": 6.0, "bottom": 1.1, "height": 2.2},
 		],
 		"floor": false, "ceiling": false,
 	},
 
-	# --- SÓTANO (y = -4.2): ENERGÍA Y BREAKER (SIN VENTANAS) ---
+	# --- SÓTANO (y = -4.4): ENERGÍA Y BREAKER (SIN VENTANAS) ---
 	{
 		"id": "power_room", "label": "CUARTO DE ENERGÍA Y BREAKER",
-		"x": 2.0, "z": -10.0, "w": 14.0, "d": 16.0, "y": -4.2,
+		"x": 2.0, "z": -12.0, "w": 17.0, "d": 19.5, "y": -4.4,
 		"doors": [
-			{"side": "east", "at": 2.0, "width": 2.8, "height": 3.0},
+			{"side": "east", "at": 2.5, "width": 3.2, "height": 3.2},
 		],
 		"ceiling": false,
 	},
@@ -124,54 +124,54 @@ const ROOMS := [
 
 ## Cajas perimetrales adicionales (cerramiento de escalera en sótano/planta alta y caseta de azotea).
 const EXTRA_WALL_RECTS := [
-	# Pozo de escalera en sótano (y = -4.2); el lado oeste lo aporta power_room con su puerta.
+	# Pozo de escalera en sótano (y = -4.4); el lado oeste lo aporta power_room con su puerta.
 	{
-		"x": 16.0, "z": -10.0, "w": 14.0, "d": 16.0, "y": -4.2,
+		"x": 19.0, "z": -12.0, "w": 17.0, "d": 19.5, "y": -4.4,
 		"sides": ["north", "east", "south"],
 		"doors": [], "windows": [],
 	},
-	# Pozo de escalera en planta alta (y = 4.2); el lado oeste lo cubren upper_hall + bath.
+	# Pozo de escalera en planta alta (y = 4.4); el lado oeste lo cubren upper_hall + bath.
 	{
-		"x": 16.0, "z": -10.0, "w": 14.0, "d": 16.0, "y": 4.2,
+		"x": 19.0, "z": -12.0, "w": 17.0, "d": 19.5, "y": 4.4,
 		"sides": ["north", "east", "south"],
 		"doors": [],
 		"windows": [
-			{"side": "north", "at": 23.0, "width": 5.6, "bottom": 1.1, "height": 2.1},
-			{"side": "east", "at": -2.0, "width": 5.2, "bottom": 1.1, "height": 2.1},
+			{"side": "north", "at": 27.5, "width": 6.8, "bottom": 1.1, "height": 2.2},
+			{"side": "east", "at": -2.0, "width": 6.2, "bottom": 1.1, "height": 2.2},
 		],
 	},
-	# Caseta de salida a la azotea (y = 8.4).
+	# Caseta de salida a la azotea (y = 8.8).
 	{
-		"x": 16.0, "z": 1.5, "w": 14.0, "d": 4.5, "y": 8.4,
-		"wall_height": 3.0,
+		"x": 19.0, "z": 2.0, "w": 17.0, "d": 5.5, "y": 8.8,
+		"wall_height": 3.2,
 		"sides": ["north", "south", "west", "east"],
-		"doors": [{"side": "west", "at": 3.8, "width": 2.4, "height": 2.4}],
-		"windows": [{"side": "north", "at": 23.0, "width": 3.6, "bottom": 1.0, "height": 1.2}],
+		"doors": [{"side": "west", "at": 4.8, "width": 2.8, "height": 2.6}],
+		"windows": [{"side": "north", "at": 27.5, "width": 4.2, "bottom": 1.0, "height": 1.3}],
 	},
 ]
 
 const SPECIAL_ZONES := [
-	{"id": "entrance", "label": "ENTRADA PRINCIPAL", "x": 21.0, "y": 0.0, "z": -25.0},
-	{"id": "alt_drop_zone", "label": "ENTREGA EXTERIOR", "x": 28.0, "y": 0.0, "z": -16.0},
-	{"id": "roof_access", "label": "ACCESO AL TEJADO", "x": 17.5, "y": 8.4, "z": 3.8},
-	{"id": "roof", "label": "TEJADO", "x": 0.0, "y": 8.4, "z": -4.0},
+	{"id": "entrance", "label": "ENTRADA PRINCIPAL", "x": 25.0, "y": 0.0, "z": -30.0},
+	{"id": "alt_drop_zone", "label": "ENTREGA EXTERIOR", "x": 33.5, "y": 0.0, "z": -19.2},
+	{"id": "roof_access", "label": "ACCESO AL TEJADO", "x": 20.8, "y": 8.8, "z": 4.8},
+	{"id": "roof", "label": "TEJADO", "x": 0.0, "y": 8.8, "z": -4.0},
 ]
 
 ## Plataformas de circulación y forjados parciales en el núcleo de escaleras.
 const PLATFORMS := [
-	# Sótano escalera completo (y = -4.2).
-	{"id": "basement_stair_floor", "x": 16.0, "z": -10.0, "w": 14.0, "d": 16.0, "y": -4.2},
+	# Sótano escalera completo (y = -4.4).
+	{"id": "basement_stair_floor", "x": 19.0, "z": -12.0, "w": 17.0, "d": 19.5, "y": -4.4},
 	# Planta baja escalera: galería oeste y antesala norte desde lobby (deja hueco central hacia sótano).
-	{"id": "ground_stair_west", "x": 16.0, "z": -10.0, "w": 3.0, "d": 16.0, "y": 0.0},
-	{"id": "ground_stair_north", "x": 19.0, "z": -10.0, "w": 11.0, "d": 4.0, "y": 0.0},
-	# Planta alta escalera: anillo galería con hueco abierto en el centro (x: 19..27, z: -6..6).
-	{"id": "upper_stair_west", "x": 16.0, "z": -10.0, "w": 3.0, "d": 16.0, "y": 4.2},
-	{"id": "upper_stair_north", "x": 19.0, "z": -10.0, "w": 11.0, "d": 4.0, "y": 4.2},
-	{"id": "upper_stair_east", "x": 27.0, "z": -6.0, "w": 3.0, "d": 12.0, "y": 4.2},
-	# Azotea escalera: desembarco oeste y cubierta norte de escalera (deja hueco para RoofRamp en x:19..27, z:1.5..6).
-	{"id": "roof_stair_west", "x": 16.0, "z": -10.0, "w": 3.0, "d": 16.0, "y": 8.4},
-	{"id": "roof_stair_north", "x": 19.0, "z": -10.0, "w": 11.0, "d": 11.5, "y": 8.4},
-	{"id": "roof_stair_east", "x": 27.0, "z": 1.5, "w": 3.0, "d": 4.5, "y": 8.4},
+	{"id": "ground_stair_west", "x": 19.0, "z": -12.0, "w": 3.5, "d": 19.5, "y": 0.0},
+	{"id": "ground_stair_north", "x": 22.5, "z": -12.0, "w": 13.5, "d": 5.0, "y": 0.0},
+	# Planta alta escalera: anillo galería con hueco abierto en el centro (x: 22.5..32.5, z: -7.0..7.5).
+	{"id": "upper_stair_west", "x": 19.0, "z": -12.0, "w": 3.5, "d": 19.5, "y": 4.4},
+	{"id": "upper_stair_north", "x": 22.5, "z": -12.0, "w": 13.5, "d": 5.0, "y": 4.4},
+	{"id": "upper_stair_east", "x": 32.5, "z": -7.0, "w": 3.5, "d": 14.5, "y": 4.4},
+	# Azotea escalera: desembarco oeste y cubierta norte (deja hueco para RoofRamp en x:22.5..32.5, z:2..7.5).
+	{"id": "roof_stair_west", "x": 19.0, "z": -12.0, "w": 3.5, "d": 19.5, "y": 8.8},
+	{"id": "roof_stair_north", "x": 22.5, "z": -12.0, "w": 13.5, "d": 14.0, "y": 8.8},
+	{"id": "roof_stair_east", "x": 32.5, "z": 2.0, "w": 3.5, "d": 5.5, "y": 8.8},
 ]
 
 

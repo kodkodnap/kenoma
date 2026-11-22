@@ -32,10 +32,10 @@ light_energy = 0.65
 [node name="Base" parent="." unique_id=2141765265 instance=ExtResource("7_base")]
 
 [node name="TestMachine" parent="." unique_id=1402054352 instance=ExtResource("4_machine")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7, 0, 3.5)
 
 [node name="Player" parent="." unique_id=1544661026 instance=ExtResource("1_player")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 4.25, -12.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 4.45, -15.2)
 
 [node name="PerfOverlay" parent="." unique_id=1148315694 instance=ExtResource("2_overlay")]
 

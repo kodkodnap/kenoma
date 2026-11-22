@@ -1,9 +1,10 @@
 class_name BaseBuilder
 extends Node3D
-## Construye la estación Kenoma con primitivas y MultiMesh por lotes.
+## Construye la estación Kenoma (+20 % ampliada) con primitivas y MultiMesh por lotes.
 ## La geometría estática se agrupa por material; las colisiones viven en un solo StaticBody3D.
 
 const WALL_HEIGHT := BaseLayout.WALL_HEIGHT
+const LEVEL_HEIGHT := BaseLayout.LEVEL_HEIGHT
 const WALL_THICKNESS := 0.25
 const FLOOR_THICKNESS := 0.2
 
@@ -112,51 +113,51 @@ func _build_rooms() -> void:
 			_box("ceiling", Vector3(cx, y + WALL_HEIGHT + 0.1, cz), Vector3(w, FLOOR_THICKNESS, d))
 
 		var light_color := NEUTRAL_LIGHT
-		var light_energy := 1.5
+		var light_energy := 1.55
 		var light_range := maxf(w, d)
 		match id:
 			&"signal":
 				light_color = WARM_LIGHT
-				light_energy = 1.9
-				light_range = 18.0
+				light_energy = 2.0
+				light_range = 22.0
 			&"living":
 				light_color = WARM_LIGHT
-				light_energy = 1.8
-				light_range = 14.0
+				light_energy = 1.9
+				light_range = 16.0
 			&"garage":
 				light_color = WARM_LIGHT
-				light_energy = 1.7
-				light_range = 16.0
+				light_energy = 1.85
+				light_range = 19.0
 			&"upper_hall":
 				light_color = DIM_HALL_LIGHT
-				light_energy = 0.85
-				light_range = 14.0
+				light_energy = 0.9
+				light_range = 16.0
 			&"server_room":
 				light_color = COOL_LIGHT
-				light_energy = 1.05
-				light_range = 14.0
+				light_energy = 1.15
+				light_range = 17.0
 			&"power_room":
 				light_color = COOL_LIGHT
-				light_energy = 1.25
-				light_range = 15.0
+				light_energy = 1.3
+				light_range = 18.0
 			&"drone_terrace":
 				light_color = WARM_LIGHT
-				light_energy = 1.15
-				light_range = 14.0
+				light_energy = 1.2
+				light_range = 16.0
 		_zone(id, String(room["label"]), Vector3(cx, y + 0.15, cz), light_range, light_color, light_energy)
 
-		# Luces complementarias en estancias largas.
+		# Luces complementarias en estancias grandes.
 		if id == &"signal":
-			_zone_light(Vector3(-12.5, 7.6, -19.5), 11.0, 1.4, WARM_LIGHT)
-			_zone_light(Vector3(-1.5, 7.6, -19.5), 11.0, 1.4, WARM_LIGHT)
-			_zone_light(Vector3(-12.5, 7.6, -13.0), 10.0, 1.1, WARM_LIGHT)
+			_zone_light(Vector3(-15.0, 8.0, -24.0), 13.0, 1.5, WARM_LIGHT)
+			_zone_light(Vector3(-2.0, 8.0, -24.0), 13.0, 1.5, WARM_LIGHT)
+			_zone_light(Vector3(-15.0, 8.0, -16.0), 12.0, 1.2, WARM_LIGHT)
 		elif id == &"upper_hall":
-			_zone_light(Vector3(-11.0, 7.7, -8.0), 10.0, 1.0, DIM_HALL_LIGHT)
-			_zone_light(Vector3(11.0, 7.7, -8.0), 9.0, 0.75, COOL_LIGHT)
+			_zone_light(Vector3(-13.5, 8.1, -9.5), 11.0, 1.0, DIM_HALL_LIGHT)
+			_zone_light(Vector3(13.5, 8.1, -9.5), 10.0, 0.8, COOL_LIGHT)
 		elif id == &"stairwell":
-			_zone_light(Vector3(23.0, 3.2, -3.0), 14.0, 1.2, NEUTRAL_LIGHT)
-			_zone_light(Vector3(23.0, 7.4, -2.0), 14.0, 1.25, NEUTRAL_LIGHT)
-			_zone_light(Vector3(23.0, -1.2, -2.0), 14.0, 1.0, COOL_LIGHT)
+			_zone_light(Vector3(27.5, 3.4, -3.0), 16.0, 1.25, NEUTRAL_LIGHT)
+			_zone_light(Vector3(27.5, 7.8, -2.0), 16.0, 1.3, NEUTRAL_LIGHT)
+			_zone_light(Vector3(27.5, -1.2, -2.0), 16.0, 1.05, COOL_LIGHT)
 
 
 func _build_special_zones() -> void:
@@ -166,7 +167,7 @@ func _build_special_zones() -> void:
 		var color := COOL_LIGHT if id == &"roof" else WARM_LIGHT
 		_zone(id, String(zone["label"]),
 			Vector3(float(zone["x"]), float(zone["y"]) + 0.15, float(zone["z"])),
-			14.0, color, 1.2)
+			15.0, color, 1.25)
 
 
 func _build_walls() -> void:
@@ -296,60 +297,58 @@ func _build_platforms() -> void:
 			Vector3(w, FLOOR_THICKNESS, d))
 
 	# Barandillas del pozo abierto de escalera en Planta Baja (y = 0.0).
-	_railing_x(19.0, 30.0, -6.0, 0.0)
-	_railing_z(19.0, -6.0, -5.2, 0.0)
-	_railing_z(19.0, -2.8, -1.2, 0.0)
-	_railing_z(19.0, 1.2, 6.0, 0.0)
+	_railing_x(22.5, 36.0, -7.0, 0.0)
+	_railing_z(22.5, -7.0, -5.9, 0.0)
+	_railing_z(22.5, -3.1, -1.4, 0.0)
+	_railing_z(22.5, 1.4, 7.4, 0.0)
 
-	# Barandillas del pozo abierto de escalera en Planta Alta (y = 4.2).
-	_railing_x(19.0, 27.0, -6.0, 4.2)
-	_railing_z(19.0, -6.0, 6.0, 4.2)
-	_railing_z(27.0, -6.0, -1.2, 4.2)
-	_railing_z(27.0, 1.2, 2.8, 4.2)
-	_railing_x(19.0, 27.0, 5.9, 4.2)
+	# Barandillas del pozo abierto de escalera en Planta Alta (y = 4.4).
+	_railing_x(22.5, 32.5, -7.0, 4.4)
+	_railing_z(22.5, -7.0, 7.4, 4.4)
+	_railing_z(32.5, -7.0, -1.4, 4.4)
+	_railing_z(32.5, 1.4, 3.4, 4.4)
+	_railing_z(32.5, 6.2, 7.4, 4.4)
+	_railing_x(22.5, 32.5, 7.4, 4.4)
 
-	# Barandillas en el desembarco superior de RoofRamp dentro de la caseta (y = 8.4).
-	_railing_x(19.0, 27.0, 1.55, 8.4)
-	_railing_z(19.0, 1.55, 2.8, 8.4)
-	_railing_z(19.0, 5.2, 5.9, 8.4)
+	# Barandillas en el desembarco superior de RoofRamp dentro de la caseta (y = 8.8).
+	_railing_x(22.5, 32.5, 2.05, 8.8)
+	_railing_z(22.5, 2.05, 3.4, 8.8)
+	_railing_z(22.5, 6.2, 7.4, 8.8)
 
-	# Cubierta de la caseta de azotea (y = 11.4).
-	_box("roof", Vector3(23.0, 11.5, 3.75), Vector3(14.3, 0.22, 4.8))
+	# Cubierta de la caseta de azotea (y = 12.0).
+	_box("roof", Vector3(27.5, 12.1, 4.75), Vector3(17.3, 0.22, 5.8))
 
 
 ## Estructura exterior del voladizo (vigas y pilares de acero/hormigón hasta y = 0).
 func _build_cantilever_structure() -> void:
-	# Cenefa gruesa de hormigón bajo el borde del voladizo (y = 3.75..4.2).
-	_box("wall", Vector3(-7.0, 3.85, -24.1), Vector3(18.4, 0.55, 0.45))
-	_box("wall", Vector3(-16.1, 3.85, -17.0), Vector3(0.45, 0.55, 14.4))
-	_box("wall", Vector3(2.1, 3.85, -17.0), Vector3(0.45, 0.55, 14.4))
+	# Cenefa gruesa de hormigón bajo el borde del voladizo (y = 4.05..4.4).
+	_box("wall", Vector3(-8.5, 4.05, -29.1), Vector3(21.4, 0.58, 0.45))
+	_box("wall", Vector3(-19.1, 4.05, -20.5), Vector3(0.45, 0.58, 17.4))
+	_box("wall", Vector3(2.1, 4.05, -20.5), Vector3(0.45, 0.58, 17.4))
 
-	# Tres pilares delanteros con zapata cónica y puntal inclinado como en el arte maestro.
-	for px in [-14.2, -7.0, 0.2]:
-		_box("wall", Vector3(px, 0.55, -22.2), Vector3(1.5, 1.1, 1.5))
-		_box("dark_metal", Vector3(px, 2.3, -22.2), Vector3(0.65, 3.4, 0.65))
-		# Puntal diagonal de acero desde la zapata hacia el voladizo exterior.
-		_box("dark_metal", Vector3(px, 2.3, -22.8), Vector3(0.45, 3.7, 0.45),
+	# Tres pilares delanteros con zapata cónica y puntal inclinado hacia el voladizo.
+	for px in [-16.8, -8.5, -0.2]:
+		_box("wall", Vector3(px, 0.6, -26.8), Vector3(1.7, 1.2, 1.7))
+		_box("dark_metal", Vector3(px, 2.45, -26.8), Vector3(0.75, 3.55, 0.75))
+		_box("dark_metal", Vector3(px, 2.45, -27.5), Vector3(0.5, 3.9, 0.5),
 			Basis(Vector3.RIGHT, 0.28))
 
 	# Pilares traseros de apoyo cerca del arranque del voladizo.
-	for px in [-14.2, -1.2]:
-		_box("wall", Vector3(px, 0.45, -12.0), Vector3(1.3, 0.9, 1.3))
-		_box("dark_metal", Vector3(px, 2.2, -12.0), Vector3(0.55, 3.5, 0.55))
+	for px in [-16.8, -1.4]:
+		_box("wall", Vector3(px, 0.5, -14.2), Vector3(1.5, 1.0, 1.5))
+		_box("dark_metal", Vector3(px, 2.35, -14.2), Vector3(0.65, 3.65, 0.65))
 
-	# Focos cálidos bajo el voladizo para iluminar el suelo frente al garaje.
-	for lx in [-11.0, -3.5]:
-		_box("light", Vector3(lx, 3.88, -21.5), Vector3(0.7, 0.1, 0.3), Basis.IDENTITY, false)
-		_zone_light(Vector3(lx, 3.6, -21.5), 11.0, 1.15, WARM_LIGHT)
+	# Focos cálidos bajo el voladizo iluminando el claro frontal y entrada del garaje.
+	for lx in [-13.0, -4.0]:
+		_box("light", Vector3(lx, 4.08, -26.0), Vector3(0.85, 0.1, 0.32), Basis.IDENTITY, false)
+		_zone_light(Vector3(lx, 3.8, -26.0), 13.0, 1.25, WARM_LIGHT)
 
 
 func _build_stairs() -> void:
-	# Rampa baja a sótano (y=0.0 -> -4.2), carril norte z = -4.0.
-	_make_ramp("StairsDown", Vector3(19.0, 0.0, -4.0), Vector3(27.0, -4.2, -4.0), 2.2)
-	# Rampa sube a planta alta (y=0.0 -> +4.2), carril centro z = 0.0.
-	_make_ramp("StairsUp", Vector3(19.0, 0.0, 0.0), Vector3(27.0, 4.2, 0.0), 2.2)
-	# Rampa sube al tejado (y=4.2 -> +8.4), carril sur z = +4.0.
-	_make_ramp("RoofRamp", Vector3(27.0, 4.2, 4.0), Vector3(19.0, 8.4, 4.0), 2.2)
+	# Rampas anchas (2.6 m) con desarrollo de 10 m (~23.7 grados).
+	_make_ramp("StairsDown", Vector3(22.5, 0.0, -4.5), Vector3(32.5, -4.4, -4.5), 2.6)
+	_make_ramp("StairsUp", Vector3(22.5, 0.0, 0.0), Vector3(32.5, 4.4, 0.0), 2.6)
+	_make_ramp("RoofRamp", Vector3(32.5, 4.4, 4.8), Vector3(22.5, 8.8, 4.8), 2.6)
 
 
 func _make_ramp(ramp_name: String, from: Vector3, to: Vector3, width: float) -> void:
@@ -389,7 +388,7 @@ func _railing_x(x0: float, x1: float, z: float, y: float) -> void:
 	var cx := (x0 + x1) * 0.5
 	_box("metal", Vector3(cx, y + 0.95, z), Vector3(length, 0.06, 0.06))
 	_box("metal", Vector3(cx, y + 0.5, z), Vector3(length, 0.04, 0.04), Basis.IDENTITY, false)
-	var posts := maxi(2, int(ceil(length / 2.5)) + 1)
+	var posts := maxi(2, int(ceil(length / 2.8)) + 1)
 	for i in posts:
 		var px := lerpf(x0, x1, float(i) / float(posts - 1))
 		_box("dark_metal", Vector3(px, y + 0.48, z), Vector3(0.06, 0.96, 0.06), Basis.IDENTITY, false)
@@ -402,268 +401,258 @@ func _railing_z(x: float, z0: float, z1: float, y: float) -> void:
 	var cz := (z0 + z1) * 0.5
 	_box("metal", Vector3(x, y + 0.95, cz), Vector3(0.06, 0.06, length))
 	_box("metal", Vector3(x, y + 0.5, cz), Vector3(0.04, 0.04, length), Basis.IDENTITY, false)
-	var posts := maxi(2, int(ceil(length / 2.5)) + 1)
+	var posts := maxi(2, int(ceil(length / 2.8)) + 1)
 	for i in posts:
 		var pz := lerpf(z0, z1, float(i) / float(posts - 1))
 		_box("dark_metal", Vector3(x, y + 0.48, pz), Vector3(0.06, 0.96, 0.06), Basis.IDENTITY, false)
 
 
 func _build_roof() -> void:
-	# Petos y barandillas perimetrales de azotea (y = 8.4) y cubierta de vestíbulo (y = 4.2).
-	_railing_x(-16.0, 2.0, -24.0, 8.4)
-	_railing_z(-16.0, -24.0, 6.0, 8.4)
-	_railing_z(2.0, -24.0, -10.0, 8.4)
-	_railing_x(2.0, 16.0, -10.0, 8.4)
-	_railing_x(-16.0, 16.0, 6.0, 8.4)
-	_railing_x(16.0, 30.0, -10.0, 8.4)
-	_railing_z(30.0, -10.0, 1.5, 8.4)
+	# Petos y barandillas perimetrales de azotea (y = 8.8) y cubierta de vestíbulo (y = 4.4).
+	_railing_x(-19.0, 2.0, -29.0, 8.8)
+	_railing_z(-19.0, -29.0, 7.5, 8.8)
+	_railing_z(2.0, -29.0, -12.0, 8.8)
+	_railing_x(2.0, 19.0, -12.0, 8.8)
+	_railing_x(-19.0, 19.0, 7.5, 8.8)
+	_railing_x(19.0, 36.0, -12.0, 8.8)
+	_railing_z(36.0, -12.0, 2.0, 8.8)
 
-	# Barandilla perimetral de la Terraza del Dron (y = 4.2, sobre el garaje).
-	_railing_x(2.2, 15.9, -21.9, 4.2)
-	_railing_z(15.9, -21.9, -10.1, 4.2)
-	_railing_x(16.0, 25.9, -21.9, 4.2)
-	_railing_z(25.9, -21.9, -10.1, 4.2)
+	# Barandilla perimetral de la Terraza del Dron (y = 4.4, sobre el garaje).
+	_railing_x(2.2, 18.9, -26.4, 4.4)
+	_railing_z(18.9, -26.4, -12.1, 4.4)
+	_railing_x(19.0, 30.9, -26.4, 4.4)
+	_railing_z(30.9, -26.4, -12.1, 4.4)
 
-	# Plataforma H del dron sobre Terraza del Dron (x=9.0, z=-16.0, y=4.2).
-	_box("dark_metal", Vector3(9.0, 4.22, -16.0), Vector3(7.0, 0.04, 7.0), Basis.IDENTITY, false)
-	_box("warning", Vector3(9.0, 4.245, -19.2), Vector3(6.6, 0.02, 0.25), Basis.IDENTITY, false)
-	_box("warning", Vector3(9.0, 4.245, -12.8), Vector3(6.6, 0.02, 0.25), Basis.IDENTITY, false)
-	_box("warning", Vector3(5.8, 4.245, -16.0), Vector3(0.25, 0.02, 6.6), Basis.IDENTITY, false)
-	_box("warning", Vector3(12.2, 4.245, -16.0), Vector3(0.25, 0.02, 6.6), Basis.IDENTITY, false)
-	_box("paper", Vector3(7.8, 4.245, -16.0), Vector3(0.35, 0.02, 2.8), Basis.IDENTITY, false)
-	_box("paper", Vector3(10.2, 4.245, -16.0), Vector3(0.35, 0.02, 2.8), Basis.IDENTITY, false)
-	_box("paper", Vector3(9.0, 4.245, -16.0), Vector3(2.2, 0.02, 0.35), Basis.IDENTITY, false)
+	# Plataforma H del dron sobre Terraza del Dron (x=10.5, z=-19.2, y=4.4).
+	_box("dark_metal", Vector3(10.5, 4.42, -19.2), Vector3(8.2, 0.04, 8.2), Basis.IDENTITY, false)
+	_box("warning", Vector3(10.5, 4.445, -23.0), Vector3(7.8, 0.02, 0.28), Basis.IDENTITY, false)
+	_box("warning", Vector3(10.5, 4.445, -15.4), Vector3(7.8, 0.02, 0.28), Basis.IDENTITY, false)
+	_box("warning", Vector3(6.7, 4.445, -19.2), Vector3(0.28, 0.02, 7.8), Basis.IDENTITY, false)
+	_box("warning", Vector3(14.3, 4.445, -19.2), Vector3(0.28, 0.02, 7.8), Basis.IDENTITY, false)
+	_box("paper", Vector3(9.1, 4.445, -19.2), Vector3(0.4, 0.02, 3.2), Basis.IDENTITY, false)
+	_box("paper", Vector3(11.9, 4.445, -19.2), Vector3(0.4, 0.02, 3.2), Basis.IDENTITY, false)
+	_box("paper", Vector3(10.5, 4.445, -19.2), Vector3(2.6, 0.02, 0.4), Basis.IDENTITY, false)
 	var pad := Marker3D.new()
 	pad.name = "DronePad"
-	pad.position = Vector3(9.0, 4.25, -16.0)
+	pad.position = Vector3(10.5, 4.45, -19.2)
 	pad.add_to_group("drone_pad")
 	add_child(pad)
 
 	# Parabólica icónica sobre el techo de Sala de Señales + mástil y respiraderos.
-	_box("metal", Vector3(-6.0, 8.6, -15.5), Vector3(1.8, 0.4, 1.8))
-	_box("dark_metal", Vector3(-6.0, 9.7, -15.5), Vector3(0.55, 2.0, 0.55))
-	_dish_transforms.append(Transform3D(Basis(Vector3.RIGHT, -0.55).scaled(Vector3(1.45, 1.45, 1.45)),
-		Vector3(-6.0, 10.9, -15.5)))
+	_box("metal", Vector3(-7.5, 9.0, -18.5), Vector3(2.0, 0.45, 2.0))
+	_box("dark_metal", Vector3(-7.5, 10.15, -18.5), Vector3(0.6, 2.1, 0.6))
+	_dish_transforms.append(Transform3D(Basis(Vector3.RIGHT, -0.55).scaled(Vector3(1.6, 1.6, 1.6)),
+		Vector3(-7.5, 11.4, -18.5)))
 
-	_box("dark_metal", Vector3(-11.0, 8.95, -2.0), Vector3(3.2, 1.1, 2.2))
-	_box("dark_metal", Vector3(4.0, 8.9, 1.0), Vector3(2.4, 1.0, 2.4))
-	_box("metal", Vector3(11.0, 11.4, -4.0), Vector3(0.3, 6.0, 0.3))
-	_box("led_red", Vector3(11.0, 14.5, -4.0), Vector3(0.25, 0.25, 0.25), Basis.IDENTITY, false)
-	_note("AZOTEA / PARABÓLICA PRINCIPAL", Vector3(-6.0, 11.8, -15.5))
+	_box("dark_metal", Vector3(-13.0, 9.35, -2.0), Vector3(3.6, 1.1, 2.6))
+	_box("dark_metal", Vector3(5.0, 9.3, 1.0), Vector3(2.8, 1.0, 2.8))
+	_box("metal", Vector3(13.0, 11.8, -4.0), Vector3(0.32, 6.0, 0.32))
+	_box("led_red", Vector3(13.0, 14.9, -4.0), Vector3(0.28, 0.28, 0.28), Basis.IDENTITY, false)
+	_note("AZOTEA / PARABÓLICA PRINCIPAL", Vector3(-7.5, 12.2, -18.5))
 
 
 func _build_props() -> void:
 	# --- PLANTA BAJA: GARAJE DEL SNOWCAT ---
-	_build_snowcat_placeholder(Vector3(9.0, 0.0, -14.2))
-	# Dintel enrollable del portón y bolardos amarillos exteriores.
-	_box("dark_metal", Vector3(9.0, 3.65, -22.0), Vector3(6.4, 0.35, 0.32))
-	_box("warning", Vector3(5.3, 0.65, -22.4), Vector3(0.26, 1.3, 0.26))
-	_box("warning", Vector3(12.7, 0.65, -22.4), Vector3(0.26, 1.3, 0.26))
-	_box("light", Vector3(9.0, 3.85, -22.25), Vector3(1.2, 0.16, 0.16), Basis.IDENTITY, false)
-	_zone_light(Vector3(9.0, 3.7, -23.5), 14.0, 1.6, WARM_LIGHT)
+	_build_snowcat_placeholder(Vector3(10.5, 0.0, -16.8))
+	_box("dark_metal", Vector3(10.5, 3.95, -26.5), Vector3(7.6, 0.35, 0.32))
+	_box("warning", Vector3(6.2, 0.65, -26.9), Vector3(0.28, 1.3, 0.28))
+	_box("warning", Vector3(14.8, 0.65, -26.9), Vector3(0.28, 1.3, 0.28))
+	_box("light", Vector3(10.5, 4.05, -26.75), Vector3(1.4, 0.16, 0.16), Basis.IDENTITY, false)
+	_zone_light(Vector3(10.5, 3.85, -28.0), 16.0, 1.7, WARM_LIGHT)
 	# Banco de trabajo y herramientas en muro oeste del garaje.
-	_box("wood", Vector3(3.0, 0.5, -13.0), Vector3(1.2, 1.0, 4.4))
-	_box("dark_metal", Vector3(2.25, 1.75, -13.0), Vector3(0.1, 1.1, 3.8))
-	_box("metal", Vector3(3.2, 1.0, -8.0), Vector3(1.4, 2.0, 2.4))
-	_note("GARAJE SNOWCAT", Vector3(9.0, 3.2, -21.7))
+	_box("wood", Vector3(3.1, 0.5, -16.0), Vector3(1.4, 1.0, 5.2))
+	_box("dark_metal", Vector3(2.25, 1.85, -16.0), Vector3(0.1, 1.2, 4.4))
+	_box("metal", Vector3(3.3, 1.05, -9.5), Vector3(1.6, 2.1, 2.8))
+	_note("GARAJE SNOWCAT", Vector3(10.5, 3.4, -26.2))
 
 	# --- PLANTA BAJA: VESTÍBULO DE ENTRADA ---
-	_box("light", Vector3(21.0, 3.35, -22.25), Vector3(0.9, 0.16, 0.16), Basis.IDENTITY, false)
-	_zone_light(Vector3(21.0, 3.2, -23.4), 12.0, 1.5, WARM_LIGHT)
-	_box("wood", Vector3(17.5, 0.42, -19.5), Vector3(2.6, 0.84, 0.7))
+	_box("light", Vector3(25.0, 3.55, -26.75), Vector3(1.0, 0.16, 0.16), Basis.IDENTITY, false)
+	_zone_light(Vector3(25.0, 3.4, -28.0), 13.0, 1.6, WARM_LIGHT)
+	_box("wood", Vector3(21.0, 0.44, -23.5), Vector3(3.2, 0.88, 0.8))
 	for i in 4:
-		_box("metal", Vector3(25.3, 1.05, -20.5 + float(i) * 1.1), Vector3(0.7, 2.1, 0.9))
+		_box("metal", Vector3(30.2, 1.05, -24.5 + float(i) * 1.25), Vector3(0.75, 2.1, 1.0))
 	var lockers := Node3D.new()
 	lockers.name = "Lockers"
-	lockers.position = Vector3(25.3, 1.05, -18.8)
+	lockers.position = Vector3(30.2, 1.05, -22.5)
 	lockers.add_to_group("lockers")
 	add_child(lockers)
-	_box("dark_metal", Vector3(16.25, 1.8, -11.5), Vector3(0.1, 1.3, 2.2))
+	_box("dark_metal", Vector3(19.25, 1.9, -13.8), Vector3(0.1, 1.4, 2.6))
 	_note("DIRECTORIO\nPLANTA 0: GARAJE / ALMACÉN\nPLANTA 1: CONTROL / SERVIDORES / DESCANSO\nSÓTANO: BREAKER",
-		Vector3(16.4, 2.0, -11.5))
+		Vector3(19.4, 2.1, -13.8))
 
 	# --- PLANTA BAJA: ALMACÉN DE SUMINISTROS ---
-	# Centro (x=6..12, z=0..5) libre para TestMachine y TestItem durante el prototipado.
+	# Centro/Sur (x=7..15, z=0..6) libre para TestMachine y TestItem durante el prototipado.
 	for i in 4:
-		_box("metal", Vector3(2.8, 1.15, -4.0 + float(i) * 2.5), Vector3(0.9, 2.3, 2.0))
+		_box("metal", Vector3(2.9, 1.2, -4.8 + float(i) * 3.0), Vector3(1.0, 2.4, 2.4))
 	for i in 3:
-		_box("wood", Vector3(8.5 + float(i) * 1.4, 0.5, -4.8), Vector3(1.0, 1.0, 1.0))
-	_box("wood", Vector3(9.2, 1.5, -4.8), Vector3(0.9, 1.0, 0.9))
-	_note("ALMACÉN DE SUMINISTROS", Vector3(9.0, 2.6, -5.7))
+		_box("wood", Vector3(9.5 + float(i) * 1.6, 0.55, -5.6), Vector3(1.1, 1.1, 1.1))
+	_box("wood", Vector3(10.3, 1.65, -5.6), Vector3(1.0, 1.1, 1.0))
+	_note("ALMACÉN DE SUMINISTROS", Vector3(10.5, 2.8, -6.7))
 
-	# --- PLANTA ALTA: PASILLO PRINCIPAL (32 m x 4 m) ---
-	for bx in [-12.0, -4.0, 4.0, 12.0]:
-		_box("dark_metal", Vector3(bx, 7.95, -8.0), Vector3(7.6, 0.14, 0.65), Basis.IDENTITY, false)
-	_box("metal", Vector3(-15.3, 5.3, -8.0), Vector3(0.8, 2.2, 2.8))
-	_note("← SERVIDORES (AISLADOS)\nDESCANSO / COCINA / BAÑO →", Vector3(0.0, 6.7, -6.2))
+	# --- PLANTA ALTA: PASILLO PRINCIPAL (38 m x 5 m) ---
+	for bx in [-14.0, -4.5, 5.0, 14.5]:
+		_box("dark_metal", Vector3(bx, 8.35, -9.5), Vector3(9.0, 0.14, 0.75), Basis.IDENTITY, false)
+	_box("metal", Vector3(-18.2, 5.5, -9.5), Vector3(0.9, 2.2, 3.4))
+	_note("← SERVIDORES (AISLADOS)\nDESCANSO / COCINA / BAÑO →", Vector3(0.0, 7.0, -7.2))
 
-	# --- PLANTA ALTA: SALA DE SERVIDORES (CERRADA, 30 RACKS EN 2 PASILLOS AMPLIOS) ---
+	# --- PLANTA ALTA: SALA DE SERVIDORES (CERRADA, 30 RACKS EN PASILLOS AMPLIOS) ---
 	for row in 6:
 		for col in 5:
-			var sx := -14.0 + float(col) * 2.5
-			var sz := -3.8 + float(row) * 1.75
-			_box("dark_metal", Vector3(sx, 5.3, sz), Vector3(1.15, 2.2, 0.65))
-			_box("led_green", Vector3(sx - 0.3, 6.05, sz + 0.34), Vector3(0.08, 0.08, 0.03), Basis.IDENTITY, false)
-			_box("led_red", Vector3(sx + 0.3, 6.05, sz + 0.34), Vector3(0.08, 0.08, 0.03), Basis.IDENTITY, false)
+			var sx := -16.5 + float(col) * 3.0
+			var sz := -4.2 + float(row) * 2.1
+			_box("dark_metal", Vector3(sx, 5.5, sz), Vector3(1.25, 2.25, 0.72))
+			_box("led_green", Vector3(sx - 0.35, 6.25, sz + 0.38), Vector3(0.08, 0.08, 0.03), Basis.IDENTITY, false)
+			_box("led_red", Vector3(sx + 0.35, 6.25, sz + 0.38), Vector3(0.08, 0.08, 0.03), Basis.IDENTITY, false)
 			var marker := Marker3D.new()
 			marker.name = "Server_%02d_%02d" % [row, col]
-			marker.position = Vector3(sx, 4.2, sz)
+			marker.position = Vector3(sx, 4.4, sz)
 			marker.add_to_group("server_placeholder")
 			add_child(marker)
-	_box("metal", Vector3(-9.0, 5.2, 5.3), Vector3(4.0, 2.0, 0.9))
-	_note("CLÚSTER DE SERVIDORES\n30 NODOS", Vector3(-9.0, 7.0, -5.7))
+	_box("metal", Vector3(-10.5, 5.4, 6.7), Vector3(4.8, 2.0, 1.0))
+	_note("CLÚSTER DE SERVIDORES\n30 NODOS", Vector3(-10.5, 7.2, -6.7))
 
 	# --- PLANTA ALTA: ZONA DE DESCANSO & COCINA (REFUGIO CÁLIDO) ---
-	_box("rug", Vector3(3.5, 4.22, -0.5), Vector3(5.0, 0.03, 4.0), Basis.IDENTITY, false)
-	# Literas para cooperativo (muro oeste).
-	_box("wood", Vector3(-0.7, 4.65, -2.2), Vector3(1.8, 0.5, 3.2))
-	_box("paper", Vector3(-0.7, 4.96, -2.2), Vector3(1.6, 0.14, 3.0))
-	_box("wood", Vector3(-0.7, 5.85, -2.2), Vector3(1.8, 0.4, 3.2))
-	_box("paper", Vector3(-0.7, 6.12, -2.2), Vector3(1.6, 0.14, 3.0))
-	# Mesa cálida con lámpara y sillas.
-	_box("wood", Vector3(3.5, 4.95, -0.5), Vector3(2.2, 0.1, 1.4))
-	for lx in [-0.9, 0.9]:
-		for lz in [-0.55, 0.55]:
-			_box("dark_metal", Vector3(3.5 + lx, 4.55, -0.5 + lz), Vector3(0.08, 0.7, 0.08))
-	for cx in [2.1, 4.9]:
-		_box("wood", Vector3(cx, 4.65, -0.5), Vector3(0.6, 0.85, 0.6))
-	_box("light", Vector3(3.5, 5.2, -0.5), Vector3(0.28, 0.22, 0.28), Basis.IDENTITY, false)
-	# Encimera de cocina en L, fogones y nevera.
-	_box("wood", Vector3(7.0, 4.7, 4.9), Vector3(5.0, 1.0, 1.2))
-	_box("wood", Vector3(9.0, 4.7, 1.5), Vector3(1.2, 1.0, 5.6))
-	_box("metal", Vector3(0.2, 5.25, 4.9), Vector3(1.2, 2.1, 1.1))
-	_note("DESCANSO / COCINA", Vector3(4.0, 6.9, 5.6))
+	_box("rug", Vector3(4.5, 4.42, 0.0), Vector3(6.0, 0.03, 4.8), Basis.IDENTITY, false)
+	_box("wood", Vector3(-0.6, 4.85, -2.5), Vector3(2.0, 0.5, 3.6))
+	_box("paper", Vector3(-0.6, 5.16, -2.5), Vector3(1.8, 0.14, 3.3))
+	_box("wood", Vector3(-0.6, 6.05, -2.5), Vector3(2.0, 0.4, 3.6))
+	_box("paper", Vector3(-0.6, 6.32, -2.5), Vector3(1.8, 0.14, 3.3))
+	_box("wood", Vector3(4.5, 5.15, 0.0), Vector3(2.6, 0.12, 1.6))
+	for lx in [-1.05, 1.05]:
+		for lz in [-0.62, 0.62]:
+			_box("dark_metal", Vector3(4.5 + lx, 4.75, 0.0 + lz), Vector3(0.09, 0.72, 0.09))
+	for cx in [2.9, 6.1]:
+		_box("wood", Vector3(cx, 4.85, 0.0), Vector3(0.68, 0.88, 0.68))
+	_box("light", Vector3(4.5, 5.4, 0.0), Vector3(0.32, 0.24, 0.32), Basis.IDENTITY, false)
+	_box("wood", Vector3(8.5, 4.9, 6.2), Vector3(6.0, 1.0, 1.3))
+	_box("wood", Vector3(10.8, 4.9, 2.0), Vector3(1.3, 1.0, 6.6))
+	_box("metal", Vector3(0.2, 5.45, 6.2), Vector3(1.3, 2.1, 1.2))
+	_note("DESCANSO / COCINA", Vector3(5.0, 7.1, 7.0))
 
 	# --- PLANTA ALTA: BAÑO ---
-	_box("paper", Vector3(14.8, 4.65, 4.5), Vector3(1.2, 0.9, 1.2))
-	_box("paper", Vector3(11.4, 4.7, 4.8), Vector3(1.4, 1.0, 1.0))
-	_box("paper", Vector3(14.4, 4.55, -1.5), Vector3(2.2, 0.7, 2.4))
-	_box("glass", Vector3(13.2, 5.4, -1.5), Vector3(0.05, 2.2, 2.4), Basis.IDENTITY, false)
+	_box("paper", Vector3(17.6, 4.85, 5.8), Vector3(1.3, 0.9, 1.3))
+	_box("paper", Vector3(13.6, 4.9, 6.1), Vector3(1.6, 1.0, 1.1))
+	_box("paper", Vector3(17.1, 4.75, -1.8), Vector3(2.6, 0.7, 2.8))
+	_box("glass", Vector3(15.7, 5.6, -1.8), Vector3(0.05, 2.3, 2.8), Basis.IDENTITY, false)
 
 	# --- SÓTANO: CUARTO DE ENERGÍA Y BREAKER ---
-	# Cuadro de breaker en muro norte (z = -10.0), mirando hacia +Z.
-	_box("dark_metal", Vector3(9.0, -2.75, -9.55), Vector3(3.0, 2.0, 0.35))
+	# Cuadro de breaker en muro norte (z = -12.0), mirando hacia +Z.
+	_box("dark_metal", Vector3(10.5, -2.95, -11.55), Vector3(3.4, 2.1, 0.35))
 	for i in 5:
-		_box("warning", Vector3(7.8 + float(i) * 0.6, -3.25, -9.25), Vector3(0.26, 0.14, 0.12))
-	_box("warning", Vector3(9.0, -1.65, -9.45), Vector3(1.6, 0.25, 0.1))
+		_box("warning", Vector3(9.3 + float(i) * 0.6, -3.45, -11.25), Vector3(0.26, 0.14, 0.12))
+	_box("warning", Vector3(10.5, -1.8, -11.45), Vector3(1.8, 0.25, 0.1))
 	var breaker := Node3D.new()
 	breaker.name = "Breaker"
-	breaker.position = Vector3(9.0, -3.7, -9.45)
+	breaker.position = Vector3(10.5, -3.9, -11.45)
 	breaker.add_to_group("breaker")
 	add_child(breaker)
-	_note("BREAKER PRINCIPAL\nNO REARMAR CON CARGA", Vector3(9.0, -1.2, -9.4))
+	_note("BREAKER PRINCIPAL\nNO REARMAR CON CARGA", Vector3(10.5, -1.3, -11.4))
 
 	# Dos generadores diésel grandes al oeste del sótano.
-	for gz in [-3.5, 2.2]:
-		_box("dark_metal", Vector3(5.0, -3.2, gz), Vector3(3.2, 2.0, 1.8))
-		_box("warning", Vector3(5.0, -4.15, gz), Vector3(3.6, 0.08, 2.2))
-		_box("metal", Vector3(4.0, -1.7, gz), Vector3(0.35, 1.2, 0.35))
+	for gz in [-4.5, 2.5]:
+		_box("dark_metal", Vector3(5.8, -3.4, gz), Vector3(3.6, 2.1, 2.0))
+		_box("warning", Vector3(5.8, -4.35, gz), Vector3(4.0, 0.08, 2.4))
+		_box("metal", Vector3(4.6, -1.85, gz), Vector3(0.38, 1.3, 0.38))
 
-	# Armarios interiores de control de transformadores en muro sur (z = 5.3).
+	# Armarios interiores de control de transformadores en muro sur (z = 6.7).
 	for i in 3:
-		_box("dark_metal", Vector3(5.5 + float(i) * 3.5, -2.8, 5.3), Vector3(2.2, 2.4, 0.8))
-		_box("screen", Vector3(5.5 + float(i) * 3.5, -2.45, 4.85), Vector3(1.0, 0.5, 0.04), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(6.2 + float(i) * 4.2, -3.0, 6.7), Vector3(2.4, 2.5, 0.85))
+		_box("screen", Vector3(6.2 + float(i) * 4.2, -2.65, 6.22), Vector3(1.1, 0.55, 0.04), Basis.IDENTITY, false)
 
 	# Depósito de combustible.
-	_box("metal", Vector3(13.8, -3.1, -6.5), Vector3(2.0, 2.2, 3.2))
+	_box("metal", Vector3(16.2, -3.3, -7.5), Vector3(2.4, 2.3, 3.8))
 
 
 func _build_snowcat_placeholder(pos: Vector3) -> void:
-	# Orientado hacia -Z (morro mirando al portón del garaje).
 	var marker := Marker3D.new()
 	marker.name = "SnowcatPlaceholder"
 	marker.position = pos
 	marker.add_to_group("snowcat_placeholder")
 	add_child(marker)
-	# Orugas izquierda y derecha.
-	for sx in [-1.25, 1.25]:
-		_box("dark_metal", pos + Vector3(sx, 0.45, 0.0), Vector3(0.65, 0.9, 4.8))
-	# Chasis y plataforma trasera de carga.
-	_box("dark_metal", pos + Vector3(0.0, 0.95, 0.0), Vector3(2.1, 0.45, 4.5))
-	_box("metal", pos + Vector3(0.0, 1.45, 1.35), Vector3(2.3, 0.65, 2.1))
-	# Cabina delantera cálida con parabrisas.
-	_box("snowcat", pos + Vector3(0.0, 1.85, -0.75), Vector3(2.2, 1.55, 2.1))
-	_box("glass", pos + Vector3(0.0, 2.1, -1.82), Vector3(1.9, 0.75, 0.06), Basis.IDENTITY, false)
-	# Pala quitanieves frontal.
-	_box("warning", pos + Vector3(0.0, 0.45, -2.85), Vector3(3.1, 0.85, 0.35))
-	# Faros delanteros encendidos.
-	_box("light", pos + Vector3(-0.75, 1.25, -1.85), Vector3(0.28, 0.2, 0.08), Basis.IDENTITY, false)
-	_box("light", pos + Vector3(0.75, 1.25, -1.85), Vector3(0.28, 0.2, 0.08), Basis.IDENTITY, false)
+	for sx in [-1.35, 1.35]:
+		_box("dark_metal", pos + Vector3(sx, 0.48, 0.0), Vector3(0.72, 0.96, 5.2))
+	_box("dark_metal", pos + Vector3(0.0, 1.0, 0.0), Vector3(2.3, 0.48, 4.9))
+	_box("metal", pos + Vector3(0.0, 1.52, 1.45), Vector3(2.5, 0.7, 2.3))
+	_box("snowcat", pos + Vector3(0.0, 1.95, -0.85), Vector3(2.4, 1.65, 2.3))
+	_box("glass", pos + Vector3(0.0, 2.2, -2.02), Vector3(2.05, 0.8, 0.06), Basis.IDENTITY, false)
+	_box("warning", pos + Vector3(0.0, 0.48, -3.1), Vector3(3.4, 0.9, 0.38))
+	_box("light", pos + Vector3(-0.82, 1.3, -2.05), Vector3(0.3, 0.22, 0.08), Basis.IDENTITY, false)
+	_box("light", pos + Vector3(0.82, 1.3, -2.05), Vector3(0.3, 0.22, 0.08), Basis.IDENTITY, false)
 
 
-## Detalle de Sala de Control de Señales (y = 4.2): ventanal en voladizo,
-## bancada curva de 4 estaciones, impresora matricial, mesa cálida y vistas exteriores.
+## Detalle de Sala de Control de Señales (y = 4.4): ventanal panorámico en voladizo,
+## bancada de 4 estaciones, impresora matricial, mesa cálida central y vistas exteriores.
 func _build_signal_room() -> void:
-	var window := _signal_detail("SignalWindow", Vector3(-7.0, 6.5, -24.0))
+	var window := _signal_detail("SignalWindow", Vector3(-8.5, 6.8, -29.0))
 	window.set_meta("width", BaseLayout.SIGNAL_WINDOW_WIDTH)
 
-	# Parteluces inclinados del ventanal panorámico de 3 paños.
-	for mx in [-11.5, -2.5]:
-		_box("dark_metal", Vector3(mx, 6.5, -23.92), Vector3(0.16, 2.6, 0.22), Basis.IDENTITY, false)
+	# Parteluces del ventanal panorámico de 3 paños.
+	for mx in [-14.0, -3.0]:
+		_box("dark_metal", Vector3(mx, 6.8, -28.92), Vector3(0.18, 2.8, 0.24), Basis.IDENTITY, false)
 
-	# Vigas estructurales de hormigón y bandejas portacables vistas en techo (y = 7.95).
-	for bz in [-21.0, -17.5, -14.0]:
-		_box("wall", Vector3(-7.0, 8.0, bz), Vector3(17.6, 0.32, 0.45), Basis.IDENTITY, false)
-	for cx in [-11.5, -2.5]:
-		_box("dark_metal", Vector3(cx, 7.75, -17.0), Vector3(0.75, 0.14, 13.0), Basis.IDENTITY, false)
-		_box("light", Vector3(cx, 7.7, -19.0), Vector3(0.2, 0.08, 2.4), Basis.IDENTITY, false)
-		_box("light", Vector3(cx, 7.7, -14.5), Vector3(0.2, 0.08, 2.4), Basis.IDENTITY, false)
+	# Vigas estructurales de hormigón y bandejas portacables vistas en techo (y = 8.1..8.5).
+	for bz in [-25.0, -21.0, -17.0]:
+		_box("wall", Vector3(-8.5, 8.35, bz), Vector3(20.6, 0.34, 0.48), Basis.IDENTITY, false)
+	for cx in [-13.5, -3.5]:
+		_box("dark_metal", Vector3(cx, 8.1, -20.5), Vector3(0.85, 0.14, 15.6), Basis.IDENTITY, false)
+		_box("light", Vector3(cx, 8.05, -23.0), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
+		_box("light", Vector3(cx, 8.05, -17.5), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
 
-	# Bancada de 4 máquinas físicas frente al ventanal panorámico (y = 4.2 -> marcadores en 5.45).
-	_add_panel(-13.0, 4.2, -22.2, 0)  # CoordinatesPanel
-	_add_panel(-9.2, 4.2, -22.9, 1)   # DownloadsPanel
-	_add_panel(-5.0, 4.2, -22.9, 2)   # Playback + SellDock
-	_add_panel(-1.2, 4.2, -22.2, 3)   # ProcessingPanel
+	# Bancada de 4 máquinas físicas frente al ventanal panorámico (y = 4.4 -> marcadores en 5.65).
+	_add_panel(-15.5, 4.4, -27.2, 0)  # CoordinatesPanel
+	_add_panel(-10.8, 4.4, -27.9, 1)  # DownloadsPanel
+	_add_panel(-5.8, 4.4, -27.9, 2)   # Playback + SellDock
+	_add_panel(-1.2, 4.4, -27.2, 3)   # ProcessingPanel
 
 	# Consola física provisional de Reproducción (Panel 3).
-	_box("dark_metal", Vector3(-5.0, 4.8, -22.9), Vector3(2.2, 1.2, 0.72))
-	_box("screen", Vector3(-5.3, 5.25, -22.52), Vector3(1.1, 0.55, 0.04), Basis.IDENTITY, false)
-	_box("metal", Vector3(-3.85, 4.95, -22.65), Vector3(0.45, 0.35, 0.45), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-5.8, 5.0, -27.9), Vector3(2.4, 1.2, 0.78))
+	_box("screen", Vector3(-6.1, 5.45, -27.49), Vector3(1.2, 0.58, 0.04), Basis.IDENTITY, false)
+	_box("metal", Vector3(-4.65, 5.15, -27.65), Vector3(0.48, 0.36, 0.48), Basis.IDENTITY, false)
 
 	# Estación de terminal de gestión (MainComputer) en flanco oeste.
-	_box("dark_metal", Vector3(-13.5, 4.7, -15.0), Vector3(2.1, 1.0, 1.1))
-	_box("dark_metal", Vector3(-13.5, 5.55, -15.25), Vector3(1.2, 0.75, 0.5))
-	_box("screen", Vector3(-13.5, 5.55, -14.98), Vector3(0.9, 0.52, 0.04), Basis.IDENTITY, false)
-	_signal_detail("MainComputerMarker", Vector3(-13.5, 5.45, -15.0))
+	_box("dark_metal", Vector3(-16.0, 4.9, -18.5), Vector3(2.2, 1.0, 1.2))
+	_box("dark_metal", Vector3(-16.0, 5.75, -18.78), Vector3(1.3, 0.78, 0.52))
+	_box("screen", Vector3(-16.0, 5.75, -18.49), Vector3(0.96, 0.54, 0.04), Basis.IDENTITY, false)
+	_signal_detail("MainComputerMarker", Vector3(-16.0, 5.65, -18.5))
 
 	# Mesa cálida central con alfombra gastada, lámpara de bronce y mapas.
-	_signal_detail("TarimaBaja", Vector3(-7.0, 4.22, -16.8))
-	_box("rug", Vector3(-7.0, 4.215, -16.8), Vector3(6.8, 0.03, 4.4), Basis.IDENTITY, false)
-	_box("wood", Vector3(-7.0, 4.98, -16.8), Vector3(3.4, 0.12, 1.6))
-	for lx in [-1.4, 1.4]:
-		for lz in [-0.6, 0.6]:
-			_box("dark_metal", Vector3(-7.0 + lx, 4.58, -16.8 + lz), Vector3(0.1, 0.76, 0.1))
-	_box("paper", Vector3(-7.1, 5.05, -16.75), Vector3(1.3, 0.02, 0.9), Basis(Vector3.UP, 0.12), false)
-	_box("dark_metal", Vector3(-8.2, 5.28, -16.4), Vector3(0.18, 0.48, 0.18), Basis.IDENTITY, false)
-	_box("light", Vector3(-8.2, 5.54, -16.4), Vector3(0.32, 0.18, 0.32), Basis.IDENTITY, false)
-	_zone_light(Vector3(-8.2, 5.65, -16.4), 7.5, 1.5, WARM_LIGHT)
-	for cx in [-8.0, -6.0]:
-		_box("wood", Vector3(cx, 4.65, -15.4), Vector3(0.65, 0.88, 0.65))
+	_signal_detail("TarimaBaja", Vector3(-8.5, 4.42, -20.0))
+	_box("rug", Vector3(-8.5, 4.415, -20.0), Vector3(7.8, 0.03, 5.0), Basis.IDENTITY, false)
+	_box("wood", Vector3(-8.5, 5.18, -20.0), Vector3(4.0, 0.12, 1.8))
+	for lx in [-1.65, 1.65]:
+		for lz in [-0.7, 0.7]:
+			_box("dark_metal", Vector3(-8.5 + lx, 4.78, -20.0 + lz), Vector3(0.1, 0.76, 0.1))
+	_box("paper", Vector3(-8.6, 5.25, -19.95), Vector3(1.5, 0.02, 1.0), Basis(Vector3.UP, 0.12), false)
+	_box("dark_metal", Vector3(-9.9, 5.48, -19.55), Vector3(0.18, 0.48, 0.18), Basis.IDENTITY, false)
+	_box("light", Vector3(-9.9, 5.74, -19.55), Vector3(0.34, 0.18, 0.34), Basis.IDENTITY, false)
+	_zone_light(Vector3(-9.9, 5.85, -19.55), 8.5, 1.6, WARM_LIGHT)
+	for cx in [-9.6, -7.4]:
+		_box("wood", Vector3(cx, 4.85, -18.4), Vector3(0.7, 0.9, 0.7))
 
-	# Mesa de discos junto a Procesado (MesaDiscos: superficie en y=5.0 -> disco en 5.15).
-	_signal_detail("MesaDiscos", Vector3(-2.5, 5.0, -17.5))
-	_box("wood", Vector3(-2.5, 4.98, -17.5), Vector3(2.2, 0.12, 1.1))
-	for dx in [-0.95, 0.95]:
-		for dz in [-0.42, 0.42]:
-			_box("dark_metal", Vector3(-2.5 + dx, 4.58, -17.5 + dz), Vector3(0.09, 0.76, 0.09))
+	# Mesa de discos junto a Procesado (MesaDiscos: superficie en y=5.2 -> disco en 5.35).
+	_signal_detail("MesaDiscos", Vector3(-2.8, 5.2, -20.5))
+	_box("wood", Vector3(-2.8, 5.18, -20.5), Vector3(2.4, 0.12, 1.2))
+	for dx in [-1.05, 1.05]:
+		for dz in [-0.46, 0.46]:
+			_box("dark_metal", Vector3(-2.8 + dx, 4.78, -20.5 + dz), Vector3(0.09, 0.76, 0.09))
 	for i in 3:
-		_box("metal", Vector3(-3.1 + float(i) * 0.6, 5.06, -17.5),
-			Vector3(0.42, 0.03, 0.42), Basis.IDENTITY, false)
+		_box("metal", Vector3(-3.4 + float(i) * 0.65, 5.26, -20.5),
+			Vector3(0.44, 0.03, 0.44), Basis.IDENTITY, false)
 
-	# Impresora matricial física sobre mueble propio en el lado este junto a la terraza.
-	_signal_detail("PrinterPlaceholder", Vector3(1.0, 5.0, -14.8))
-	_box("metal", Vector3(1.0, 4.6, -14.8), Vector3(1.1, 0.8, 0.9))
-	_box("paper", Vector3(1.0, 5.22, -14.8), Vector3(0.75, 0.38, 0.6))
-	_box("paper", Vector3(0.62, 5.02, -14.8), Vector3(0.32, 0.03, 0.48), Basis(Vector3.BACK, 0.35), false)
-	_box("led_green", Vector3(0.65, 5.38, -14.52), Vector3(0.06, 0.06, 0.04), Basis.IDENTITY, false)
-	_note("IMPRESORA MATRICIAL", Vector3(0.95, 5.85, -14.8))
+	# Impresora matricial física en el lado este junto a la puerta de terraza.
+	_signal_detail("PrinterPlaceholder", Vector3(0.9, 5.2, -17.5))
+	_box("metal", Vector3(0.9, 4.8, -17.5), Vector3(1.2, 0.8, 1.0))
+	_box("paper", Vector3(0.9, 5.42, -17.5), Vector3(0.8, 0.4, 0.65))
+	_box("paper", Vector3(0.5, 5.22, -17.5), Vector3(0.34, 0.03, 0.52), Basis(Vector3.BACK, 0.35), false)
+	_box("led_green", Vector3(0.52, 5.58, -17.2), Vector3(0.06, 0.06, 0.04), Basis.IDENTITY, false)
+	_note("IMPRESORA MATRICIAL", Vector3(0.85, 6.05, -17.5))
 
-	# Tablones de notas y armarios en muro sur (z = -10.35).
-	_box("wood", Vector3(-11.5, 6.2, -10.22), Vector3(2.4, 1.3, 0.08), Basis.IDENTITY, false)
-	_box("paper", Vector3(-11.8, 6.3, -10.17), Vector3(0.6, 0.5, 0.02), Basis.IDENTITY, false)
-	_box("paper", Vector3(-10.9, 6.1, -10.17), Vector3(0.55, 0.7, 0.02), Basis.IDENTITY, false)
-	_box("dark_metal", Vector3(-1.2, 5.3, -10.45), Vector3(3.4, 2.2, 0.7))
-	_signal_detail("RadarPared", Vector3(-15.7, 6.2, -12.0))
+	# Tablones de notas y armarios en muro sur (z = -12.35).
+	_box("wood", Vector3(-13.8, 6.4, -12.22), Vector3(2.8, 1.4, 0.08), Basis.IDENTITY, false)
+	_box("paper", Vector3(-14.2, 6.5, -12.17), Vector3(0.7, 0.55, 0.02), Basis.IDENTITY, false)
+	_box("paper", Vector3(-13.1, 6.3, -12.17), Vector3(0.65, 0.75, 0.02), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-1.8, 5.5, -12.45), Vector3(4.0, 2.2, 0.75))
+	_signal_detail("RadarPared", Vector3(-18.7, 6.4, -14.2))
 
 
 func _signal_detail(detail_name: String, pos: Vector3) -> Marker3D:
@@ -684,56 +673,54 @@ func _add_panel(px: float, floor_y: float, pz: float, index: int) -> void:
 
 
 func _build_exterior() -> void:
-	# Explanada de hormigón exterior (bajo el voladizo, acceso al garaje, vestíbulo y entrega alt.).
-	_box("floor", Vector3(2.0, -0.1, -26.5), Vector3(36.0, 0.2, 9.0))
-	_box("floor", Vector3(-7.0, -0.1, -16.0), Vector3(18.0, 0.2, 12.0))
-	_box("floor", Vector3(28.0, -0.1, -16.0), Vector3(4.0, 0.2, 12.0))
-	_box("warning", Vector3(28.0, 0.015, -16.0), Vector3(3.2, 0.02, 4.4), Basis.IDENTITY, false)
+	# Explanada de hormigón exterior (bajo voladizo, garaje, vestíbulo y entrega alt.).
+	_box("floor", Vector3(8.5, -0.09, -31.75), Vector3(59.0, 0.2, 10.5))
+	_box("floor", Vector3(-8.5, -0.09, -19.25), Vector3(21.0, 0.2, 14.5))
+	_box("floor", Vector3(33.5, -0.09, -19.25), Vector3(5.0, 0.2, 14.5))
+	_box("warning", Vector3(33.5, 0.025, -19.25), Vector3(3.8, 0.02, 5.2), Basis.IDENTITY, false)
 
-	# Suelo de nieve continuo en anillo de 1,4 km alrededor del edificio (sin hueco bajo voladizo).
-	# Huella cerrada del edificio: x:[2..30], z:[-22..6].
-	_box("snow", Vector3(0.0, -0.2, -361.0), Vector3(1400.0, 0.4, 678.0))
-	_box("snow", Vector3(0.0, -0.2, 353.0), Vector3(1400.0, 0.4, 694.0))
-	_box("snow", Vector3(-349.0, -0.2, -8.0), Vector3(702.0, 0.4, 28.0))
-	_box("snow", Vector3(365.0, -0.2, -8.0), Vector3(670.0, 0.4, 28.0))
+	# Suelo de nieve continuo en anillo de 1,4 km alrededor de la huella cerrada del edificio [2..36] x [-26.5..7.5].
+	_box("snow", Vector3(0.0, -0.2, -363.25), Vector3(1400.0, 0.4, 673.5))
+	_box("snow", Vector3(0.0, -0.2, 353.75), Vector3(1400.0, 0.4, 692.5))
+	_box("snow", Vector3(-349.0, -0.2, -9.5), Vector3(702.0, 0.4, 34.0))
+	_box("snow", Vector3(368.0, -0.2, -9.5), Vector3(664.0, 0.4, 34.0))
 
 	# Ladera rocosa y nevada abrazando la parte trasera y flanco oeste de la estación.
-	_box("rock", Vector3(7.0, 2.2, 13.0), Vector3(58.0, 4.8, 13.0))
-	_box("snow", Vector3(7.0, 4.7, 14.0), Vector3(58.0, 0.5, 11.0))
-	_box("rock", Vector3(7.0, 6.2, 23.0), Vector3(64.0, 7.6, 14.0))
-	_box("snow", Vector3(7.0, 10.1, 24.0), Vector3(64.0, 0.6, 12.0))
-	_box("rock", Vector3(-24.0, 2.0, 1.0), Vector3(14.0, 4.4, 16.0))
-	_box("snow", Vector3(-24.0, 4.3, 1.0), Vector3(14.0, 0.5, 16.0))
+	_box("rock", Vector3(8.5, 2.3, 15.0), Vector3(68.0, 5.0, 15.0))
+	_box("snow", Vector3(8.5, 4.9, 16.0), Vector3(68.0, 0.5, 13.0))
+	_box("rock", Vector3(8.5, 6.5, 26.5), Vector3(74.0, 8.0, 16.0))
+	_box("snow", Vector3(8.5, 10.6, 27.5), Vector3(74.0, 0.6, 14.0))
+	_box("rock", Vector3(-28.0, 2.1, 1.5), Vector3(16.0, 4.6, 18.0))
+	_box("snow", Vector3(-28.0, 4.5, 1.5), Vector3(16.0, 0.5, 18.0))
 
-	# Camino apisonado desde el garaje hacia el claro norte (-Z) y postes de luz de madera.
+	# Postes de luz de madera siguiendo la pista hacia el claro norte (-Z).
 	for i in 5:
-		var pz := -35.0 - float(i) * 18.0
-		var px := 9.0 + float(i) * 7.5
+		var pz := -42.0 - float(i) * 19.0
+		var px := 10.5 + float(i) * 8.0
 		_box("wood", Vector3(px, 3.2, pz), Vector3(0.28, 6.4, 0.28))
 		_box("wood", Vector3(px, 6.0, pz), Vector3(1.8, 0.2, 0.2))
 		_box("dark_metal", Vector3(px, 5.75, pz), Vector3(0.32, 0.45, 0.32), Basis.IDENTITY, false)
 
-	# Bosque de pinos en el borde del claro (batcheado en Batch_pine/wood, 0 draws extra).
+	# Bosque de pinos en el borde del claro.
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 198304
-	for i in 48:
-		var angle := TAU * float(i) / 48.0 + rng.randf_range(-0.04, 0.04)
-		# Mantener la parte trasera detrás de la ladera más alejada y el claro frontal despejado.
-		var radius := rng.randf_range(46.0, 115.0)
+	for i in 52:
+		var angle := TAU * float(i) / 52.0 + rng.randf_range(-0.04, 0.04)
+		var radius := rng.randf_range(54.0, 125.0)
 		var tx := cos(angle) * radius
-		var tz := -18.0 + sin(angle) * radius
-		if absf(tx - 9.0) < 12.0 and tz > -55.0 and tz < -15.0:
+		var tz := -22.0 + sin(angle) * radius
+		if absf(tx - 10.5) < 14.0 and tz > -64.0 and tz < -18.0:
 			continue
-		if tx > -28.0 and tx < 38.0 and tz > -28.0 and tz < 32.0:
+		if tx > -32.0 and tx < 45.0 and tz > -36.0 and tz < 36.0:
 			continue
-		var h := rng.randf_range(7.0, 13.0)
+		var h := rng.randf_range(7.0, 13.5)
 		_box("wood", Vector3(tx, h * 0.18, tz), Vector3(0.45, h * 0.36, 0.45))
 		_box("pine", Vector3(tx, h * 0.45, tz), Vector3(3.4, h * 0.32, 3.4), Basis.IDENTITY, false)
 		_box("pine", Vector3(tx, h * 0.68, tz), Vector3(2.4, h * 0.28, 2.4), Basis.IDENTITY, false)
 		_box("snow", Vector3(tx, h * 0.88, tz), Vector3(1.2, h * 0.16, 1.2), Basis.IDENTITY, false)
 
-	# Pico lejano al norte con domo radar y baliza roja visible desde el ventanal de Señales.
-	var peak_pos := Vector3(45.0, 0.0, -185.0)
+	# Pico lejano al norte con domo radar y baliza roja visible desde el ventanal.
+	var peak_pos := Vector3(48.0, 0.0, -195.0)
 	_box("rock", peak_pos + Vector3(0.0, 14.0, 0.0), Vector3(72.0, 28.0, 56.0), Basis(Vector3.UP, 0.22), false)
 	_box("snow", peak_pos + Vector3(0.0, 28.0, 0.0), Vector3(52.0, 8.0, 40.0), Basis(Vector3.UP, 0.18), false)
 	_box("rock", peak_pos + Vector3(0.0, 35.0, 0.0), Vector3(30.0, 12.0, 24.0), Basis.IDENTITY, false)
@@ -768,8 +755,8 @@ func _build_exterior() -> void:
 
 	# 3 transformadores exteriores al noreste del vestíbulo.
 	for i in 3:
-		var tx := 36.0
-		var tz := -18.0 + float(i) * 5.5
+		var tx := 42.0
+		var tz := -21.0 + float(i) * 6.5
 		var transformer := Node3D.new()
 		transformer.name = "Transformer%d" % (i + 1)
 		transformer.position = Vector3(tx, 0.0, tz)
@@ -837,8 +824,8 @@ func _build_exterior() -> void:
 	_note("TORRE DE RADIO", Vector3(tower_pos.x, 31.5, tower_pos.z))
 
 	# Iluminación exterior del claro y transformadores.
-	_zone_light(Vector3(36.0, 4.0, -12.5), 14.0, 1.4, WARM_LIGHT)
-	_zone_light(Vector3(16.0, 6.0, -28.0), 20.0, 1.6, COOL_LIGHT)
+	_zone_light(Vector3(42.0, 4.0, -14.5), 15.0, 1.5, WARM_LIGHT)
+	_zone_light(Vector3(18.0, 6.0, -33.0), 22.0, 1.6, COOL_LIGHT)
 
 
 func _build_lights() -> void:
@@ -924,10 +911,10 @@ func _zone(id: StringName, label: String, pos: Vector3, range_value: float,
 	marker.add_child(label3d)
 	var light := OmniLight3D.new()
 	light.name = "Light"
-	light.position = Vector3(0.0, 3.1, 0.0)
+	light.position = Vector3(0.0, 3.2, 0.0)
 	light.light_color = light_color
 	light.light_energy = light_energy
-	light.omni_range = clampf(range_value * 0.8, 7.0, 28.0)
+	light.omni_range = clampf(range_value * 0.85, 8.0, 30.0)
 	light.shadow_enabled = false
 	marker.add_child(light)
 	zones[id] = marker
