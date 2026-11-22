@@ -7,16 +7,27 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="5_hud"]
 [ext_resource type="PackedScene" path="res://scenes/base/alpha_root_base.tscn" id="7_base"]
 
+[sub_resource type="ProceduralSkyMaterial" id="Sky_alpine"]
+sky_top_color = Color(0.055, 0.095, 0.175, 1)
+sky_horizon_color = Color(0.18, 0.27, 0.40, 1)
+ground_bottom_color = Color(0.04, 0.06, 0.10, 1)
+ground_horizon_color = Color(0.14, 0.21, 0.32, 1)
+sky_curve = 0.22
+
+[sub_resource type="Sky" id="Sky_kenoma"]
+sky_material = SubResource("Sky_alpine")
+
 [sub_resource type="Environment" id="Env_night"]
-background_mode = 1
-background_color = Color(0.08, 0.13, 0.21, 1)
-ambient_light_source = 2
-ambient_light_color = Color(0.24, 0.36, 0.54, 1)
-ambient_light_energy = 1.25
+background_mode = 2
+sky = SubResource("Sky_kenoma")
+ambient_light_source = 3
+ambient_light_color = Color(0.26, 0.38, 0.56, 1)
+ambient_light_sky_contribution = 0.72
+ambient_light_energy = 0.48
 tonemap_mode = 2
 fog_enabled = true
-fog_light_color = Color(0.11, 0.18, 0.28, 1)
-fog_density = 0.0028
+fog_light_color = Color(0.14, 0.22, 0.34, 1)
+fog_density = 0.00095
 
 [node name="Main" type="Node3D" unique_id=510003987]
 script = ExtResource("3_main")
@@ -25,9 +36,12 @@ script = ExtResource("3_main")
 environment = SubResource("Env_night")
 
 [node name="Moon" type="DirectionalLight3D" parent="." unique_id=1492931274]
-transform = Transform3D(0.8253356, -0.44229966, 0.3509874, 0, 0.62161, 0.7833269, -0.5646425, -0.6465076, 0.51303685, 0, 0, 0)
-light_color = Color(0.62, 0.75, 0.96, 1)
-light_energy = 0.65
+transform = Transform3D(-0.5345, -0.3719, 0.7594, 0, 0.898, 0.44, -0.8452, 0.2352, -0.4796, 0, 0, 0)
+light_color = Color(0.66, 0.79, 0.98, 1)
+light_energy = 1.25
+shadow_enabled = true
+shadow_bias = 0.05
+directional_shadow_max_distance = 240.0
 
 [node name="Base" parent="." unique_id=2141765265 instance=ExtResource("7_base")]
 

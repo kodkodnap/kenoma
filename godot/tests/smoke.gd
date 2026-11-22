@@ -405,16 +405,32 @@ func _run() -> void:
 		_check(get_nodes_in_group("signal_panel").size() == 4,
 			"4 paneles junto al ventanal", failures)
 
-		# Terreno terraformado del valle: malla, colisión, pico del radar y vaciado del sótano.
+		# Terreno terraformado del valle: malla, colisión, relieve frontal, pico del radar y árboles cónicos.
 		var terrain := base.get_node_or_null("Terrain") as TerrainBuilder
 		var terrain_col := terrain.get_node_or_null("TerrainCollision") as StaticBody3D if terrain != null else null
 		_check(terrain != null and terrain_col != null and terrain_col.get_child_count() > 0,
 			"terreno terraformado con colisión", failures)
-		_check(TerrainMap.height_at(TerrainMap.PEAK_CENTER.x, TerrainMap.PEAK_CENTER.y) > 40.0,
-			"pico lejano del radar elevado sobre el valle", failures)
+		_check(TerrainMap.height_at(TerrainMap.PEAK_CENTER.x, TerrainMap.PEAK_CENTER.y) > 65.0,
+			"pico lejano del radar elevado (>65 m) sobre el valle", failures)
 		_check(TerrainMap.height_at(10.5, -29.0) < 0.3
 				and TerrainMap.height_at(18.0, -2.0) < -4.5,
 			"explanada del garaje y vaciado del sótano en cota", failures)
+		var min_valley_y := 9999.0
+		var max_valley_y := -9999.0
+		for vx in [-120.0, -60.0, 0.0, 60.0, 120.0]:
+			for vz in [-70.0, -105.0, -140.0]:
+				var vy := TerrainMap.height_at(vx, vz)
+				min_valley_y = minf(min_valley_y, vy)
+				max_valley_y = maxf(max_valley_y, vy)
+		_check((max_valley_y - min_valley_y) > 8.0,
+			"el valle frontal tiene relieve orgánico (rango=%.1f m)" % (max_valley_y - min_valley_y), failures)
+		var tree_trunks := base.get_node_or_null("TreeTrunks") as MultiMeshInstance3D
+		var tree_boughs := base.get_node_or_null("TreeBoughs") as MultiMeshInstance3D
+		_check(tree_trunks != null and tree_trunks.multimesh != null
+				and tree_trunks.multimesh.instance_count >= 400
+				and tree_boughs != null and tree_boughs.multimesh != null
+				and tree_boughs.multimesh.instance_count >= 1200,
+			"bosque alpino de abetos cónicos con al menos 400 árboles", failures)
 
 		var window_budget := _count_budget(main)
 		_check(int(window_budget.get("draws", 0)) < 250,

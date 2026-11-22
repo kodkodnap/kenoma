@@ -1,13 +1,13 @@
 class_name TerrainBuilder
 extends Node3D
-## Construye la malla esculpida del valle de Kenoma en 3 anillos de detalle (4 m / 16 m / 40 m)
-## con sombreado por pendiente/pista/hielo y colisión exacta dentro del presupuesto de Forward+.
+## Construye la malla esculpida del valle de Kenoma en 3 anillos (4 m / 12 m / 32 m)
+## con relieve alpino, detalle normal triplanar y colisión exacta dentro del presupuesto Forward+.
 
-const SNOW_LIGHT := Color(0.49, 0.57, 0.70)
-const SNOW_DEEP := Color(0.38, 0.46, 0.60)
-const ROAD_COLOR := Color(0.24, 0.29, 0.36)
-const ROCK_COLOR := Color(0.15, 0.17, 0.21)
-const ICE_COLOR := Color(0.20, 0.31, 0.44)
+const SNOW_LIGHT := Color(0.56, 0.64, 0.77)
+const SNOW_DEEP := Color(0.35, 0.44, 0.58)
+const ROAD_COLOR := Color(0.22, 0.27, 0.34)
+const ROCK_COLOR := Color(0.14, 0.16, 0.20)
+const ICE_COLOR := Color(0.18, 0.30, 0.44)
 
 var _terrain_material: StandardMaterial3D
 var _collision: StaticBody3D
@@ -20,12 +20,12 @@ func _ready() -> void:
 	add_child(_collision)
 
 	var collision_faces := PackedVector3Array()
-	# Anillo interior de alta resolución (4 m) en 4 cuadrantes alrededor de la base.
-	_build_ring("Inner", -128.0, 128.0, 4.0, 0.0, 0.0, collision_faces, true)
-	# Anillo medio del valle y platos (16 m), solapando ligeramente por debajo del anillo interior.
-	_build_ring("Mid", -480.0, 480.0, 16.0, 112.0, -0.12, collision_faces, false)
-	# Cordón montañoso perimetral (40 m) hasta 1 km de radio.
-	_build_ring("Outer", -1000.0, 1000.0, 40.0, 440.0, -0.35, collision_faces, false)
+	# Anillo interior de detalle fino (4 m) alrededor de la base y el valle cercano.
+	_build_ring("Inner", -144.0, 144.0, 4.0, 0.0, 0.0, collision_faces, true)
+	# Anillo medio del valle, platos y picos cercanos (12 m).
+	_build_ring("Mid", -528.0, 528.0, 12.0, 132.0, -0.14, collision_faces, false)
+	# Cordón montañoso perimetral hasta 1.1 km de radio (32 m).
+	_build_ring("Outer", -1088.0, 1088.0, 32.0, 480.0, -0.45, collision_faces, false)
 
 	if not collision_faces.is_empty():
 		var shape := ConcavePolygonShape3D.new()
@@ -37,29 +37,55 @@ func _ready() -> void:
 
 
 func _make_material() -> StandardMaterial3D:
+	var grain_noise := FastNoiseLite.new()
+	grain_noise.seed = 198311
+	grain_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	grain_noise.fractal_octaves = 4
+	grain_noise.frequency = 0.075
+
+	var normal_tex := NoiseTexture2D.new()
+	normal_tex.width = 256
+	normal_tex.height = 256
+	normal_tex.seamless = true
+	normal_tex.as_normal_map = true
+	normal_tex.bump_strength = 4.5
+	normal_tex.noise = grain_noise
+
 	var mat := StandardMaterial3D.new()
 	mat.vertex_color_use_as_albedo = true
-	mat.roughness = 0.94
+	mat.roughness = 0.90
 	mat.metallic = 0.0
+	mat.normal_enabled = true
+	mat.normal_scale = 0.55
+	mat.normal_texture = normal_tex
+	mat.uv1_triplanar = true
+	mat.uv1_scale = Vector3(0.055, 0.055, 0.055)
 	return mat
 
 
 func _build_ring(tag: String, min_coord: float, max_coord: float, step: float,
 		inner_skip_half: float, overlap_drop: float,
 		collision_faces: PackedVector3Array, carve_base: bool) -> void:
-	# Una malla por anillo: 3 draws en total, dentro del presupuesto de Forward+.
-	var mesh := _build_quad_mesh(
-		min_coord, max_coord, min_coord, max_coord,
-		step, inner_skip_half, overlap_drop, collision_faces, carve_base
-	)
-	if mesh == null:
-		return
-	var inst := MeshInstance3D.new()
-	inst.name = "Terrain_" + tag
-	inst.mesh = mesh
-	inst.material_override = _terrain_material
-	inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	add_child(inst)
+	var quads := [
+		{"suffix": "NW", "x0": min_coord, "x1": 0.0, "z0": min_coord, "z1": 0.0},
+		{"suffix": "NE", "x0": 0.0, "x1": max_coord, "z0": min_coord, "z1": 0.0},
+		{"suffix": "SW", "x0": min_coord, "x1": 0.0, "z0": 0.0, "z1": max_coord},
+		{"suffix": "SE", "x0": 0.0, "x1": max_coord, "z0": 0.0, "z1": max_coord},
+	]
+	for q_variant in quads:
+		var q: Dictionary = q_variant
+		var mesh := _build_quad_mesh(
+			float(q["x0"]), float(q["x1"]), float(q["z0"]), float(q["z1"]),
+			step, inner_skip_half, overlap_drop, collision_faces, carve_base
+		)
+		if mesh == null:
+			continue
+		var inst := MeshInstance3D.new()
+		inst.name = "Terrain_%s_%s" % [tag, String(q["suffix"])]
+		inst.mesh = mesh
+		inst.material_override = _terrain_material
+		inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		add_child(inst)
 
 
 func _build_quad_mesh(x0: float, x1: float, z0: float, z1: float, step: float,
@@ -134,16 +160,16 @@ func _build_quad_mesh(x0: float, x1: float, z0: float, z1: float, step: float,
 
 
 func _vertex_color(x: float, y: float, z: float, n: Vector3) -> Color:
-	var snow := SNOW_LIGHT.lerp(SNOW_DEEP, clampf((y + 4.0) / 55.0, 0.0, 1.0))
-	var slope := clampf((0.86 - n.y) / 0.24, 0.0, 1.0)
+	var snow := SNOW_DEEP.lerp(SNOW_LIGHT, clampf((y + 6.0) / 70.0, 0.0, 1.0))
+	var slope := clampf((0.88 - n.y) / 0.22, 0.0, 1.0)
 	var col := snow.lerp(ROCK_COLOR, slope)
 
-	var creek_z := -152.0 + sin(x * 0.018) * 26.0 - cos(x * 0.008) * 14.0
-	if absf(x) < 460.0 and absf(z - creek_z) < 9.0 and y < -2.2:
-		var ice_t := clampf((9.0 - absf(z - creek_z)) / 9.0, 0.0, 1.0)
-		col = col.lerp(ICE_COLOR, ice_t * 0.78)
+	var creek_z := -156.0 + sin(x * 0.017) * 28.0 - cos(x * 0.008) * 16.0
+	if absf(x) < 500.0 and absf(z - creek_z) < 9.5 and y < -2.2:
+		var ice_t := clampf((9.5 - absf(z - creek_z)) / 9.5, 0.0, 1.0)
+		col = col.lerp(ICE_COLOR, ice_t * 0.80)
 
 	var road := TerrainMap.road_factor(x, z)
 	if road > 0.01:
-		col = col.lerp(ROAD_COLOR, road * 0.85)
+		col = col.lerp(ROAD_COLOR, road * 0.86)
 	return col
