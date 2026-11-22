@@ -361,8 +361,12 @@ func _make_ramp(ramp_name: String, from: Vector3, to: Vector3, width: float) -> 
 	body.add_to_group("base_ramp")
 	var mesh := BoxMesh.new()
 	mesh.size = Vector3(length, 0.22, width)
+	# La cara superior coincide con la línea from→to; así el arranque queda a ras de suelo.
+	# Con dirección -X el eje local Y apunta abajo, por eso se invierte el signo.
+	var surface_offset := Vector3(0.0, -signf(direction.x) * mesh.size.y * 0.5, 0.0)
 	var visual := MeshInstance3D.new()
 	visual.mesh = mesh
+	visual.position = surface_offset
 	visual.material_override = _materials["metal"]
 	visual.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	body.add_child(visual)
@@ -371,6 +375,7 @@ func _make_ramp(ramp_name: String, from: Vector3, to: Vector3, width: float) -> 
 	var collision := CollisionShape3D.new()
 	collision.name = "Collision"
 	collision.shape = shape
+	collision.position = surface_offset
 	body.add_child(collision)
 	body.transform = Transform3D(basis, (from + to) * 0.5)
 	add_child(body)
@@ -640,7 +645,8 @@ func _build_signal_room() -> void:
 			Vector3(0.44, 0.03, 0.44), Basis.IDENTITY, false)
 
 	# Impresora matricial física en el lado este junto a la puerta de terraza.
-	_signal_detail("PrinterPlaceholder", Vector3(0.9, 5.2, -17.5))
+	var printer := _signal_detail("PrinterPlaceholder", Vector3(0.9, 5.2, -17.5))
+	printer.add_to_group("printer_placeholder")
 	_box("metal", Vector3(0.9, 4.8, -17.5), Vector3(1.2, 0.8, 1.0))
 	_box("paper", Vector3(0.9, 5.42, -17.5), Vector3(0.8, 0.4, 0.65))
 	_box("paper", Vector3(0.5, 5.22, -17.5), Vector3(0.34, 0.03, 0.52), Basis(Vector3.BACK, 0.35), false)
