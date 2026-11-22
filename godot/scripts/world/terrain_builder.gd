@@ -76,7 +76,8 @@ func _build_ring(tag: String, min_coord: float, max_coord: float, step: float,
 			single_inst.name = "Terrain_" + tag
 			single_inst.mesh = single
 			single_inst.material_override = _terrain_material
-			single_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+			# El terreno solo recibe sombras: proyectarlas sobre sí mismo deja franjas negras en la nieve.
+			single_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 			add_child(single_inst)
 		return
 	var quads := [
@@ -97,7 +98,8 @@ func _build_ring(tag: String, min_coord: float, max_coord: float, step: float,
 		inst.name = "Terrain_%s_%s" % [tag, String(q["suffix"])]
 		inst.mesh = mesh
 		inst.material_override = _terrain_material
-		inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		# El terreno solo recibe sombras: proyectarlas sobre sí mismo deja franjas negras en la nieve.
+		inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(inst)
 
 
