@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "protocol": {
+    "heading": "## Skills obligatorias",
+    "docs": ["AGENTS.md", "godot/AGENTS.md"]
+  },
+  "skills": [
+    {
+      "name": "vitest",
+      "scope": "project",
+      "docs": "AGENTS.md",
+      "when": "Añadir, cambiar o arreglar pruebas de `src/core` y `test/`.",
+      "triggers": ["test/**/*.ts", "src/core/**/*.ts"]
+    },
+    {
+      "name": "systematic-debugging",
+      "scope": "project",
+      "docs": "AGENTS.md",
+      "when": "Cualquier fallo reproducible, test rojo, bug intermitente o problema de determinismo.",
+      "triggers": []
+    },
+    {
+      "name": "godot-gdscript",
+      "scope": "builtin",
+      "docs": "godot/AGENTS.md",
+      "when": "Cualquier script `.gd`: ciclo de vida, tipado estático, señales, await.",
+      "triggers": ["godot/scripts/**/*.gd"]
+    },
+    {
+      "name": "godot-gdscript-patterns",
+      "scope": "builtin",
+      "docs": "godot/AGENTS.md",
+      "when": "Lógica de `scripts/core/`: estado, máquinas de estado, señales y patrones de simulación.",
+      "triggers": ["godot/scripts/core/**/*.gd"]
+    },
+    {
+      "name": "godot-nodes-scenes",
+      "scope": "builtin",
+      "docs": "godot/AGENTS.md",
+      "when": "Escenas `.tscn`, instanciación en runtime, autoloads y árbol de nodos.",
+      "triggers": ["godot/scenes/**/*.tscn"]
+    },
+    {
+      "name": "godot-ui-control",
+      "scope": "builtin",
+      "docs": "godot/AGENTS.md",
+      "when": "HUD, paneles, themes, anchors, contenedores y foco en `scripts/ui/`.",
+      "triggers": ["godot/scripts/ui/**/*.gd"]
+    }
+  ]
+}

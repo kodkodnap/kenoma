@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ESTÁTICA · turno de noche</title>
+    <meta name="description" content="ESTÁTICA — estación de escucha en los Alpes. Escucha, decodifica, sobrevive al turno." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=Inter:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="view"></canvas>
+      <div id="grain" aria-hidden="true"></div>
+      <div id="scanlines" aria-hidden="true"></div>
+      <div id="vignette" aria-hidden="true"></div>
+      <div id="hud"></div>
+      <div id="overlay"></div>
+      <div id="boot">
+        <div class="boot-inner">
+          <p class="eyebrow">Estación Kestrel · 46°33′N 8°04′E</p>
+          <h1>ESTÁTICA</h1>
+          <p class="boot-sub">Turno de noche. Nadie más está despierto.</p>
+          <div class="boot-bar"><span id="boot-fill"></span></div>
+          <p class="boot-status" id="boot-status">iniciando consola…</p>
+          <button id="boot-start" class="ghost" hidden>Entrar en la estación</button>
+          <p class="boot-hint">WASD moverse · ratón mirar · E interactuar · F linterna · Tab registro</p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
