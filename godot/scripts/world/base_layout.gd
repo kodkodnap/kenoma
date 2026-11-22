@@ -1,11 +1,12 @@
 class_name BaseLayout
 extends RefCounted
-## Plano de la estación Kenoma (+20 % más ancho y amplio). Datos puros: sin escena ni geometría.
-## Arquitectura en ladera con ala de mando en voladizo (y=4.4), garaje amplio
-## debajo (y=0.0), sótano técnico (y=-4.4) y núcleo abierto de escaleras.
+## Plano de la estación Kenoma (+20 % ampliada) con ala de mando elevada sobre el garaje.
+## Arquitectura en ladera: ala en voladizo (y=6.0), cuerpo principal (y=4.4),
+## garaje + vestíbulo (y=0.0), sótano técnico (y=-4.4) y núcleo abierto de escaleras.
 
 const WALL_HEIGHT := 4.2
 const LEVEL_HEIGHT := 4.4
+const SIGNAL_Y := 6.0
 const DOOR_WIDTH := 2.8
 const DOOR_HEIGHT := 3.0
 const SIGNAL_WINDOW_WIDTH := 18.0
@@ -13,23 +14,26 @@ const SIGNAL_WINDOW_WIDTH := 18.0
 ## Habitaciones. x/z son la esquina mínima; w/d el tamaño; y la altura del suelo.
 ## Las puertas/ventanas se expresan con side + at (x en muros norte/sur, z en este/oeste).
 const ROOMS := [
-	# --- PLANTA ALTA (y = 4.4): ALA EN VOLADIZO Y CUERPO PRINCIPAL ---
+	# --- ALA EN VOLADIZO ELEVADA (y = 6.0): +1.6 m sobre terraza del garaje y pasillo ---
 	{
 		"id": "signal", "label": "SALA DE CONTROL DE SEÑALES",
-		"x": -19.0, "z": -29.0, "w": 21.0, "d": 17.0, "y": 4.4,
+		"x": -19.0, "z": -29.0, "w": 21.0, "d": 17.0, "y": SIGNAL_Y,
+		"floor": false,
+		"sides": ["north", "west", "east"],
 		"doors": [
-			{"side": "south", "at": -7.5, "width": 3.8, "height": 3.2},
-			{"side": "east", "at": -15.0, "width": 2.6, "height": 3.0},
+			{"side": "east", "at": -15.5, "width": 2.6, "height": 3.0},
 		],
 		"windows": [
 			{"side": "north", "at": -8.5, "width": SIGNAL_WINDOW_WIDTH,
 				"bottom": 1.0, "height": 2.8},
-			{"side": "east", "at": -21.5, "width": 6.2,
+			{"side": "east", "at": -21.8, "width": 6.0,
 				"bottom": 1.05, "height": 2.3},
 			{"side": "west", "at": -20.5, "width": 5.4,
 				"bottom": 1.5, "height": 1.4},
 		],
 	},
+
+	# --- PLANTA ALTA (y = 4.4): TERRAZA SOBRE GARAJE Y CUERPO PRINCIPAL ---
 	{
 		"id": "drone_terrace", "label": "TERRAZA DEL DRON",
 		"x": 2.0, "z": -26.5, "w": 17.0, "d": 14.5, "y": 4.4,
@@ -39,7 +43,7 @@ const ROOMS := [
 		"id": "upper_hall", "label": "PASILLO PRINCIPAL",
 		"x": -19.0, "z": -12.0, "w": 38.0, "d": 5.0, "y": 4.4,
 		"doors": [
-			{"side": "north", "at": -7.5, "width": 3.8, "height": 3.2},
+			{"side": "north", "at": -7.5, "width": 4.0, "height": 4.2, "open": true},
 			{"side": "north", "at": 8.0, "width": 2.8, "height": 3.0},
 			{"side": "south", "at": -12.5, "width": 2.6, "height": 3.0},
 			{"side": "south", "at": 5.0, "width": 2.6, "height": 3.0},
@@ -122,7 +126,7 @@ const ROOMS := [
 	},
 ]
 
-## Cajas perimetrales adicionales (cerramiento de escalera en sótano/planta alta y caseta de azotea).
+## Cajas perimetrales adicionales (escaleras, caseta de azotea y encuentros del ala elevada).
 const EXTRA_WALL_RECTS := [
 	# Pozo de escalera en sótano (y = -4.4); el lado oeste lo aporta power_room con su puerta.
 	{
@@ -139,6 +143,20 @@ const EXTRA_WALL_RECTS := [
 			{"side": "north", "at": 27.5, "width": 6.8, "bottom": 1.1, "height": 2.2},
 			{"side": "east", "at": -2.0, "width": 6.2, "bottom": 1.1, "height": 2.2},
 		],
+	},
+	# Cabecera sur de Sala de Señales sobre el techo del pasillo (y = 8.6..10.2).
+	{
+		"x": -19.0, "z": -29.0, "w": 21.0, "d": 17.0, "y": 8.6,
+		"wall_height": 1.6,
+		"sides": ["south"],
+		"doors": [], "windows": [],
+	},
+	# Zócalo vertical entre Terraza del Dron (y = 4.4) y el ala elevada (y = 6.0).
+	{
+		"x": -19.0, "z": -26.5, "w": 21.0, "d": 14.5, "y": 4.4,
+		"wall_height": 1.6,
+		"sides": ["east"],
+		"doors": [], "windows": [],
 	},
 	# Caseta de salida a la azotea (y = 8.8).
 	{
@@ -157,8 +175,14 @@ const SPECIAL_ZONES := [
 	{"id": "roof", "label": "TEJADO", "x": 0.0, "y": 8.8, "z": -4.0},
 ]
 
-## Plataformas de circulación y forjados parciales en el núcleo de escaleras.
+## Plataformas de circulación, forjado partido de Sala de Señales y núcleo de escaleras.
 const PLATFORMS := [
+	# Suelo de Sala de Señales elevada (y = 6.0), dejando hueco central de 4 m para SignalBridgeRamp.
+	{"id": "signal_north", "x": -19.0, "z": -29.0, "w": 21.0, "d": 13.5, "y": SIGNAL_Y},
+	{"id": "signal_sw", "x": -19.0, "z": -15.5, "w": 9.5, "d": 3.5, "y": SIGNAL_Y},
+	{"id": "signal_se", "x": -5.5, "z": -15.5, "w": 7.5, "d": 3.5, "y": SIGNAL_Y},
+	# Desembarco exterior de la puerta este de Sala de Señales (y = 6.0) hacia la terraza.
+	{"id": "signal_terrace_landing", "x": 2.0, "z": -16.9, "w": 2.6, "d": 2.8, "y": SIGNAL_Y},
 	# Sótano escalera completo (y = -4.4).
 	{"id": "basement_stair_floor", "x": 19.0, "z": -12.0, "w": 17.0, "d": 19.5, "y": -4.4},
 	# Planta baja escalera: galería oeste y antesala norte desde lobby (deja hueco central hacia sótano).

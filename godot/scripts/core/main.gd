@@ -73,7 +73,7 @@ func _spawn_exported_disk(index: int) -> void:
 	media.name = "ExportedDisk%d" % index
 	add_child(media)
 	media.setup(signals, index)
-	var spawn_at := Vector3(-2.8, 5.35, -20.5)
+	var spawn_at := Vector3(-2.8, 6.95, -20.5)
 	if base != null:
 		var table := base.get_node_or_null("MesaDiscos") as Node3D
 		if table != null:
@@ -218,7 +218,7 @@ func _wire_cycle_terminal() -> void:
 	var marker := base.get_node_or_null("MainComputerMarker") as Node3D
 	var terminal := Interactable.new()
 	terminal.name = "MainComputer"
-	terminal.position = marker.position if marker != null else Vector3(-16.0, 5.65, -18.5)
+	terminal.position = marker.position if marker != null else Vector3(-16.0, 7.25, -18.5)
 	terminal.prompt = "Abrir terminal"
 	terminal.activated.connect(_on_terminal_activated)
 	var shape := CollisionShape3D.new()

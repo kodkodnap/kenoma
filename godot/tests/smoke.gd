@@ -393,32 +393,45 @@ func _run() -> void:
 		_check(base.get_node_or_null("RoofRamp") is StaticBody3D,
 			"rampa al tejado presente", failures)
 
-		# Ventanal panorámico en voladizo y detalle de la Sala de Control de Señales.
+		# Ventanal panorámico en voladizo elevado (+1.6 m sobre el garaje) y detalle de señales.
 		var signal_window := base.get_node_or_null("SignalWindow") as Node3D
 		_check(signal_window != null
 				and float(signal_window.get_meta("width", 0.0)) >= 15.0
-				and absf(signal_window.global_position.z - (-29.0)) < 0.5,
-			"ventanal panorámico de al menos 15 m en z=-29", failures)
+				and absf(signal_window.global_position.z - (-29.0)) < 0.5
+				and signal_window.global_position.y > 7.5,
+			"ventanal panorámico elevado de al menos 15 m en z=-29", failures)
 		_check(get_nodes_in_group("signal_room_detail").size() >= 6,
 			"detalle de la sala de señales con al menos 6 nodos", failures)
 		_check(get_nodes_in_group("signal_panel").size() == 4,
 			"4 paneles junto al ventanal", failures)
+
+		# Terreno terraformado del valle: malla, colisión, pico del radar y vaciado del sótano.
+		var terrain := base.get_node_or_null("Terrain") as TerrainBuilder
+		var terrain_col := terrain.get_node_or_null("TerrainCollision") as StaticBody3D if terrain != null else null
+		_check(terrain != null and terrain_col != null and terrain_col.get_child_count() > 0,
+			"terreno terraformado con colisión", failures)
+		_check(TerrainMap.height_at(TerrainMap.PEAK_CENTER.x, TerrainMap.PEAK_CENTER.y) > 40.0,
+			"pico lejano del radar elevado sobre el valle", failures)
+		_check(TerrainMap.height_at(10.5, -29.0) < 0.3
+				and TerrainMap.height_at(18.0, -2.0) < -4.5,
+			"explanada del garaje y vaciado del sótano en cota", failures)
+
 		var window_budget := _count_budget(main)
 		_check(int(window_budget.get("draws", 0)) < 250,
 			"presupuesto del ventanal: menos de 250 draw calls", failures)
 		_check(int(window_budget.get("triangles", 0)) < 150000,
 			"presupuesto del ventanal: menos de 150k triángulos", failures)
 
-		# Recorrido real: pasillo principal y entrada a la Sala de Control de Señales.
+		# Recorrido real: pasillo principal y subida por el puente a Sala de Control de Señales.
 		_reset_player(player, Vector3(-7.5, 4.45, -9.5))
 		for i in 2:
 			await physics_frame
 		Input.action_press("move_forward")
-		for i in 70:
+		for i in 85:
 			await physics_frame
 		Input.action_release("move_forward")
-		_check(player.global_position.z < -13.0,
-			"se entra a la sala de señales desde el pasillo principal", failures)
+		_check(player.global_position.z < -13.0 and player.global_position.y > 4.7,
+			"se sube a la sala de señales elevada desde el pasillo", failures)
 
 		_reset_player(player, Vector3(-17.0, 4.45, -9.5))
 		for i in 2:
@@ -643,7 +656,7 @@ func _run() -> void:
 		_check(int(disk.get("value", 0)) > 0, "exportar a disco calcula el valor", failures)
 		var spawned_disk := main.find_child("ExportedDisk0", true, false) as DiskMedia
 		_check(spawned_disk != null and spawned_disk.disk_index == 0
-				and spawned_disk.global_position.distance_to(Vector3(-2.8, 5.35, -20.5)) < 1.0,
+				and spawned_disk.global_position.distance_to(Vector3(-2.8, 6.95, -20.5)) < 1.0,
 			"export_copy crea el disco físico sobre MesaDiscos sin instanciarlo desde el test", failures)
 		var earned := signals.sell_disk(signals.disk_count() - 1)
 		_check(earned == int(disk.get("value", 0)) and signals.credits == earned,
@@ -852,7 +865,7 @@ func _run() -> void:
 				_check(absf(seat.y) < 0.006 and seat.z > 0.02 and seat.z < 0.33,
 					"la perilla se apoya en la cubierta", failures)
 				signals.select_by_id(&"relay_hum")
-				_stand_and_aim(player, knob, 1.1, 4.45)
+				_stand_and_aim(player, knob, 1.1, 6.05)
 				for i in 4:
 					await physics_frame
 				_check(player.current_interactable == knob,
@@ -893,7 +906,7 @@ func _run() -> void:
 
 			# Hito 5.6: mandos reales compartidos, arrastre angular del dial.
 			var dial := downloads.get_knob(0)
-			_stand_and_aim(player, dial, 1.1, 4.45)
+			_stand_and_aim(player, dial, 1.1, 6.05)
 			for i in 4:
 				await physics_frame
 			_check(player.current_interactable == dial,
@@ -991,7 +1004,7 @@ func _run() -> void:
 				signals.set_azimuth(relay.azimuth)
 				signals.set_elevation(relay.elevation)
 				coordinates.sync_knobs()
-				_stand_and_aim(player, ping, 1.3, 4.45)
+				_stand_and_aim(player, ping, 1.3, 6.05)
 				for i in 4:
 					await physics_frame
 				_check(player.current_interactable == ping,
@@ -1258,7 +1271,7 @@ func _run() -> void:
 		var terminal := base.get_node_or_null("MainComputer") as Interactable
 		_check(terminal != null, "la terminal física existe", failures)
 		if terminal != null:
-			_stand_and_aim(player, terminal, 1.3, 4.45)
+			_stand_and_aim(player, terminal, 1.3, 6.05)
 			for i in 4:
 				await physics_frame
 			_check(player.current_interactable == terminal,
