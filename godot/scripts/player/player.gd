@@ -9,6 +9,7 @@ const DEFAULT_BALANCE: GameBalance = preload("res://data/balance.tres")
 
 @export var balance: GameBalance = DEFAULT_BALANCE
 @export var mouse_sensitivity: float = 0.0022
+@export var gamepad_look_sensitivity: float = 2.5
 @export var interact_range: float = 2.4
 @export var interact_mask: int = 2
 @export var hold_distance: float = 1.3
@@ -186,11 +187,27 @@ func _clear_focus() -> void:
 
 
 func _process(delta: float) -> void:
+	_apply_gamepad_look(delta)
 	if not flashlight.visible:
 		return
 	battery = maxf(0.0, battery - balance.flashlight_drain_per_second * delta)
 	if battery == 0.0:
 		flashlight.visible = false
+
+
+func _apply_gamepad_look(delta: float) -> void:
+	if _mouse_look_blocked():
+		return
+	var x := Input.get_axis("look_left", "look_right")
+	var y := Input.get_axis("look_up", "look_down")
+	if absf(x) < 0.05 and absf(y) < 0.05:
+		return
+	if held != null:
+		rotate_held(Vector2(x, y) * delta * 240.0)
+		return
+	rotate_y(-x * gamepad_look_sensitivity * delta)
+	_pitch = clampf(_pitch - y * gamepad_look_sensitivity * delta, -1.45, 1.45)
+	head.rotation.x = _pitch
 
 
 func _toggle_flashlight() -> void:

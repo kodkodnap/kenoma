@@ -359,12 +359,6 @@ func _build_props() -> void:
 	_box("wood", Vector3(12.0, 1.55, 5.0), Vector3(1.0, 1.0, 1.0))
 	_box("metal", Vector3(21.0, 0.6, 4.5), Vector3(3.2, 1.2, 1.0))
 	_box("dark_metal", Vector3(21.0, 1.5, 4.5), Vector3(2.4, 0.5, 0.6))
-	# ATV placeholder.
-	_box("warning", Vector3(21.0, 0.75, 13.0), Vector3(2.2, 0.5, 1.2))
-	_box("dark_metal", Vector3(21.0, 1.1, 13.0), Vector3(1.2, 0.55, 0.6))
-	for wheel_x in [20.0, 22.0]:
-		for wheel_z in [12.5, 13.5]:
-			_box("dark_metal", Vector3(wheel_x, 0.45, wheel_z), Vector3(0.45, 0.45, 0.25))
 	# Break room.
 	_box("wood", Vector3(-20.0, 0.65, -10.0), Vector3(3.0, 1.2, 1.5))
 	for chair_x in [-21.4, -18.6]:
@@ -374,16 +368,9 @@ func _build_props() -> void:
 	_box("led_green", Vector3(-15.0, 1.5, -15.7), Vector3(0.7, 0.4, 0.05), Basis.IDENTITY, false)
 	_note("NO USAR EL MICROONDAS\nDESPUÉS DE LAS 03:00", Vector3(-22.0, 2.2, -17.7))
 	# Signal Processing: cuatro paneles y consola de radar.
-	# Los 1 y 2 (Coordinates y Descargas) son consolas físicas completas: no llevan caja de relleno.
 	for i in 4:
 		var px := -9.0 + i * 6.0
-		if i > 1 and i < 3:
-			_box("dark_metal", Vector3(px, 1.25, -17.55), Vector3(2.1, 1.5, 0.5))
-			_box("screen", Vector3(px, 1.35, -17.25), Vector3(1.7, 0.95, 0.05),
-				Basis.IDENTITY, false)
 		_add_panel(px, -17.2, i)
-		if i > 1 and i < 3:
-			_note("PANEL %d" % (i + 1), Vector3(px, 2.45, -17.4))
 	_box("dark_metal", Vector3(0.0, 0.85, -9.0), Vector3(2.4, 1.7, 1.8))
 	_box("screen", Vector3(0.0, 1.1, -8.05), Vector3(1.6, 1.0, 0.05), Basis.IDENTITY, false)
 	_box("dark_metal", Vector3(0.0, 1.8, -9.0), Vector3(2.0, 0.2, 1.4))
@@ -550,36 +537,25 @@ func _add_panel(px: float, pz: float, index: int) -> void:
 	panel.name = "SignalPanel%d" % (index + 1)
 	panel.position = Vector3(px, 1.25, pz)
 	panel.add_to_group("signal_panel")
-	if index > 1:
-		var label := Label3D.new()
-		label.text = "SIG %d" % (index + 1)
-		label.font_size = 28
-		label.pixel_size = 0.007
-		label.modulate = Color(0.4, 1.0, 0.8)
-		label.position = Vector3(0.0, 0.85, 0.05)
-		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		panel.add_child(label)
 	add_child(panel)
 
 
 func _build_exterior() -> void:
-	# Suelo de nieve en anillo, sin cubrir la base ni la escalera.
-	_box("snow", Vector3(0.0, -0.2, -69.0), Vector3(240.0, 0.4, 102.0))
-	_box("snow", Vector3(0.0, -0.2, 69.0), Vector3(240.0, 0.4, 102.0))
-	_box("snow", Vector3(-73.0, -0.2, 0.0), Vector3(94.0, 0.4, 36.0))
-	_box("snow", Vector3(80.0, -0.2, 0.0), Vector3(80.0, 0.4, 36.0))
-	_box("snow", Vector3(33.0, -0.2, -10.0), Vector3(14.0, 0.4, 16.0))
-	_box("snow", Vector3(33.0, -0.2, 10.0), Vector3(14.0, 0.4, 16.0))
+	# Suelo de nieve en anillo de 1,4 km, sin cubrir la base ni la escalera.
+	_box("snow", Vector3(0.0, -0.2, -360.0), Vector3(1400.0, 0.4, 680.0))
+	_box("snow", Vector3(0.0, -0.2, 360.0), Vector3(1400.0, 0.4, 680.0))
+	_box("snow", Vector3(-365.0, -0.2, 0.0), Vector3(670.0, 0.4, 40.0))
+	_box("snow", Vector3(370.0, -0.2, 0.0), Vector3(660.0, 0.4, 40.0))
 	# Valla perimetral.
-	_box("metal", Vector3(0.0, 1.2, -110.0), Vector3(220.0, 2.4, 0.2))
-	_box("metal", Vector3(0.0, 1.2, 110.0), Vector3(220.0, 2.4, 0.2))
-	_box("metal", Vector3(-110.0, 1.2, 0.0), Vector3(0.2, 2.4, 220.0))
-	_box("metal", Vector3(110.0, 1.2, 0.0), Vector3(0.2, 2.4, 220.0))
+	_box("metal", Vector3(0.0, 1.2, -700.0), Vector3(1400.0, 2.4, 0.2))
+	_box("metal", Vector3(0.0, 1.2, 700.0), Vector3(1400.0, 2.4, 0.2))
+	_box("metal", Vector3(-700.0, 1.2, 0.0), Vector3(0.2, 2.4, 1400.0))
+	_box("metal", Vector3(700.0, 1.2, 0.0), Vector3(0.2, 2.4, 1400.0))
 	# 24 platos.
 	for i in 24:
 		var angle := TAU * float(i) / 24.0
-		var px := cos(angle) * 55.0
-		var pz := sin(angle) * 55.0
+		var px := cos(angle) * 250.0
+		var pz := sin(angle) * 250.0
 		var dish := Marker3D.new()
 		dish.name = "Dish%02d" % (i + 1)
 		dish.position = Vector3(px, 0.0, pz)
@@ -608,8 +584,8 @@ func _build_exterior() -> void:
 		_box("warning", Vector3(tx, 2.2, tz + 0.82), Vector3(0.8, 0.4, 0.08))
 		_note("TRAFO %s" % ["A", "B", "C"][i], Vector3(tx, 3.2, tz))
 	# Radares de coordenadas.
-	var radar_positions := [Vector3(-45.0, 0.0, -35.0), Vector3(45.0, 0.0, -35.0),
-		Vector3(0.0, 0.0, 50.0)]
+	var radar_positions := [Vector3(-260.0, 0.0, -260.0), Vector3(260.0, 0.0, -260.0),
+		Vector3(0.0, 0.0, 300.0)]
 	for i in 3:
 		var rp: Vector3 = radar_positions[i]
 		var radar := Node3D.new()
@@ -622,8 +598,8 @@ func _build_exterior() -> void:
 		_box("dark_metal", Vector3(rp.x, 6.0, rp.z), Vector3(2.6, 0.2, 2.6))
 		_note("RADAR %d" % (i + 1), Vector3(rp.x, 7.2, rp.z))
 	# Turbinas eólicas.
-	var turbine_positions := [Vector3(-70.0, 0.0, -70.0), Vector3(70.0, 0.0, -70.0),
-		Vector3(-70.0, 0.0, 70.0), Vector3(70.0, 0.0, 70.0)]
+	var turbine_positions := [Vector3(-560.0, 0.0, -560.0), Vector3(560.0, 0.0, -560.0),
+		Vector3(-560.0, 0.0, 560.0), Vector3(560.0, 0.0, 560.0)]
 	for i in 4:
 		var tp: Vector3 = turbine_positions[i]
 		var turbine := Node3D.new()
@@ -639,7 +615,7 @@ func _build_exterior() -> void:
 			_box("metal", Vector3(tp.x, 18.2, tp.z + 1.0) + blade_basis * Vector3(0.0, 3.5, 0.0),
 				Vector3(0.25, 7.0, 0.08), blade_basis)
 	# Torre de radio.
-	var tower_pos := Vector3(75.0, 0.0, -10.0)
+	var tower_pos := Vector3(400.0, 0.0, -150.0)
 	var tower := Node3D.new()
 	tower.name = "RadioTower"
 	tower.position = tower_pos
@@ -681,7 +657,7 @@ func _flush_batches() -> void:
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		multimesh.mesh = mesh
 		multimesh.instance_count = transforms.size()
-		multimesh.custom_aabb = AABB(Vector3(-130.0, -12.0, -130.0), Vector3(260.0, 40.0, 260.0))
+		multimesh.custom_aabb = AABB(Vector3(-720.0, -20.0, -720.0), Vector3(1440.0, 60.0, 1440.0))
 		for i in transforms.size():
 			multimesh.set_instance_transform(i, transforms[i])
 		var instance := MultiMeshInstance3D.new()
@@ -700,7 +676,7 @@ func _flush_batches() -> void:
 		dish_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		dish_multimesh.mesh = dish_mesh
 		dish_multimesh.instance_count = _dish_transforms.size()
-		dish_multimesh.custom_aabb = AABB(Vector3(-80.0, 0.0, -80.0), Vector3(160.0, 10.0, 160.0))
+		dish_multimesh.custom_aabb = AABB(Vector3(-300.0, 0.0, -300.0), Vector3(600.0, 12.0, 600.0))
 		for i in _dish_transforms.size():
 			dish_multimesh.set_instance_transform(i, _dish_transforms[i])
 		var dish_instance := MultiMeshInstance3D.new()

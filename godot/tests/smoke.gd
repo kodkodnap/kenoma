@@ -54,6 +54,23 @@ func _run() -> void:
 	_check(main.get_node_or_null("PerfOverlay") != null, "overlay de rendimiento presente", failures)
 	_check(machine.definition != null, "definición de máquina cargada", failures)
 
+	var gamepad_actions := ["move_forward", "move_back", "move_left", "move_right", "sprint",
+			"jump", "crouch", "flashlight", "interact", "drop", "toggle_test_panel",
+			"look_left", "look_right", "look_up", "look_down"]
+	var missing_gamepad: Array[String] = []
+	for action in gamepad_actions:
+		if not InputMap.has_action(action):
+			missing_gamepad.append(action)
+			continue
+		var has_pad := false
+		for event in InputMap.action_get_events(action):
+			if event is InputEventJoypadMotion or event is InputEventJoypadButton:
+				has_pad = true
+				break
+		if not has_pad:
+			missing_gamepad.append(action)
+	_check(missing_gamepad.is_empty(), "mando: acciones mapeadas " + str(missing_gamepad), failures)
+
 	# Hito 1: contrato de movimiento, stamina y linterna.
 	var balance := player.balance
 	_check(is_equal_approx(_number(balance, "walk_speed", 0.0), 4.0), "balance: andar 4 m/s", failures)
