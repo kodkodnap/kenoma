@@ -21,11 +21,11 @@ func _ready() -> void:
 
 	var collision_faces := PackedVector3Array()
 	# Anillo interior de detalle fino (4 m) alrededor de la base y el valle cercano.
-	_build_ring("Inner", -144.0, 144.0, 4.0, 0.0, 0.0, collision_faces, true)
+	_build_ring("Inner", -144.0, 144.0, 4.0, 0.0, 0.0, collision_faces, true, true)
 	# Anillo medio del valle, platos y picos cercanos (12 m).
-	_build_ring("Mid", -528.0, 528.0, 12.0, 132.0, -0.14, collision_faces, false)
+	_build_ring("Mid", -528.0, 528.0, 12.0, 132.0, -0.14, collision_faces, false, false)
 	# Cordón montañoso perimetral hasta 1.1 km de radio (32 m).
-	_build_ring("Outer", -1088.0, 1088.0, 32.0, 480.0, -0.45, collision_faces, false)
+	_build_ring("Outer", -1088.0, 1088.0, 32.0, 480.0, -0.45, collision_faces, false, false)
 
 	if not collision_faces.is_empty():
 		var shape := ConcavePolygonShape3D.new()
@@ -65,7 +65,20 @@ func _make_material() -> StandardMaterial3D:
 
 func _build_ring(tag: String, min_coord: float, max_coord: float, step: float,
 		inner_skip_half: float, overlap_drop: float,
-		collision_faces: PackedVector3Array, carve_base: bool) -> void:
+		collision_faces: PackedVector3Array, carve_base: bool, split_quads: bool) -> void:
+	if not split_quads:
+		var single := _build_quad_mesh(
+			min_coord, max_coord, min_coord, max_coord,
+			step, inner_skip_half, overlap_drop, collision_faces, carve_base
+		)
+		if single != null:
+			var single_inst := MeshInstance3D.new()
+			single_inst.name = "Terrain_" + tag
+			single_inst.mesh = single
+			single_inst.material_override = _terrain_material
+			single_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+			add_child(single_inst)
+		return
 	var quads := [
 		{"suffix": "NW", "x0": min_coord, "x1": 0.0, "z0": min_coord, "z1": 0.0},
 		{"suffix": "NE", "x0": 0.0, "x1": max_coord, "z0": min_coord, "z1": 0.0},

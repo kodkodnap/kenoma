@@ -435,7 +435,7 @@ func _make_ramp(ramp_name: String, from: Vector3, to: Vector3, width: float) -> 
 	add_child(body)
 	var mid := (from + to) * 0.5
 	for side_sign in [-1.0, 1.0]:
-		var z_off := side_sign * width * 0.5
+		var z_off: float = side_sign * width * 0.5
 		_box("metal", mid + basis * Vector3(0.0, 0.9, z_off),
 			Vector3(length, 0.08, 0.06), basis, false)
 		_box("metal", mid + basis * Vector3(0.0, 0.48, z_off),
