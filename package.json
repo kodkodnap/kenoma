@@ -5,7 +5,7 @@
   "type": "module",
   "description": "ESTÁTICA (web, Three.js) — deprecada; el desarrollo activo vive en godot/ (Kenoma). Juego de horror y señales.",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0 --port 3000",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 4173",
     "test": "vitest run",
