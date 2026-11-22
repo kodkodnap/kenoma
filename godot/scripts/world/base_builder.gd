@@ -1,10 +1,11 @@
 class_name BaseBuilder
 extends Node3D
-## Construye la estación Kenoma (+20 % ampliada) con primitivas y MultiMesh por lotes.
-## La geometría estática se agrupa por material; las colisiones viven en un solo StaticBody3D.
+## Construye la estación Kenoma (+20 % ampliada, ala en voladizo elevada) sobre el valle
+## terraformado de TerrainBuilder, agrupando geometría por material y colisión única.
 
 const WALL_HEIGHT := BaseLayout.WALL_HEIGHT
 const LEVEL_HEIGHT := BaseLayout.LEVEL_HEIGHT
+const SIGNAL_Y := BaseLayout.SIGNAL_Y
 const WALL_THICKNESS := 0.25
 const FLOOR_THICKNESS := 0.2
 
@@ -46,6 +47,11 @@ func _ready() -> void:
 	_collision = StaticBody3D.new()
 	_collision.name = "Collision"
 	add_child(_collision)
+
+	var terrain := TerrainBuilder.new()
+	terrain.name = "Terrain"
+	add_child(terrain)
+
 	_build_rooms()
 	_build_special_zones()
 	_build_walls()
@@ -68,8 +74,8 @@ func _make_materials() -> void:
 	_materials["dark_metal"] = _material(Color(0.10, 0.12, 0.14), 0.72, 0.45)
 	_materials["screen"] = _material(Color(0.03, 0.18, 0.16), 0.0, 0.35, Color(0.18, 0.96, 0.62), 2.3)
 	_materials["light"] = _material(Color(1.0, 0.88, 0.66), 0.0, 0.4, Color(1.0, 0.74, 0.38), 2.8)
-	_materials["snow"] = _material(Color(0.45, 0.53, 0.65), 0.0, 0.96)
-	_materials["rock"] = _material(Color(0.17, 0.19, 0.22), 0.0, 0.95)
+	_materials["snow"] = _material(Color(0.47, 0.55, 0.68), 0.0, 0.96)
+	_materials["rock"] = _material(Color(0.15, 0.17, 0.21), 0.0, 0.95)
 	_materials["pine"] = _material(Color(0.07, 0.12, 0.10), 0.0, 0.94)
 	_materials["roof"] = _material(Color(0.18, 0.20, 0.22), 0.0, 0.92)
 	_materials["wood"] = _material(Color(0.40, 0.26, 0.15), 0.0, 0.86)
@@ -148,9 +154,9 @@ func _build_rooms() -> void:
 
 		# Luces complementarias en estancias grandes.
 		if id == &"signal":
-			_zone_light(Vector3(-15.0, 8.0, -24.0), 13.0, 1.5, WARM_LIGHT)
-			_zone_light(Vector3(-2.0, 8.0, -24.0), 13.0, 1.5, WARM_LIGHT)
-			_zone_light(Vector3(-15.0, 8.0, -16.0), 12.0, 1.2, WARM_LIGHT)
+			_zone_light(Vector3(-15.0, SIGNAL_Y + 3.6, -24.0), 13.0, 1.5, WARM_LIGHT)
+			_zone_light(Vector3(-2.0, SIGNAL_Y + 3.6, -24.0), 13.0, 1.5, WARM_LIGHT)
+			_zone_light(Vector3(-15.0, SIGNAL_Y + 3.6, -16.0), 12.0, 1.2, WARM_LIGHT)
 		elif id == &"upper_hall":
 			_zone_light(Vector3(-13.5, 8.1, -9.5), 11.0, 1.0, DIM_HALL_LIGHT)
 			_zone_light(Vector3(13.5, 8.1, -9.5), 10.0, 0.8, COOL_LIGHT)
@@ -296,6 +302,14 @@ func _build_platforms() -> void:
 		_box("floor", Vector3(x + w * 0.5, y - 0.1, z + d * 0.5),
 			Vector3(w, FLOOR_THICKNESS, d))
 
+	# Barandillas del pozo de acceso central en Sala de Señales (y = 6.0).
+	_railing_z(-9.5, -15.5, -12.0, SIGNAL_Y)
+	_railing_z(-5.5, -15.5, -12.0, SIGNAL_Y)
+
+	# Barandillas del desembarco exterior hacia Terraza del Dron (y = 6.0).
+	_railing_z(4.55, -16.9, -14.1, SIGNAL_Y)
+	_railing_x(2.05, 4.55, -14.15, SIGNAL_Y)
+
 	# Barandillas del pozo abierto de escalera en Planta Baja (y = 0.0).
 	_railing_x(22.5, 36.0, -7.0, 0.0)
 	_railing_z(22.5, -7.0, -5.9, 0.0)
@@ -314,56 +328,86 @@ func _build_platforms() -> void:
 	_railing_x(22.5, 32.5, 2.05, 8.8)
 	_railing_z(22.5, 2.05, 3.4, 8.8)
 	_railing_z(22.5, 6.2, 7.4, 8.8)
+	_railing_z(32.5, 2.05, 7.4, 8.8)
 
 	# Cubierta de la caseta de azotea (y = 12.0).
 	_box("roof", Vector3(27.5, 12.1, 4.75), Vector3(17.3, 0.22, 5.8))
 
 
-## Estructura exterior del voladizo (vigas y pilares de acero/hormigón hasta y = 0).
+## Estructura exterior del voladizo elevado (vigas y pilares anclados al terreno real).
 func _build_cantilever_structure() -> void:
-	# Cenefa gruesa de hormigón bajo el borde del voladizo (y = 4.05..4.4).
-	_box("wall", Vector3(-8.5, 4.05, -29.1), Vector3(21.4, 0.58, 0.45))
-	_box("wall", Vector3(-19.1, 4.05, -20.5), Vector3(0.45, 0.58, 17.4))
-	_box("wall", Vector3(2.1, 4.05, -20.5), Vector3(0.45, 0.58, 17.4))
+	var soffit_y := SIGNAL_Y - 0.35
+	# Cenefa gruesa de hormigón bajo el borde del voladizo (y = 5.4..6.0).
+	_box("wall", Vector3(-8.5, soffit_y, -29.1), Vector3(21.4, 0.62, 0.45))
+	_box("wall", Vector3(-19.1, soffit_y, -20.5), Vector3(0.45, 0.62, 17.4))
+	_box("wall", Vector3(2.1, soffit_y, -20.5), Vector3(0.45, 0.62, 17.4))
 
-	# Tres pilares delanteros con zapata cónica y puntal inclinado hacia el voladizo.
+	# Vigas transversales bajo la losa del voladizo.
+	for vx in [-16.8, -8.5, -0.2]:
+		_box("dark_metal", Vector3(vx, soffit_y - 0.15, -20.5), Vector3(0.55, 0.42, 16.5))
+
+	# Tres pilares delanteros con zapata asentada sobre la ladera real y puntal inclinado.
 	for px in [-16.8, -8.5, -0.2]:
-		_box("wall", Vector3(px, 0.6, -26.8), Vector3(1.7, 1.2, 1.7))
-		_box("dark_metal", Vector3(px, 2.45, -26.8), Vector3(0.75, 3.55, 0.75))
-		_box("dark_metal", Vector3(px, 2.45, -27.5), Vector3(0.5, 3.9, 0.5),
-			Basis(Vector3.RIGHT, 0.28))
+		var ground_y := TerrainMap.height_at(px, -26.8)
+		var foot_base := ground_y - 0.5
+		var top_y := soffit_y - 0.1
+		var pillar_h := maxf(2.0, top_y - (foot_base + 1.1))
+		_box("wall", Vector3(px, foot_base + 0.65, -26.8), Vector3(1.85, 1.3, 1.85))
+		_box("dark_metal", Vector3(px, foot_base + 1.1 + pillar_h * 0.5, -26.8),
+			Vector3(0.78, pillar_h, 0.78))
+		_box("dark_metal", Vector3(px, foot_base + 1.1 + pillar_h * 0.5, -27.55),
+			Vector3(0.5, pillar_h * 1.06, 0.5), Basis(Vector3.RIGHT, 0.24))
 
 	# Pilares traseros de apoyo cerca del arranque del voladizo.
 	for px in [-16.8, -1.4]:
-		_box("wall", Vector3(px, 0.5, -14.2), Vector3(1.5, 1.0, 1.5))
-		_box("dark_metal", Vector3(px, 2.35, -14.2), Vector3(0.65, 3.65, 0.65))
+		var ground_y := TerrainMap.height_at(px, -14.2)
+		var foot_base := ground_y - 0.5
+		var top_y := soffit_y - 0.1
+		var pillar_h := maxf(2.0, top_y - (foot_base + 0.9))
+		_box("wall", Vector3(px, foot_base + 0.55, -14.2), Vector3(1.6, 1.1, 1.6))
+		_box("dark_metal", Vector3(px, foot_base + 0.9 + pillar_h * 0.5, -14.2),
+			Vector3(0.66, pillar_h, 0.66))
 
-	# Focos cálidos bajo el voladizo iluminando el claro frontal y entrada del garaje.
+	# Zócalo de cimentación bajo Server/Living/Bath (y = -0.6..4.4) para cerrar el apoyo en ladera.
+	_box("wall", Vector3(-8.5, 2.0, 7.5), Vector3(21.2, 5.2, 0.35))
+	_box("wall", Vector3(-19.0, 2.0, -2.25), Vector3(0.35, 5.2, 19.5))
+
+	# Focos cálidos bajo el voladizo iluminando el claro frontal.
 	for lx in [-13.0, -4.0]:
-		_box("light", Vector3(lx, 4.08, -26.0), Vector3(0.85, 0.1, 0.32), Basis.IDENTITY, false)
-		_zone_light(Vector3(lx, 3.8, -26.0), 13.0, 1.25, WARM_LIGHT)
+		_box("light", Vector3(lx, soffit_y - 0.25, -26.0), Vector3(0.95, 0.1, 0.34), Basis.IDENTITY, false)
+		_zone_light(Vector3(lx, soffit_y - 0.55, -26.0), 15.0, 1.35, WARM_LIGHT)
 
 
 func _build_stairs() -> void:
-	# Rampas anchas (2.6 m) con desarrollo de 10 m (~23.7 grados).
+	# Rampas anchas (2.6 m) del núcleo central de escaleras.
 	_make_ramp("StairsDown", Vector3(22.5, 0.0, -4.5), Vector3(32.5, -4.4, -4.5), 2.6)
 	_make_ramp("StairsUp", Vector3(22.5, 0.0, 0.0), Vector3(32.5, 4.4, 0.0), 2.6)
 	_make_ramp("RoofRamp", Vector3(32.5, 4.4, 4.8), Vector3(22.5, 8.8, 4.8), 2.6)
+
+	# Rampa puente central desde Pasillo Principal (y=4.4) hacia el ala elevada (y=6.0).
+	_make_ramp("SignalBridgeRamp", Vector3(-7.5, 4.4, -12.0), Vector3(-7.5, SIGNAL_Y, -15.5), 4.0)
+	# Escalera exterior desde la puerta este de Sala de Señales (y=6.0) a Terraza del Dron (y=4.4).
+	_make_ramp("TerraceRamp", Vector3(3.3, SIGNAL_Y, -16.9), Vector3(3.3, 4.4, -21.0), 2.4)
+	# Rampa de azotea conectando cubierta trasera (y=8.8) con cubierta del voladizo (y=10.4).
+	_make_ramp("RoofStepRamp", Vector3(-0.3, 8.8, -8.5), Vector3(-0.3, 10.4, -12.0), 2.4)
 
 
 func _make_ramp(ramp_name: String, from: Vector3, to: Vector3, width: float) -> void:
 	var direction := to - from
 	var length := direction.length()
-	var angle := atan2(direction.y, direction.x)
-	var basis := Basis(Vector3(0.0, 0.0, 1.0), angle)
+	var horiz_len := Vector2(direction.x, direction.z).length()
+	var yaw := atan2(-direction.z, direction.x)
+	var pitch := atan2(direction.y, horiz_len)
+	var basis := Basis(Vector3.UP, yaw) * Basis(Vector3.BACK, pitch)
+
 	var body := StaticBody3D.new()
 	body.name = ramp_name
 	body.add_to_group("base_ramp")
 	var mesh := BoxMesh.new()
 	mesh.size = Vector3(length, 0.22, width)
 	# La cara superior coincide con la línea from→to; así el arranque queda a ras de suelo.
-	# Con dirección -X el eje local Y apunta abajo, por eso se invierte el signo.
-	var surface_offset := Vector3(0.0, -signf(direction.x) * mesh.size.y * 0.5, 0.0)
+	# El eje local Y apunta arriba en cualquier orientación de la rampa.
+	var surface_offset := Vector3(0.0, -mesh.size.y * 0.5, 0.0)
 	var visual := MeshInstance3D.new()
 	visual.mesh = mesh
 	visual.position = surface_offset
@@ -413,10 +457,16 @@ func _railing_z(x: float, z0: float, z1: float, y: float) -> void:
 
 
 func _build_roof() -> void:
-	# Petos y barandillas perimetrales de azotea (y = 8.8) y cubierta de vestíbulo (y = 4.4).
-	_railing_x(-19.0, 2.0, -29.0, 8.8)
-	_railing_z(-19.0, -29.0, 7.5, 8.8)
-	_railing_z(2.0, -29.0, -12.0, 8.8)
+	var signal_roof_y := SIGNAL_Y + WALL_HEIGHT + 0.2  # 10.4
+	# Barandillas de la cubierta elevada del voladizo (y = 10.4).
+	_railing_x(-19.0, 2.0, -29.0, signal_roof_y)
+	_railing_z(-19.0, -29.0, -12.0, signal_roof_y)
+	_railing_z(2.0, -29.0, -12.0, signal_roof_y)
+	_railing_x(-19.0, -1.55, -12.0, signal_roof_y)
+	_railing_x(0.95, 2.0, -12.0, signal_roof_y)
+
+	# Barandillas del cuerpo trasero (y = 8.8).
+	_railing_z(-19.0, -12.0, 7.5, 8.8)
 	_railing_x(2.0, 19.0, -12.0, 8.8)
 	_railing_x(-19.0, 19.0, 7.5, 8.8)
 	_railing_x(19.0, 36.0, -12.0, 8.8)
@@ -443,17 +493,17 @@ func _build_roof() -> void:
 	pad.add_to_group("drone_pad")
 	add_child(pad)
 
-	# Parabólica icónica sobre el techo de Sala de Señales + mástil y respiraderos.
-	_box("metal", Vector3(-7.5, 9.0, -18.5), Vector3(2.0, 0.45, 2.0))
-	_box("dark_metal", Vector3(-7.5, 10.15, -18.5), Vector3(0.6, 2.1, 0.6))
+	# Parabólica icónica sobre la cubierta elevada de Sala de Señales (y = 10.4) + respiraderos.
+	_box("metal", Vector3(-7.5, signal_roof_y + 0.2, -18.5), Vector3(2.0, 0.45, 2.0))
+	_box("dark_metal", Vector3(-7.5, signal_roof_y + 1.35, -18.5), Vector3(0.6, 2.1, 0.6))
 	_dish_transforms.append(Transform3D(Basis(Vector3.RIGHT, -0.55).scaled(Vector3(1.6, 1.6, 1.6)),
-		Vector3(-7.5, 11.4, -18.5)))
+		Vector3(-7.5, signal_roof_y + 2.6, -18.5)))
 
 	_box("dark_metal", Vector3(-13.0, 9.35, -2.0), Vector3(3.6, 1.1, 2.6))
 	_box("dark_metal", Vector3(5.0, 9.3, 1.0), Vector3(2.8, 1.0, 2.8))
 	_box("metal", Vector3(13.0, 11.8, -4.0), Vector3(0.32, 6.0, 0.32))
 	_box("led_red", Vector3(13.0, 14.9, -4.0), Vector3(0.28, 0.28, 0.28), Basis.IDENTITY, false)
-	_note("AZOTEA / PARABÓLICA PRINCIPAL", Vector3(-7.5, 12.2, -18.5))
+	_note("AZOTEA / PARABÓLICA PRINCIPAL", Vector3(-7.5, signal_roof_y + 3.4, -18.5))
 
 
 func _build_props() -> void:
@@ -464,7 +514,6 @@ func _build_props() -> void:
 	_box("warning", Vector3(14.8, 0.65, -26.9), Vector3(0.28, 1.3, 0.28))
 	_box("light", Vector3(10.5, 4.05, -26.75), Vector3(1.4, 0.16, 0.16), Basis.IDENTITY, false)
 	_zone_light(Vector3(10.5, 3.85, -28.0), 16.0, 1.7, WARM_LIGHT)
-	# Banco de trabajo y herramientas en muro oeste del garaje.
 	_box("wood", Vector3(3.1, 0.5, -16.0), Vector3(1.4, 1.0, 5.2))
 	_box("dark_metal", Vector3(2.25, 1.85, -16.0), Vector3(0.1, 1.2, 4.4))
 	_box("metal", Vector3(3.3, 1.05, -9.5), Vector3(1.6, 2.1, 2.8))
@@ -482,11 +531,10 @@ func _build_props() -> void:
 	lockers.add_to_group("lockers")
 	add_child(lockers)
 	_box("dark_metal", Vector3(19.25, 1.9, -13.8), Vector3(0.1, 1.4, 2.6))
-	_note("DIRECTORIO\nPLANTA 0: GARAJE / ALMACÉN\nPLANTA 1: CONTROL / SERVIDORES / DESCANSO\nSÓTANO: BREAKER",
+	_note("DIRECTORIO\nPLANTA 0: GARAJE / ALMACÉN\nPLANTA 1: SERVIDORES / DESCANSO\nPUENTE: CONTROL DE SEÑALES\nSÓTANO: BREAKER",
 		Vector3(19.4, 2.1, -13.8))
 
 	# --- PLANTA BAJA: ALMACÉN DE SUMINISTROS ---
-	# Centro/Sur (x=7..15, z=0..6) libre para TestMachine y TestItem durante el prototipado.
 	for i in 4:
 		_box("metal", Vector3(2.9, 1.2, -4.8 + float(i) * 3.0), Vector3(1.0, 2.4, 2.4))
 	for i in 3:
@@ -498,7 +546,7 @@ func _build_props() -> void:
 	for bx in [-14.0, -4.5, 5.0, 14.5]:
 		_box("dark_metal", Vector3(bx, 8.35, -9.5), Vector3(9.0, 0.14, 0.75), Basis.IDENTITY, false)
 	_box("metal", Vector3(-18.2, 5.5, -9.5), Vector3(0.9, 2.2, 3.4))
-	_note("← SERVIDORES (AISLADOS)\nDESCANSO / COCINA / BAÑO →", Vector3(0.0, 7.0, -7.2))
+	_note("← SERVIDORES | ↑ PUENTE SEÑALES | DESCANSO / BAÑO →", Vector3(0.0, 7.0, -7.2))
 
 	# --- PLANTA ALTA: SALA DE SERVIDORES (CERRADA, 30 RACKS EN PASILLOS AMPLIOS) ---
 	for row in 6:
@@ -541,7 +589,6 @@ func _build_props() -> void:
 	_box("glass", Vector3(15.7, 5.6, -1.8), Vector3(0.05, 2.3, 2.8), Basis.IDENTITY, false)
 
 	# --- SÓTANO: CUARTO DE ENERGÍA Y BREAKER ---
-	# Cuadro de breaker en muro norte (z = -12.0), mirando hacia +Z.
 	_box("dark_metal", Vector3(10.5, -2.95, -11.55), Vector3(3.4, 2.1, 0.35))
 	for i in 5:
 		_box("warning", Vector3(9.3 + float(i) * 0.6, -3.45, -11.25), Vector3(0.26, 0.14, 0.12))
@@ -553,18 +600,15 @@ func _build_props() -> void:
 	add_child(breaker)
 	_note("BREAKER PRINCIPAL\nNO REARMAR CON CARGA", Vector3(10.5, -1.3, -11.4))
 
-	# Dos generadores diésel grandes al oeste del sótano.
 	for gz in [-4.5, 2.5]:
 		_box("dark_metal", Vector3(5.8, -3.4, gz), Vector3(3.6, 2.1, 2.0))
 		_box("warning", Vector3(5.8, -4.35, gz), Vector3(4.0, 0.08, 2.4))
 		_box("metal", Vector3(4.6, -1.85, gz), Vector3(0.38, 1.3, 0.38))
 
-	# Armarios interiores de control de transformadores en muro sur (z = 6.7).
 	for i in 3:
 		_box("dark_metal", Vector3(6.2 + float(i) * 4.2, -3.0, 6.7), Vector3(2.4, 2.5, 0.85))
 		_box("screen", Vector3(6.2 + float(i) * 4.2, -2.65, 6.22), Vector3(1.1, 0.55, 0.04), Basis.IDENTITY, false)
 
-	# Depósito de combustible.
 	_box("metal", Vector3(16.2, -3.3, -7.5), Vector3(2.4, 2.3, 3.8))
 
 
@@ -585,80 +629,78 @@ func _build_snowcat_placeholder(pos: Vector3) -> void:
 	_box("light", pos + Vector3(0.82, 1.3, -2.05), Vector3(0.3, 0.22, 0.08), Basis.IDENTITY, false)
 
 
-## Detalle de Sala de Control de Señales (y = 4.4): ventanal panorámico en voladizo,
+## Detalle de Sala de Control de Señales elevada (y = 6.0): ventanal en voladizo,
 ## bancada de 4 estaciones, impresora matricial, mesa cálida central y vistas exteriores.
 func _build_signal_room() -> void:
-	var window := _signal_detail("SignalWindow", Vector3(-8.5, 6.8, -29.0))
+	var y := SIGNAL_Y
+	var window := _signal_detail("SignalWindow", Vector3(-8.5, y + 2.4, -29.0))
 	window.set_meta("width", BaseLayout.SIGNAL_WINDOW_WIDTH)
 
-	# Parteluces del ventanal panorámico de 3 paños.
 	for mx in [-14.0, -3.0]:
-		_box("dark_metal", Vector3(mx, 6.8, -28.92), Vector3(0.18, 2.8, 0.24), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(mx, y + 2.4, -28.92), Vector3(0.18, 2.8, 0.24), Basis.IDENTITY, false)
 
-	# Vigas estructurales de hormigón y bandejas portacables vistas en techo (y = 8.1..8.5).
 	for bz in [-25.0, -21.0, -17.0]:
-		_box("wall", Vector3(-8.5, 8.35, bz), Vector3(20.6, 0.34, 0.48), Basis.IDENTITY, false)
+		_box("wall", Vector3(-8.5, y + 3.95, bz), Vector3(20.6, 0.34, 0.48), Basis.IDENTITY, false)
 	for cx in [-13.5, -3.5]:
-		_box("dark_metal", Vector3(cx, 8.1, -20.5), Vector3(0.85, 0.14, 15.6), Basis.IDENTITY, false)
-		_box("light", Vector3(cx, 8.05, -23.0), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
-		_box("light", Vector3(cx, 8.05, -17.5), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(cx, y + 3.7, -20.5), Vector3(0.85, 0.14, 15.6), Basis.IDENTITY, false)
+		_box("light", Vector3(cx, y + 3.65, -23.0), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
+		_box("light", Vector3(cx, y + 3.65, -17.5), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
 
-	# Bancada de 4 máquinas físicas frente al ventanal panorámico (y = 4.4 -> marcadores en 5.65).
-	_add_panel(-15.5, 4.4, -27.2, 0)  # CoordinatesPanel
-	_add_panel(-10.8, 4.4, -27.9, 1)  # DownloadsPanel
-	_add_panel(-5.8, 4.4, -27.9, 2)   # Playback + SellDock
-	_add_panel(-1.2, 4.4, -27.2, 3)   # ProcessingPanel
+	# Bancada de 4 máquinas físicas frente al ventanal panorámico (y = 6.0 -> marcadores en 7.25).
+	_add_panel(-15.5, y, -27.2, 0)
+	_add_panel(-10.8, y, -27.9, 1)
+	_add_panel(-5.8, y, -27.9, 2)
+	_add_panel(-1.2, y, -27.2, 3)
 
-	# Consola física provisional de Reproducción (Panel 3).
-	_box("dark_metal", Vector3(-5.8, 5.0, -27.9), Vector3(2.4, 1.2, 0.78))
-	_box("screen", Vector3(-6.1, 5.45, -27.49), Vector3(1.2, 0.58, 0.04), Basis.IDENTITY, false)
-	_box("metal", Vector3(-4.65, 5.15, -27.65), Vector3(0.48, 0.36, 0.48), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-5.8, y + 0.6, -27.9), Vector3(2.4, 1.2, 0.78))
+	_box("screen", Vector3(-6.1, y + 1.05, -27.49), Vector3(1.2, 0.58, 0.04), Basis.IDENTITY, false)
+	_box("metal", Vector3(-4.65, y + 0.75, -27.65), Vector3(0.48, 0.36, 0.48), Basis.IDENTITY, false)
 
 	# Estación de terminal de gestión (MainComputer) en flanco oeste.
-	_box("dark_metal", Vector3(-16.0, 4.9, -18.5), Vector3(2.2, 1.0, 1.2))
-	_box("dark_metal", Vector3(-16.0, 5.75, -18.78), Vector3(1.3, 0.78, 0.52))
-	_box("screen", Vector3(-16.0, 5.75, -18.49), Vector3(0.96, 0.54, 0.04), Basis.IDENTITY, false)
-	_signal_detail("MainComputerMarker", Vector3(-16.0, 5.65, -18.5))
+	_box("dark_metal", Vector3(-16.0, y + 0.5, -18.5), Vector3(2.2, 1.0, 1.2))
+	_box("dark_metal", Vector3(-16.0, y + 1.35, -18.78), Vector3(1.3, 0.78, 0.52))
+	_box("screen", Vector3(-16.0, y + 1.35, -18.49), Vector3(0.96, 0.54, 0.04), Basis.IDENTITY, false)
+	_signal_detail("MainComputerMarker", Vector3(-16.0, y + 1.25, -18.5))
 
 	# Mesa cálida central con alfombra gastada, lámpara de bronce y mapas.
-	_signal_detail("TarimaBaja", Vector3(-8.5, 4.42, -20.0))
-	_box("rug", Vector3(-8.5, 4.415, -20.0), Vector3(7.8, 0.03, 5.0), Basis.IDENTITY, false)
-	_box("wood", Vector3(-8.5, 5.18, -20.0), Vector3(4.0, 0.12, 1.8))
+	_signal_detail("TarimaBaja", Vector3(-8.5, y + 0.02, -20.0))
+	_box("rug", Vector3(-8.5, y + 0.015, -20.0), Vector3(7.8, 0.03, 5.0), Basis.IDENTITY, false)
+	_box("wood", Vector3(-8.5, y + 0.78, -20.0), Vector3(4.0, 0.12, 1.8))
 	for lx in [-1.65, 1.65]:
 		for lz in [-0.7, 0.7]:
-			_box("dark_metal", Vector3(-8.5 + lx, 4.78, -20.0 + lz), Vector3(0.1, 0.76, 0.1))
-	_box("paper", Vector3(-8.6, 5.25, -19.95), Vector3(1.5, 0.02, 1.0), Basis(Vector3.UP, 0.12), false)
-	_box("dark_metal", Vector3(-9.9, 5.48, -19.55), Vector3(0.18, 0.48, 0.18), Basis.IDENTITY, false)
-	_box("light", Vector3(-9.9, 5.74, -19.55), Vector3(0.34, 0.18, 0.34), Basis.IDENTITY, false)
-	_zone_light(Vector3(-9.9, 5.85, -19.55), 8.5, 1.6, WARM_LIGHT)
+			_box("dark_metal", Vector3(-8.5 + lx, y + 0.38, -20.0 + lz), Vector3(0.1, 0.76, 0.1))
+	_box("paper", Vector3(-8.6, y + 0.85, -19.95), Vector3(1.5, 0.02, 1.0), Basis(Vector3.UP, 0.12), false)
+	_box("dark_metal", Vector3(-9.9, y + 1.08, -19.55), Vector3(0.18, 0.48, 0.18), Basis.IDENTITY, false)
+	_box("light", Vector3(-9.9, y + 1.34, -19.55), Vector3(0.34, 0.18, 0.34), Basis.IDENTITY, false)
+	_zone_light(Vector3(-9.9, y + 1.45, -19.55), 8.5, 1.6, WARM_LIGHT)
 	for cx in [-9.6, -7.4]:
-		_box("wood", Vector3(cx, 4.85, -18.4), Vector3(0.7, 0.9, 0.7))
+		_box("wood", Vector3(cx, y + 0.45, -18.4), Vector3(0.7, 0.9, 0.7))
 
-	# Mesa de discos junto a Procesado (MesaDiscos: superficie en y=5.2 -> disco en 5.35).
-	_signal_detail("MesaDiscos", Vector3(-2.8, 5.2, -20.5))
-	_box("wood", Vector3(-2.8, 5.18, -20.5), Vector3(2.4, 0.12, 1.2))
+	# Mesa de discos junto a Procesado (MesaDiscos: superficie en y=6.8 -> disco en 6.95).
+	_signal_detail("MesaDiscos", Vector3(-2.8, y + 0.8, -20.5))
+	_box("wood", Vector3(-2.8, y + 0.78, -20.5), Vector3(2.4, 0.12, 1.2))
 	for dx in [-1.05, 1.05]:
 		for dz in [-0.46, 0.46]:
-			_box("dark_metal", Vector3(-2.8 + dx, 4.78, -20.5 + dz), Vector3(0.09, 0.76, 0.09))
+			_box("dark_metal", Vector3(-2.8 + dx, y + 0.38, -20.5 + dz), Vector3(0.09, 0.76, 0.09))
 	for i in 3:
-		_box("metal", Vector3(-3.4 + float(i) * 0.65, 5.26, -20.5),
+		_box("metal", Vector3(-3.4 + float(i) * 0.65, y + 0.86, -20.5),
 			Vector3(0.44, 0.03, 0.44), Basis.IDENTITY, false)
 
 	# Impresora matricial física en el lado este junto a la puerta de terraza.
-	var printer := _signal_detail("PrinterPlaceholder", Vector3(0.9, 5.2, -17.5))
+	var printer := _signal_detail("PrinterPlaceholder", Vector3(0.9, y + 0.8, -17.5))
 	printer.add_to_group("printer_placeholder")
-	_box("metal", Vector3(0.9, 4.8, -17.5), Vector3(1.2, 0.8, 1.0))
-	_box("paper", Vector3(0.9, 5.42, -17.5), Vector3(0.8, 0.4, 0.65))
-	_box("paper", Vector3(0.5, 5.22, -17.5), Vector3(0.34, 0.03, 0.52), Basis(Vector3.BACK, 0.35), false)
-	_box("led_green", Vector3(0.52, 5.58, -17.2), Vector3(0.06, 0.06, 0.04), Basis.IDENTITY, false)
-	_note("IMPRESORA MATRICIAL", Vector3(0.85, 6.05, -17.5))
+	_box("metal", Vector3(0.9, y + 0.4, -17.5), Vector3(1.2, 0.8, 1.0))
+	_box("paper", Vector3(0.9, y + 1.02, -17.5), Vector3(0.8, 0.4, 0.65))
+	_box("paper", Vector3(0.5, y + 0.82, -17.5), Vector3(0.34, 0.03, 0.52), Basis(Vector3.BACK, 0.35), false)
+	_box("led_green", Vector3(0.52, y + 1.18, -17.2), Vector3(0.06, 0.06, 0.04), Basis.IDENTITY, false)
+	_note("IMPRESORA MATRICIAL", Vector3(0.85, y + 1.65, -17.5))
 
-	# Tablones de notas y armarios en muro sur (z = -12.35).
-	_box("wood", Vector3(-13.8, 6.4, -12.22), Vector3(2.8, 1.4, 0.08), Basis.IDENTITY, false)
-	_box("paper", Vector3(-14.2, 6.5, -12.17), Vector3(0.7, 0.55, 0.02), Basis.IDENTITY, false)
-	_box("paper", Vector3(-13.1, 6.3, -12.17), Vector3(0.65, 0.75, 0.02), Basis.IDENTITY, false)
-	_box("dark_metal", Vector3(-1.8, 5.5, -12.45), Vector3(4.0, 2.2, 0.75))
-	_signal_detail("RadarPared", Vector3(-18.7, 6.4, -14.2))
+	# Tablones de notas y armarios en los laterales del muro sur.
+	_box("wood", Vector3(-13.8, y + 2.0, -12.22), Vector3(2.8, 1.4, 0.08), Basis.IDENTITY, false)
+	_box("paper", Vector3(-14.2, y + 2.1, -12.17), Vector3(0.7, 0.55, 0.02), Basis.IDENTITY, false)
+	_box("paper", Vector3(-13.1, y + 1.9, -12.17), Vector3(0.65, 0.75, 0.02), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-1.8, y + 1.1, -12.45), Vector3(4.0, 2.2, 0.75))
+	_signal_detail("RadarPared", Vector3(-18.7, y + 2.0, -14.2))
 
 
 func _signal_detail(detail_name: String, pos: Vector3) -> Marker3D:
@@ -679,155 +721,167 @@ func _add_panel(px: float, floor_y: float, pz: float, index: int) -> void:
 
 
 func _build_exterior() -> void:
-	# Explanada de hormigón exterior (bajo voladizo, garaje, vestíbulo y entrega alt.).
-	_box("floor", Vector3(8.5, -0.09, -31.75), Vector3(59.0, 0.2, 10.5))
-	_box("floor", Vector3(-8.5, -0.09, -19.25), Vector3(21.0, 0.2, 14.5))
+	# Explanada de hormigón frente al garaje, vestíbulo y zona alternativa de entrega.
+	_box("floor", Vector3(19.0, -0.09, -31.75), Vector3(34.0, 0.2, 10.5))
 	_box("floor", Vector3(33.5, -0.09, -19.25), Vector3(5.0, 0.2, 14.5))
 	_box("warning", Vector3(33.5, 0.025, -19.25), Vector3(3.8, 0.02, 5.2), Basis.IDENTITY, false)
+	# Muros de contención exteriores de hormigón alrededor del sótano hasta y = 0.0.
+	_box("wall", Vector3(2.0, -2.2, -2.25), Vector3(0.4, 4.6, 19.5))
+	_box("wall", Vector3(19.0, -2.2, 7.5), Vector3(34.0, 4.6, 0.4))
 
-	# Suelo de nieve continuo en anillo de 1,4 km alrededor de la huella cerrada del edificio [2..36] x [-26.5..7.5].
-	_box("snow", Vector3(0.0, -0.2, -363.25), Vector3(1400.0, 0.4, 673.5))
-	_box("snow", Vector3(0.0, -0.2, 353.75), Vector3(1400.0, 0.4, 692.5))
-	_box("snow", Vector3(-349.0, -0.2, -9.5), Vector3(702.0, 0.4, 34.0))
-	_box("snow", Vector3(368.0, -0.2, -9.5), Vector3(664.0, 0.4, 34.0))
+	# Afloramientos de roca junto a la embocadura del garaje y ladera oeste (estilo concept art).
+	var rock_clusters := [
+		{"pos": Vector3(0.2, 0.4, -27.8), "size": Vector3(3.6, 2.4, 4.2), "yaw": 0.25},
+		{"pos": Vector3(-1.2, 1.2, -13.0), "size": Vector3(4.5, 3.2, 5.0), "yaw": -0.35},
+		{"pos": Vector3(-22.5, 1.6, -6.0), "size": Vector3(8.0, 5.0, 12.0), "yaw": 0.18},
+		{"pos": Vector3(4.0, 2.2, 11.5), "size": Vector3(18.0, 5.2, 7.0), "yaw": -0.08},
+	]
+	for rc_variant in rock_clusters:
+		var rc: Dictionary = rc_variant
+		var rp: Vector3 = rc["pos"]
+		_box("rock", rp, rc["size"], Basis(Vector3.UP, float(rc["yaw"])))
 
-	# Ladera rocosa y nevada abrazando la parte trasera y flanco oeste de la estación.
-	_box("rock", Vector3(8.5, 2.3, 15.0), Vector3(68.0, 5.0, 15.0))
-	_box("snow", Vector3(8.5, 4.9, 16.0), Vector3(68.0, 0.5, 13.0))
-	_box("rock", Vector3(8.5, 6.5, 26.5), Vector3(74.0, 8.0, 16.0))
-	_box("snow", Vector3(8.5, 10.6, 27.5), Vector3(74.0, 0.6, 14.0))
-	_box("rock", Vector3(-28.0, 2.1, 1.5), Vector3(16.0, 4.6, 18.0))
-	_box("snow", Vector3(-28.0, 4.5, 1.5), Vector3(16.0, 0.5, 18.0))
+	# Postes de luz de madera siguiendo la pista del Snowcat en el valle norte (-Z).
+	var pole_points := [
+		Vector2(17.5, -42.0),
+		Vector2(21.5, -66.0),
+		Vector2(35.0, -96.0),
+		Vector2(22.0, -132.0),
+		Vector2(-10.0, -172.0),
+	]
+	for pt_variant in pole_points:
+		var pt: Vector2 = pt_variant
+		var py := TerrainMap.height_at(pt.x, pt.y)
+		_box("wood", Vector3(pt.x, py + 3.2, pt.y), Vector3(0.28, 6.4, 0.28))
+		_box("wood", Vector3(pt.x, py + 6.0, pt.y), Vector3(1.8, 0.2, 0.2))
+		_box("dark_metal", Vector3(pt.x, py + 5.75, pt.y), Vector3(0.32, 0.45, 0.32), Basis.IDENTITY, false)
 
-	# Postes de luz de madera siguiendo la pista hacia el claro norte (-Z).
-	for i in 5:
-		var pz := -42.0 - float(i) * 19.0
-		var px := 10.5 + float(i) * 8.0
-		_box("wood", Vector3(px, 3.2, pz), Vector3(0.28, 6.4, 0.28))
-		_box("wood", Vector3(px, 6.0, pz), Vector3(1.8, 0.2, 0.2))
-		_box("dark_metal", Vector3(px, 5.75, pz), Vector3(0.32, 0.45, 0.32), Basis.IDENTITY, false)
-
-	# Bosque de pinos en el borde del claro.
+	# Bosque de pinos anclado a la cota real del terreno en los bordes de pista y laderas.
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 198304
-	for i in 52:
-		var angle := TAU * float(i) / 52.0 + rng.randf_range(-0.04, 0.04)
-		var radius := rng.randf_range(54.0, 125.0)
+	for i in 120:
+		var angle := TAU * float(i) / 120.0 + rng.randf_range(-0.04, 0.04)
+		var radius := rng.randf_range(56.0, 210.0)
 		var tx := cos(angle) * radius
-		var tz := -22.0 + sin(angle) * radius
-		if absf(tx - 10.5) < 14.0 and tz > -64.0 and tz < -18.0:
+		var tz := -30.0 + sin(angle) * radius
+		if TerrainMap.road_factor(tx, tz) > 0.08:
 			continue
-		if tx > -32.0 and tx < 45.0 and tz > -36.0 and tz < 36.0:
+		if tx > -32.0 and tx < 50.0 and tz > -42.0 and tz < 32.0:
 			continue
-		var h := rng.randf_range(7.0, 13.5)
-		_box("wood", Vector3(tx, h * 0.18, tz), Vector3(0.45, h * 0.36, 0.45))
-		_box("pine", Vector3(tx, h * 0.45, tz), Vector3(3.4, h * 0.32, 3.4), Basis.IDENTITY, false)
-		_box("pine", Vector3(tx, h * 0.68, tz), Vector3(2.4, h * 0.28, 2.4), Basis.IDENTITY, false)
-		_box("snow", Vector3(tx, h * 0.88, tz), Vector3(1.2, h * 0.16, 1.2), Basis.IDENTITY, false)
+		var ty := TerrainMap.height_at(tx, tz)
+		if ty > 28.0:
+			continue
+		var h := rng.randf_range(7.5, 14.5)
+		_box("wood", Vector3(tx, ty + h * 0.18, tz), Vector3(0.45, h * 0.36, 0.45))
+		_box("pine", Vector3(tx, ty + h * 0.45, tz), Vector3(3.4, h * 0.32, 3.4), Basis.IDENTITY, false)
+		_box("pine", Vector3(tx, ty + h * 0.68, tz), Vector3(2.4, h * 0.28, 2.4), Basis.IDENTITY, false)
+		_box("snow", Vector3(tx, ty + h * 0.88, tz), Vector3(1.2, h * 0.16, 1.2), Basis.IDENTITY, false)
 
-	# Pico lejano al norte con domo radar y baliza roja visible desde el ventanal.
-	var peak_pos := Vector3(48.0, 0.0, -195.0)
-	_box("rock", peak_pos + Vector3(0.0, 14.0, 0.0), Vector3(72.0, 28.0, 56.0), Basis(Vector3.UP, 0.22), false)
-	_box("snow", peak_pos + Vector3(0.0, 28.0, 0.0), Vector3(52.0, 8.0, 40.0), Basis(Vector3.UP, 0.18), false)
-	_box("rock", peak_pos + Vector3(0.0, 35.0, 0.0), Vector3(30.0, 12.0, 24.0), Basis.IDENTITY, false)
-	_box("snow", peak_pos + Vector3(0.0, 41.5, 0.0), Vector3(16.0, 3.0, 14.0), Basis.IDENTITY, false)
-	_box("wall", peak_pos + Vector3(0.0, 44.5, 0.0), Vector3(4.5, 3.5, 4.5), Basis.IDENTITY, false)
-	_box("paper", peak_pos + Vector3(0.0, 47.8, 0.0), Vector3(4.0, 3.4, 4.0), Basis.IDENTITY, false)
-	_box("led_red", peak_pos + Vector3(0.0, 50.2, 0.0), Vector3(0.9, 0.9, 0.9), Basis.IDENTITY, false)
+	# Domo radar y baliza roja en la cima real del pico norte (TerrainMap.PEAK_CENTER).
+	var peak_xz := TerrainMap.PEAK_CENTER
+	var peak_y := TerrainMap.height_at(peak_xz.x, peak_xz.y)
+	var peak_pos := Vector3(peak_xz.x, peak_y, peak_xz.y)
+	_box("wall", peak_pos + Vector3(0.0, 1.75, 0.0), Vector3(4.8, 3.5, 4.8), Basis.IDENTITY, false)
+	_box("paper", peak_pos + Vector3(0.0, 5.1, 0.0), Vector3(4.1, 3.4, 4.1), Basis.IDENTITY, false)
+	_box("led_red", peak_pos + Vector3(0.0, 7.4, 0.0), Vector3(0.95, 0.95, 0.95), Basis.IDENTITY, false)
 	var peak_beacon := OmniLight3D.new()
-	peak_beacon.position = peak_pos + Vector3(0.0, 50.5, 0.0)
+	peak_beacon.position = peak_pos + Vector3(0.0, 7.8, 0.0)
 	peak_beacon.light_color = Color(1.0, 0.12, 0.1)
 	peak_beacon.light_energy = 4.5
 	peak_beacon.omni_range = 24.0
 	peak_beacon.shadow_enabled = false
 	add_child(peak_beacon)
 
-	# 24 platos satelitales en anillo de 250 m.
+	# 24 platos satelitales en anillo de 250 m, apoyados en sus claros del terreno.
 	for i in 24:
 		var angle := TAU * float(i) / 24.0
 		var px := cos(angle) * 250.0
 		var pz := sin(angle) * 250.0
+		var py := TerrainMap.height_at(px, pz)
 		var dish := Marker3D.new()
 		dish.name = "Dish%02d" % (i + 1)
-		dish.position = Vector3(px, 0.0, pz)
+		dish.position = Vector3(px, py, pz)
 		dish.add_to_group("satellite_dish")
 		add_child(dish)
-		_box("metal", Vector3(px, 0.15, pz), Vector3(1.2, 0.3, 1.2))
-		_box("metal", Vector3(px, 1.5, pz), Vector3(0.28, 3.0, 0.28))
+		_box("metal", Vector3(px, py + 0.15, pz), Vector3(1.2, 0.3, 1.2))
+		_box("metal", Vector3(px, py + 1.5, pz), Vector3(0.28, 3.0, 0.28))
 		_dish_transforms.append(Transform3D(Basis(Vector3(1.0, 0.0, 0.0), -0.55),
-			Vector3(px, 3.25, pz)))
+			Vector3(px, py + 3.25, pz)))
 		if i < 3:
-			_note("SAT-%02d" % (i + 1), Vector3(px, 4.8, pz))
+			_note("SAT-%02d" % (i + 1), Vector3(px, py + 4.8, pz))
 
 	# 3 transformadores exteriores al noreste del vestíbulo.
 	for i in 3:
 		var tx := 42.0
 		var tz := -21.0 + float(i) * 6.5
+		var ty := TerrainMap.height_at(tx, tz)
 		var transformer := Node3D.new()
 		transformer.name = "Transformer%d" % (i + 1)
-		transformer.position = Vector3(tx, 0.0, tz)
+		transformer.position = Vector3(tx, ty, tz)
 		transformer.add_to_group("transformer")
 		add_child(transformer)
-		_box("metal", Vector3(tx, 0.2, tz), Vector3(3.0, 0.4, 2.2))
-		_box("dark_metal", Vector3(tx, 1.4, tz), Vector3(2.4, 2.2, 1.6))
+		_box("metal", Vector3(tx, ty + 0.2, tz), Vector3(3.0, 0.4, 2.2))
+		_box("dark_metal", Vector3(tx, ty + 1.4, tz), Vector3(2.4, 2.2, 1.6))
 		for fin in 4:
-			_box("metal", Vector3(tx - 0.8 + float(fin) * 0.55, 1.4, tz + 0.85),
+			_box("metal", Vector3(tx - 0.8 + float(fin) * 0.55, ty + 1.4, tz + 0.85),
 				Vector3(0.35, 1.8, 0.1))
-		_box("warning", Vector3(tx, 2.2, tz + 0.82), Vector3(0.8, 0.4, 0.08))
-		_note("TRAFO %s" % ["A", "B", "C"][i], Vector3(tx, 3.2, tz))
+		_box("warning", Vector3(tx, ty + 2.2, tz + 0.82), Vector3(0.8, 0.4, 0.08))
+		_note("TRAFO %s" % ["A", "B", "C"][i], Vector3(tx, ty + 3.2, tz))
 
-	# 3 radares de coordenadas.
-	var radar_positions := [Vector3(-260.0, 0.0, -260.0), Vector3(260.0, 0.0, -260.0),
-		Vector3(0.0, 0.0, 300.0)]
+	# 3 radares de coordenadas anclados al terreno.
+	var radar_positions := [Vector2(-260.0, -260.0), Vector2(260.0, -260.0), Vector2(0.0, 300.0)]
 	for i in 3:
-		var rp: Vector3 = radar_positions[i]
+		var r2: Vector2 = radar_positions[i]
+		var rp := Vector3(r2.x, TerrainMap.height_at(r2.x, r2.y), r2.y)
 		var radar := Node3D.new()
 		radar.name = "CoordinateRadar%d" % (i + 1)
 		radar.position = rp
 		radar.add_to_group("coordinate_radar")
 		add_child(radar)
-		_box("metal", Vector3(rp.x, 0.2, rp.z), Vector3(2.0, 0.4, 2.0))
-		_box("metal", Vector3(rp.x, 3.0, rp.z), Vector3(0.5, 6.0, 0.5))
-		_box("dark_metal", Vector3(rp.x, 6.0, rp.z), Vector3(2.6, 0.2, 2.6))
-		_note("RADAR %d" % (i + 1), Vector3(rp.x, 7.2, rp.z))
+		_box("metal", Vector3(rp.x, rp.y + 0.2, rp.z), Vector3(2.0, 0.4, 2.0))
+		_box("metal", Vector3(rp.x, rp.y + 3.0, rp.z), Vector3(0.5, 6.0, 0.5))
+		_box("dark_metal", Vector3(rp.x, rp.y + 6.0, rp.z), Vector3(2.6, 0.2, 2.6))
+		_note("RADAR %d" % (i + 1), Vector3(rp.x, rp.y + 7.2, rp.z))
 
-	# 4 turbinas eólicas.
-	var turbine_positions := [Vector3(-560.0, 0.0, -560.0), Vector3(560.0, 0.0, -560.0),
-		Vector3(-560.0, 0.0, 560.0), Vector3(560.0, 0.0, 560.0)]
+	# 4 turbinas eólicas en lomas altas.
+	var turbine_positions := [Vector2(-560.0, -560.0), Vector2(560.0, -560.0),
+		Vector2(-560.0, 560.0), Vector2(560.0, 560.0)]
 	for i in 4:
-		var tp: Vector3 = turbine_positions[i]
+		var t2: Vector2 = turbine_positions[i]
+		var tp := Vector3(t2.x, TerrainMap.height_at(t2.x, t2.y), t2.y)
 		var turbine := Node3D.new()
 		turbine.name = "WindTurbine%d" % (i + 1)
 		turbine.position = tp
 		turbine.add_to_group("wind_turbine")
 		add_child(turbine)
-		_box("metal", Vector3(tp.x, 9.0, tp.z), Vector3(1.2, 18.0, 1.2))
-		_box("dark_metal", Vector3(tp.x, 18.2, tp.z), Vector3(2.4, 1.0, 1.4))
+		_box("metal", Vector3(tp.x, tp.y + 9.0, tp.z), Vector3(1.2, 18.0, 1.2))
+		_box("dark_metal", Vector3(tp.x, tp.y + 18.2, tp.z), Vector3(2.4, 1.0, 1.4))
 		for blade in 3:
 			var blade_angle := TAU * float(blade) / 3.0
 			var blade_basis := Basis(Vector3(0.0, 0.0, 1.0), blade_angle)
-			_box("metal", Vector3(tp.x, 18.2, tp.z + 1.0) + blade_basis * Vector3(0.0, 3.5, 0.0),
+			_box("metal", Vector3(tp.x, tp.y + 18.2, tp.z + 1.0) + blade_basis * Vector3(0.0, 3.5, 0.0),
 				Vector3(0.25, 7.0, 0.08), blade_basis)
 
-	# Torre de radio principal.
-	var tower_pos := Vector3(400.0, 0.0, -150.0)
+	# Torre de radio principal en cota alta este.
+	var tower_xz := TerrainMap.RADIO_TOWER_POS
+	var tower_pos := Vector3(tower_xz.x, TerrainMap.height_at(tower_xz.x, tower_xz.y), tower_xz.y)
 	var tower := Node3D.new()
 	tower.name = "RadioTower"
 	tower.position = tower_pos
 	tower.add_to_group("radio_tower")
 	add_child(tower)
-	_box("metal", Vector3(tower_pos.x, 15.0, tower_pos.z), Vector3(1.0, 30.0, 1.0))
-	_box("metal", Vector3(tower_pos.x, 8.0, tower_pos.z + 1.2), Vector3(0.15, 16.0, 0.15))
-	_box("metal", Vector3(tower_pos.x, 22.0, tower_pos.z - 1.0), Vector3(0.15, 12.0, 0.15))
-	_box("led_red", Vector3(tower_pos.x, 30.4, tower_pos.z), Vector3(0.5, 0.5, 0.5), Basis.IDENTITY, false)
+	_box("metal", Vector3(tower_pos.x, tower_pos.y + 15.0, tower_pos.z), Vector3(1.0, 30.0, 1.0))
+	_box("metal", Vector3(tower_pos.x, tower_pos.y + 8.0, tower_pos.z + 1.2), Vector3(0.15, 16.0, 0.15))
+	_box("metal", Vector3(tower_pos.x, tower_pos.y + 22.0, tower_pos.z - 1.0), Vector3(0.15, 12.0, 0.15))
+	_box("led_red", Vector3(tower_pos.x, tower_pos.y + 30.4, tower_pos.z), Vector3(0.5, 0.5, 0.5), Basis.IDENTITY, false)
 	var tower_light := OmniLight3D.new()
-	tower_light.position = Vector3(tower_pos.x, 30.4, tower_pos.z)
+	tower_light.position = Vector3(tower_pos.x, tower_pos.y + 30.4, tower_pos.z)
 	tower_light.light_color = Color(1.0, 0.1, 0.08)
 	tower_light.light_energy = 3.0
 	tower_light.omni_range = 12.0
 	tower_light.shadow_enabled = false
 	add_child(tower_light)
-	_note("TORRE DE RADIO", Vector3(tower_pos.x, 31.5, tower_pos.z))
+	_note("TORRE DE RADIO", Vector3(tower_pos.x, tower_pos.y + 31.5, tower_pos.z))
 
 	# Iluminación exterior del claro y transformadores.
 	_zone_light(Vector3(42.0, 4.0, -14.5), 15.0, 1.5, WARM_LIGHT)
@@ -850,7 +904,7 @@ func _flush_batches() -> void:
 		multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		multimesh.mesh = mesh
 		multimesh.instance_count = transforms.size()
-		multimesh.custom_aabb = AABB(Vector3(-720.0, -20.0, -720.0), Vector3(1440.0, 90.0, 1440.0))
+		multimesh.custom_aabb = AABB(Vector3(-900.0, -30.0, -900.0), Vector3(1800.0, 160.0, 1800.0))
 		for i in transforms.size():
 			multimesh.set_instance_transform(i, transforms[i])
 		var instance := MultiMeshInstance3D.new()
@@ -869,7 +923,7 @@ func _flush_batches() -> void:
 		dish_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 		dish_multimesh.mesh = dish_mesh
 		dish_multimesh.instance_count = _dish_transforms.size()
-		dish_multimesh.custom_aabb = AABB(Vector3(-300.0, 0.0, -300.0), Vector3(600.0, 20.0, 600.0))
+		dish_multimesh.custom_aabb = AABB(Vector3(-350.0, -30.0, -350.0), Vector3(700.0, 100.0, 700.0))
 		for i in _dish_transforms.size():
 			dish_multimesh.set_instance_transform(i, _dish_transforms[i])
 		var dish_instance := MultiMeshInstance3D.new()
