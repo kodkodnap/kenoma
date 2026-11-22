@@ -75,7 +75,7 @@ func _make_materials() -> void:
 	_materials["ceiling"] = _material(Color(0.11, 0.12, 0.14), 0.0, 0.96)
 	_materials["metal"] = _material(Color(0.28, 0.31, 0.33), 0.55, 0.52)
 	_materials["dark_metal"] = _material(Color(0.10, 0.12, 0.14), 0.72, 0.45)
-	_materials["screen"] = _material(Color(0.03, 0.18, 0.16), 0.0, 0.35, Color(0.18, 0.96, 0.62), 2.3)
+	_materials["screen"] = _material(Color(0.03, 0.12, 0.10), 0.0, 0.35, Color(0.22, 0.65, 0.40), 0.75)
 	_materials["light"] = _material(Color(1.0, 0.88, 0.66), 0.0, 0.4, Color(1.0, 0.74, 0.38), 2.8)
 	_materials["snow"] = _material(Color(0.47, 0.55, 0.68), 0.0, 0.96)
 	_materials["rock"] = _material(Color(0.15, 0.17, 0.21), 0.0, 0.95)
