@@ -1,44 +1,29 @@
 # Backlog de ideas — Kenoma
 
-> Toda idea nueva se anota aquí antes de implementarla. Estados: `pendiente`, `en curso`, `hecho`,
-> `descartado`. Si una idea contradice el diseño o el original, se avisa y se propone la integración.
->
-> Formato: `ID | fecha | idea | estado | notas`.
+> Toda idea nueva o cambio de dirección se anota aquí con fecha y estado (`pendiente`, `en curso`,
+> `decidido`, `descartado`). Si contradice `DESIGN.md`, se actualiza `DESIGN.md` antes de programar.
 
 | ID | Fecha | Idea | Estado | Notas |
 |---|---|---|---|---|
-| I-001 | 2026-10-30 | Réplica fiel de los sistemas de *Voices of the Void*, con contenido y assets originales | en curso | Sustituye la visión inicial de “Ruido de Fondo”. Ver `ORIGINAL_FEATURES.md`. |
-| I-002 | 2026-10-30 | Catálogo exhaustivo del original por sistemas, con prioridad T1–T4 | hecho | `docs/ORIGINAL_FEATURES.md`. |
-| I-003 | 2026-10-30 | 15 hitos nuevos, del proyecto base al pulido | en curso | `docs/TASKS.md`; hito 0 cerrado. |
-| I-004 | 2026-10-30 | Nombres del original centralizados en `data/` para renombrarlos sin tocar código | pendiente | Se aplica desde el hito 2. |
-| I-005 | 2026-10-30 | Nombre definitivo del juego | hecho | **Kenoma**, elegido el 2026-10-31; repo `kodkodnap/kenoma`. |
-| I-006 | 2026-10-30 | Estilo visual low-poly original, coherente y barato | pendiente | Decidir paleta y silueta en el hito 3; modelos en el 12. |
-| I-007 | 2026-10-30 | Tutorial opcional y saltable | pendiente | No viola “sin guiar de la mano”; se decide en hito 9. |
-| I-008 | 2026-10-30 | Accesibilidad: subtítulos, FOV, sensibilidad, reducir sustos | pendiente | Hito 15; no recortar. |
-| I-009 | 2026-10-30 | Medir rendimiento en cada hito, no al final | en curso | F3 + presupuesto en `ARCHITECTURE.md`. |
-| I-010 | 2026-10-30 | Usar Poly Haven / Poly Pizza antes que generación 3D | pendiente | Pipeline en `ASSETS.md`; Hyper3D solo si falta. |
-| I-011 | 2026-10-30 | Primeras 8–12 señales de prueba con audio/imagen originales | hecho | Hito 5: 8 señales en `data/signals/catalog.json`, imagen y audio generados. |
-| I-012 | 2026-10-30 | Empezar con un solo minijuego de servidor y ampliar después | pendiente | Evita fatiga y alcance excesivo. |
-| I-014 | 2026-11-01 | Estación física: operar las máquinas con perillas, palancas y objetos, no con menús | en curso | Fase A hecha: consola de Descargas con CRT, vúmetro, lámpara y controles. Fases B–D en `TASKS.md`; el overlay queda solo para tareas y tienda. |
-| I-013 | 2026-11-01 | Catálogo procedural de 100+ señales, no 100 entradas a mano | pendiente | Después del hito 6: 10–15 señales de historia fijas + generador determinista con semilla por día, pools de nombre/tono/condición y selección diaria. El catálogo ya es JSON, así que no requiere refactor de `SignalSystem`. |
-
-## Ideas del usuario (pendientes de recibir)
-
-| Fecha | Idea | Estado | Notas |
-|---|---|---|---|
-| — | — | — | — |
+| I-001 | 2026-10-30 | Inspiración 100% en sistemas de *Voices of the Void* con identidad, arte, textos y giro propio | en curso | `DESIGN.md` §2 |
+| I-002 | 2026-10-31 | Nombre definitivo del proyecto: **Kenoma** | decidido | Repo `kodkodnap/kenoma` |
+| I-003 | 2026-11-01 | Flujo físico multi-máquina (nada de concentrar todo en una sola computadora) | en curso | Coordinates, Descargas, Procesado hechos; falta Playback físico + retirar overlay |
+| I-004 | 2026-11-01 | Catálogo procedural de 100+ señales deterministas por semilla/día | pendiente | Se añade cuando la base y mapa estén asentados |
+| I-005 | 2026-11-21 | **Dirección visual oficial:** PBR semi-realista estilizado (*Firewatch* + *Pacific Drive* + *Signalis*), brutalismo de los 80 en montaña nevada | decidido | Referencias en `references/art-direction/` (`base-exterior.png` y `base-interior-signal-room.png`) |
+| I-006 | 2026-11-21 | **Base en voladizo elevada** sobre pilares con garaje abajo y claro abierto sin vallas metálicas | pendiente (Hito 7) | Sustituye al plano cuadrado actual de 22 salas |
+| I-007 | 2026-11-21 | **Espacios amplios + luz cálida interior** (sensación de refugio cómodo, cero claustrofobia y cero FNAF sin pistas) | decidido | Regla de diseño para arquitectura, iluminación y eventos |
+| I-008 | 2026-11-21 | **Snowcat de orugas** como vehículo principal en un valle alpino enorme (caminar zonas lejanas costaría 1–2 días) | pendiente (Hito 8) | Sustituye al concepto genérico de ATV |
+| I-009 | 2026-11-21 | **Impresora matricial física** en sala de señales para papel continuo (hashcodes, reportes, alertas) | pendiente (Hito 7/9) | Refuerza flujo multi-máquina tangible |
+| I-010 | 2026-11-21 | **Entregas flexibles de suministros:** plataforma en el edificio, con posible aleatorización a puerta exterior u otras zonas | pendiente (Hito 8) | Concepto abierto a definir al construir el exterior |
+| I-011 | 2026-11-21 | Pipeline de modelado definitivo vía **OpenCode + Blender MCP** desde especificaciones en `ASSETS.md` | decidido | Placeholders en Godot primero; modelos en `ASSETS.md` §6 |
 
 ## Descartadas
 
 | Fecha | Idea | Motivo |
 |---|---|---|
-| 2026-10-30 | Copiar assets, textos, audio o código del original | El proyecto debe ser original. |
-| 2026-10-30 | Mantener la máquina de prueba del prototipo como diseño final | El original usa máquinas más complejas; se rehace. |
-| 2026-10-30 | Pantallas de carga entre zonas | El original es continuo; se usa carga por distancia. |
-| 2026-10-30 | Minimapa permanente y waypoints | Rompe la exploración y la dificultad. |
-
-## Plantilla
-
-```md
-| I-XXX | AAAA-MM-DD | Idea en una línea | pendiente | Por qué, cómo encaja, qué hito. |
-```
+| 2026-10-30 | Copiar assets, textos, audio o código literal de VotV | Identidad original obligatoria |
+| 2026-10-30 | Pantallas de carga entre zonas o minimapa/waypoints permanentes | Rompe inmersión y exploración |
+| 2026-11-21 | Versión web en Three.js (`src/`, raíz del repo) | Descartada hace tiempo; mantenida congelada solo como compatibilidad del entorno web |
+| 2026-11-21 | Estética "low-poly plano beige/verde" y distribución claustrofóbica de 22 salas | Sustituida por estilo PBR semi-realista estilizado, base amplia en voladizo y luz cálida |
+| 2026-11-21 | Vallas metálicas (`chain-link fences`) alrededor del claro de la base | Descartadas en favor de aislamiento abierto en ladera y bosque de pinos |
+| 2026-11-21 | Terror estilo FNAF (defenderte a ciegas esperando ataques sin indicios) | Sustituido por tensión ambiental, eventos aleatorios y pistas reales |

@@ -1,144 +1,89 @@
 # Assets — Kenoma
 
-> Todo el arte es original. No se importan modelos, texturas, audio ni animaciones del juego de
-> referencia. La estética se define aquí y se aplica a todos los modelos generados o comprados con
-> licencia compatible.
+> Todo el arte es original. La dirección visual oficial está fijada en las dos imágenes de
+> referencia en `references/art-direction/`:
+> - [`../../references/art-direction/base-exterior.png`](../../references/art-direction/base-exterior.png)
+> - [`../../references/art-direction/base-interior-signal-room.png`](../../references/art-direction/base-interior-signal-room.png)
+>
+> **Flujo con OpenCode + Blender MCP:** En fases de arquitectura y mecánicas se usan placeholders
+> limpios en Godot con medidas y cotas reales. Cada objeto definitivo pendiente tiene abajo su
+> **Ficha para OpenCode / Blender MCP** para modelarlo en local manteniendo una sola línea visual.
 
-## 1. Dirección de arte
+## 1. Dirección de arte (Biblia Visual)
 
-- **Estilo:** low-poly estilizado, formas legibles, superficies planas y desgaste pintado, no fotorrealismo.
-- **Paleta base:** beige industrial, verde oliva, gris hormigón, naranja de seguridad, azul noche.
-- **Iluminación:** interiores cálidos y fluorescentes; exterior azul, niebla y sodio.
-- **Silueta:** las máquinas deben reconocerse a 10 m; los controles, a 2 m.
-- **Coherencia:** un solo set de materiales; nada de estilos mezclados sin motivo.
+- **Estilo:** **PBR semi-realista estilizado** (*Firewatch* en legibilidad de siluetas + *Pacific Drive* en iluminación volumétrica y materialidad retro-industrial de los 80 + *Signalis* en composición y contraste). **Sin fotorrealismo** ni low-poly plano.
+- **Arquitectura:** brutalismo de hormigón vertido de los 80, pilares/vigas de acero oscuro, bandejas portacables vistas, ventanales panorámicos inclinados, nieve y carámbanos en cornisas. Sin vallas de eslabones (*chain-link fences*).
+- **Paleta oficial:**
+  - **Exterior (Hora azul / Noche):** azul pizarra y noche alpina (`#1B2B40`, `#3B5878`), nieve fría, pinos verde-negro desaturado, acento rojo lejano (`#E04646`) en domo radar.
+  - **Interior habitable (Cálido):** luz tungsteno/ámbar (`#FFB454`, `#E88B38`), madera cálida, alfombras gastadas en tonos tierra/rojo apagado.
+  - **Consolas e industria:** gris pizarra / beige industrial envejecido, fósforo verde (`#63F29B`) y ámbar (`#FFAD42`) en CRTs, acero oscuro.
+  - **Pasillos/técnico:** hormigón gris neutro degradando a sombra (`#0B0E13`).
+- **Iluminación:** fuerte contraste cálido-vs-frío. Dentro de la base manda la luz cálida acogedora; la tensión nace de pasillos anchos en penumbra y del exterior frío más allá del cristal.
 
-## 2. Presupuesto
+## 2. Presupuesto de rendimiento
 
 | Tipo | Triángulos | Draw calls | Notas |
 |---|---:|---:|---|
-| Prop pequeño | < 2.000 | 1 | Latas, herramientas, comida |
-| Prop mediano | < 8.000 | 1–2 | Cajas, sillas, monitores |
-| Máquina principal | < 15.000 | 2–4 | Paneles, servidores, transformadores |
-| Edificio modular | < 30.000 | 4–8 | Base y platos |
-| Vegetación | < 500 por variante | MultiMesh | 3–4 variantes + LOD |
+| Prop pequeño | < 2.000 | 1 | Tazas, papeles, discos, herramientas |
+| Prop mediano | < 8.000 | 1–2 | Mesa, impresora matricial, sillas, cajas |
+| Máquina principal | < 15.000 | 2–4 | Consolas de señales, servidores, transformadores |
+| Vehículo (Snowcat) | < 20.000 | 3–6 | Orugas, cabina, faros, zona de carga |
+| Edificio modular | < 45.000 | 8–16 | Base principal en voladizo + garaje |
+| Vegetación | < 600 por variante | MultiMesh | Pinos nevados (3–4 variantes + LOD) |
 | Entidad | < 12.000 | 1–3 | Rig simple si se anima |
 
-Presupuesto de escena: **< 150k triángulos visibles, < 250 draw calls, 60 FPS** en GTX 1050.
+Presupuesto objetivo de escena: **< 150k triángulos visibles, < 250 draw calls, 60 FPS** en GTX 1050.
 
-## 3. Convenciones
+## 3. Convenciones técnicas para Blender → Godot
 
-- 1 unidad = 1 metro. Exportar en metros, sin escalar en Godot.
-- Origen en el punto de apoyo o en el eje de rotación; nunca en el centro de la geometría si el objeto
-  se apoya en el suelo.
-- Ejes: Y arriba, −Z adelante, X derecha.
-- Colisión incluida o generada con `-col`; las partes móviles van separadas y con su propio origen.
-- Nombres: `sm_` estático, `sm_` con `_lod1`, `_lod2`; `sk_` esqueleto; `ui_` pantalla.
-- Materiales PBR simples: albedo, roughness, metallic; emisión solo en pantallas y LEDs.
-- Sin texturas mayores de 2048×2048; los props pequeños usan 512 o color plano.
+- **Escala:** `1 unidad = 1 metro`. Exportar en metros, sin escalar en Godot.
+- **Origen:** en la base (`y = 0` del suelo o pivote de giro en partes móviles).
+- **Ejes:** Y arriba, −Z adelante, X derecha (al exportar glTF con +Y Up).
+- **Partes móviles:** separadas como nodos independientes con pivote correcto (perillas, botones, palancas, puertas, portón de garaje, orugas/faros del snowcat, cabezal de impresora).
+- **Pantallas vivas:** nunca usar textura horneada fija para lo que cambia; dejar un bisel/plano guía limpio para montar `SubViewport` (`CrtScreen`) en Godot.
+- **Colisiones:** cajas simples en Godot o sufijos `-col` sencillos; nunca usar mallas complejas como collider.
+- **Texturas PBR:** albedo, roughness y metallic estilizados (máx. 2048×2048 en héroes/edificio; 512–1024 en props).
 
-## 4. Pipeline
+## 4. Pipeline y Prompt estándar para OpenCode + Blender MCP / Meshy
 
-1. **Placeholder** con CSG o primitivas para que el sistema sea jugable.
-2. **Bloqueo** de escala y colisión en Godot.
-3. **Búsqueda** en Poly Haven / Poly Pizza / assets con licencia compatible.
-4. **Generación** con Blender MCP o Hyper3D solo si no hay un asset adecuado.
-5. **Limpieza:** reducir polígonos, corregir normales, aplicar transformaciones, separar partes móviles.
-6. **Exportar GLB** a `assets/models/`.
-7. **Importar** en Godot, generar LOD y colisión.
-8. **Registrar** en este documento: nombre, fuente, prompt, tris, autoría/licencia.
-9. **Revisar** en el juego a escala real y con la iluminación final.
+### Prompt base consistente (estilo Kenoma)
+> *"Stylized semi-realistic PBR 3D asset (Firewatch meets Pacific Drive), 1980s retro-industrial brutalist mountain research equipment, clean readable silhouette, subtle worn painted metal / concrete textures, no photorealism, no logos, game-ready topology, neutral lighting."*
 
-### 4.1 Reglas de generación
+### Pasos
+1. Definir medidas y partes móviles en la tabla de especificaciones (Sección 6).
+2. Dejar placeholder en Godot a escala real para validar jugabilidad y distancia.
+3. Modelar/generar en local con **OpenCode + Blender MCP** (o refinar Meshy en Blender).
+4. Exportar `.glb` a `godot/assets/models/` y guardar referencia cruda si aplica en `references/<nombre>/`.
+5. Registrar tris, fuente y notas en este archivo.
 
-- Un prompt = un objeto, no una escena completa.
-- Prompt consistente: “low-poly stylized [objeto], muted industrial palette, clean topology, game-ready,
-  no text, no logos, neutral pose”.
-- Si la topología está rota, la escala es absurda o el origen es inútil, se regenera.
-- Los objetos con botones, palancas o puertas necesitan piezas separadas.
-- No se usa IA generativa para copiar el diseño de un asset existente.
-
-## 5. Registro de assets
-
-### 5.1 Placeholders actuales
+## 5. Assets ya integrados / en prototipo
 
 | Asset | Archivo | Tris aprox. | Estado | Nota |
 |---|---|---:|---|---|
-| Suelo de prueba | `scenes/main.tscn` | < 100 | placeholder | 40×40 m |
-| Paredes de prueba | `scenes/main.tscn` | < 200 | placeholder | 4 paredes |
-| Cajas | `scenes/main.tscn` | < 100 | placeholder | 3 cajas |
-| Jugador | `scenes/player/player.tscn` | 0 | provisional | Cápsula invisible |
-| Máquina de prueba | `scenes/machines/test_machine.tscn` | < 500 | prototipo | Se rehace en hito 2/3 |
-| Consola de Descargas | `scripts/machines/downloads_panel.gd` | < 15k | hecho (5.5-A) | Primitivas procedurales: chasis, CRT, vúmetro, lámpara y controles |
-| Consola de Coordinates | `scripts/machines/coordinates_panel.gd` + `assets/models/coordinates-console.glb` | 13.000 | hecho (5.5-B) | Gabinete GLB de Meshy (desde la imagen Nano Banana del usuario, crudo en `references/`; fuente `blender/coordinates-console.blend`): 1,24×1,58×1,13 m, origen en la base. Pantalla CRT viva curva (malla 18×12, `SubViewport` 720×480 + `CoordinatesScreen`) sobre el cristal horneado; perillas AZ/EL y ping como áreas invisibles alineadas con los mandos del modelo; medidores, joystick e interruptores decorativos |
-| Consola de Procesado | `scripts/machines/processing_panel.gd` + `assets/models/signal-processing-console.glb` | 2.960 + CRT 460 tris | hecho (5.5-D) | GLB exportado desde `blender/signal_console.blend` con `blender/export_processing_console.py`: 1,20×0,62×0,79 m, 12 mallas fusionadas por material (antes 74), 16 nodos. Se excluyen los tres planos de CRT y todos los objetos de texto para no importar contenido literal; el cristal y las etiquetas se regeneran en Godot. `CrtScreen` vivo en `SubViewport` 640×360 pegado al bisel `SIG_crt_bezel`; perilla FASE y pulsador CONFIRMAR invisibles sobre `SIG_dial_freq`/`SIG_slot_housing`,LED LOCK propio. El resto de diales, interruptores y EMF horneados quedan decorativos |
-| Disco de señal | `scenes/items/disk_media.tscn` + `scripts/items/disk_media.gd` | < 100 | hecho (5.6) | Primitivas procedurales: caja 0,24×0,02×0,16 m, ranura, LED emisivo y placa `Label3D` con id, nivel y valor; `ItemDef` en `data/items/disk.tres`,Extiende `Grabbable` |
-| Bandeja de discos | `scripts/interaction/disk_dock.gd` | 0 | hecho (5.6) | `Area3D` con forma de detección; guarda un `DiskMedia`, lo oculta al insertar y emite `disk_inserted`/`disk_ejected` |
-| Sala `signal` (ventanal y detalle) | `scripts/world/base_layout.gd` + `base_builder.gd` | +468 | hecho (5.6) | Ventanal de 10 m en z=-18: cristal `MachineMaterials.glass()`, marcos metálicos y fondo frío; 9 `Marker3D` en `signal_room_detail` (tarima, arco, radar, mesa, papeles, cableado y lámparas ámbar/azul) |
+| Consola de Descargas | `scripts/machines/downloads_panel.gd` | < 15k | prototipo funcional | Procedural en código: chasis, CRT, vúmetro, lámpara, 6 controles |
+| Consola de Coordinates | `assets/models/coordinates-console.glb` | 13.000 | integrado (revisar estilo PBR final) | 1,24×1,58×1,13 m; CRT curvo vivo en `SubViewport` + controles invisibles |
+| Consola de Procesado | `assets/models/signal-processing-console.glb` | 2.960 + CRT | integrado (revisar estilo PBR final) | 1,20×0,62×0,79 m; `CrtScreen` vivo + FASE/CONFIRMAR/LED LOCK |
+| Disco de señal | `scenes/items/disk_media.tscn` | < 100 | hecho | 0,24×0,02×0,16 m; placa `Label3D` + LED |
+| Bandeja de discos | `scripts/interaction/disk_dock.gd` | 0 | hecho | Ranura física de inserción |
+| Prototipos heredados (`TestMachine`, `TestItem`) | `scenes/machines/test_machine.tscn`, `scenes/items/test_item.tscn` | < 500 | **a retirar** | Se eliminan al rehacer la base y actualizar el smoke |
 
-### 5.2 Assets objetivo
+## 6. Fichas de modelos pendientes para OpenCode + Blender MCP
 
-| Asset | Hito | Fuente | Tris | Estado |
-|---|---:|---|---:|---|
-| Base modular (paredes, puertas, ventanas) | 3 | Propio / Poly Haven | < 30k | pendiente |
-| Panel de señal (4 variantes) | 5 | Propio | < 15k | 3 de 4 (Descargas 5.5-A, Coordinates 5.5-B, Procesado 5.5-D) |
-| Servidor (30 + 24) | 3/8 | Propio | < 8k | pendiente |
-| Transformador | 4 | Propio | < 15k | pendiente |
-| Breaker | 4 | Propio | < 8k | pendiente |
-| Plato satelital | 7 | Propio | < 30k | pendiente |
-| Radar | 7 | Propio | < 15k | pendiente |
-| Torre de radio | 7 | Propio | < 30k | pendiente |
-| ATV | 11 | Propio | < 15k | pendiente |
-| Entidades (6–12) | 10 | Propio | < 12k | pendiente |
-| Vegetación (3–4) | 7 | Poly Haven / Poly Pizza | < 500 | pendiente |
-| Ítems (comida, herramientas) | 11 | Poly Pizza / Propio | < 2k | pendiente |
+*(Estas fichas definen qué necesita el juego para que OpenCode pueda modelarlo en Blender con medidas reales y coherentes con las 2 imágenes de referencia).*
 
-## 6. Audio
+| ID | Asset | Medidas aprox. (m) | Partes móviles / nodos requeridos | Prioridad |
+|---|---|---|---|---|
+| `A-01` | **Base modular (Voladizo + Garaje + Pilares)** | Ala mando ~18×12×4,5 m (a y=4,5 m); garaje ~10×12×4 m abajo; pasillo ancho 3 m | Ventanal panorámico inclinado 3 paños, portón enrollable animado del garaje, puertas interiores, plataforma de entregas | **Alta (tras validar bloqueo en Godot)** |
+| `A-02` | **Snowcat de orugas** | ~4,2 × 2,4 × 2,5 m | Orugas izq/der, faros delanteros (luz cálida), puerta cabina, caja/portaequipajes trasero para cajas/discos | **Alta (Hito mapa/vehículo)** |
+| `A-03` | **Impresora Matricial de Consola** | ~0,75 × 0,55 × 0,45 m (sobre mesa/módulo derecho) | Tira de papel continuo saliendo (`paper_feed`), LED de estado, botón de corte/recoger hoja | **Alta (cierre sala señales)** |
+| `A-04` | **Consola de Reproducción (Playback)** | ~1,30 × 1,40 × 0,95 m | Pantalla CRT/espectro (`SubViewport`), dial de volumen/scrub, botón play/stop/guardar, ranura de disco | **Alta (cierre sala señales)** |
+| `A-05` | **Mobiliario cálido Sala de Mando** | Mesa 2,2×1,1×0,78 m; lámpara; alfombra 3,5×2,5 m; sillas | Lámpara orientable con foco cálido real | Media |
+| `A-06` | **Antena parabólica de azotea y Platos del valle** | Azotea ~4,5 m diámetro; Platos del valle ~8 m sobre base de hormigón | Pedestal fijo + plato giratorio (azimut) + brazo de elevación | Media |
+| `A-07` | **Pico lejano con Domo Radar** | Montaña distante + radomo cúpula | Baliza roja superior parpadeante | Media |
+| `A-08` | **Pinos nevados y rocas alpinas (kit)** | Pinos 8–16 m; rocas 1–4 m | Estáticos en `MultiMesh` + LOD1/LOD2 | Media |
+| `A-09` | **Racks de servidores y Transformadores** | Rack 0,8×2,1×0,9 m; Transformador 3,2×2,6×2,4 m | Puerta/panel frontal, LEDs verde/rojo, palanca de reparación | Media |
 
-- Todo el audio es original o de bancos con licencia compatible.
-- Ambiente por capas: viento, hojas, pájaros, agua, zumbido eléctrico, fluorescencia, metal.
-- Sin música continua; solo stingers y radios.
-- Formato: OGG para música/ambiente, WAV para efectos cortos.
-- Nombres: `amb_`, `sfx_`, `ui_`, `vo_`.
-- El audio se sintetiza cuando sea posible para ahorrar peso.
-- Ningún WAV de `blender/sounds/` entra en el juego; los textos literales del `.blend` se sustituyen
-  por etiquetas propias en `ProcessingPanel`.
+## 7. Audio
 
-## 7. Pantallas y UI
-
-- Las pantallas de computadora usan `SubViewport` con UI propia.
-- El CRT de la consola de Descargas es un `SubViewport` de 640×360 con `CrtScreen`: rejilla, traza,
-  barrido, viñeta y parpadeo dibujados en `_draw`, más un vidrio con reflejo generado. El tubo queda
-  dentro de un bisel atornillado con visera.
-- El CRT de Procesado reutiliza `CrtScreen` en un `SubViewport` 640×360 pegado al bisel del GLB;
-  `stability = decode_stability()` y `signal_level = 1` convierten la perilla FASE en jitter de la
-  traza en tiempo real, sin temporizadores.
-- Texturas de pantalla en 1024×768 o 1280×720; nada de fuentes ilegibles.
-- Los controles físicos (perillas, botones) son mallas separadas con animación.
-- El HUD es diegético siempre que se pueda: LEDs, notas, etiquetas.
-
-## 8. Licencias y autoría
-
-| Fuente | Licencia | Uso |
-|---|---|---|
-| Propio | — | Todos los assets principales |
-| Poly Haven | CC0 | Modelos y texturas |
-| Poly Pizza | CC0 / CC-BY según asset | Props y vegetación |
-| Hyper3D / Meshy | Según plan | Solo modelos originales generados |
-| Kenney | CC0 | UI y placeholders |
-
-Cada asset de terceros se registra con autor, URL y licencia. Si la licencia no está clara, no se usa.
-
-## 9. Verificación
-
-- [x] El modelo se ve bien a escala 1:1 (`docs/captures/05_procesado.png`).
-- [x] La sala de señales se ve en Forward+ con el ventanal de 10 m y las consolas
-      (`docs/captures/06_sala_senales.png`).
-- [x] El origen y la colisión son correctos.
-- [x] No supera el presupuesto.
-- [x] Las partes móviles están separadas.
-- [x] El material funciona con la iluminación del juego.
-- [x] Está registrado aquí.
-- [x] No hay assets del original.
-
-Nota: los materiales procedurales del `.blend` no sobreviven al glTF; el GLB llega con materiales
-simples y el CRT vivo se regenera en Godot. El panel lateral horneado queda liso.
+- Todo el audio es original o sintetizado (sin assets del juego original ni WAV literales de `blender/sounds/` que contienen nombres de VotV).
+- Capas clave: viento alpino, nieve bajo pasos, motor diésel y orugas del snowcat, zumbido de transformadores, impresora matricial, relés mecánicos, estática y voz/anomalías sutiles.

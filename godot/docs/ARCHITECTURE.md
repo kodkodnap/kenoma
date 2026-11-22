@@ -140,8 +140,8 @@ Data (Resources)
 | Clase | Responsabilidad | Estado |
 |---|---|---|
 | `Level` | Geometría, zonas, spawns, POIs. | prototipo |
-| `BaseLayout` | Plano puro de Alpha Root Base: 22 salas, puertas, plataformas y huecos de ventana, sin escena. | hecho (hito 5.6) |
-| `BaseBuilder` | Construye la base: MultiMesh por material, colisiones en un `StaticBody3D`, luces y props; ventanal de 10 m y nueve detalles en `signal`. | hecho (hito 5.6) |
+| `BaseLayout` | Plano puro de la base actual (v1: 22 salas, se sustituye en Hito 7 por Estación Kenoma en voladizo). | prototipo v1 |
+| `BaseBuilder` | Construye la base: MultiMesh por material, colisiones en un `StaticBody3D`, luces y props; a rehacer en Hito 7 con espacios amplios y luz cálida. | prototipo v1 |
 | `Door` | Puertas, cerraduras, breaker de Utilities. | pendiente |
 | `WeatherSystem` | Lluvia, niebla, tormenta, nieve, rayos. | pendiente |
 | `EntityDef` | Datos de entidad. | hecho (hito 2) |
@@ -247,7 +247,7 @@ decisions: {id: option}
 | 3 | item | Objetos agarrables |
 | 4 | player | Cápsula del jugador |
 | 5 | entity | Entidades |
-| 6 | vehicle | ATV |
+| 6 | vehicle | Snowcat |
 | 7 | trigger | Zonas de evento, POIs |
 | 8 | camera_block | Oclusión de cámaras |
 
@@ -326,14 +326,13 @@ Cada hito añade sus comprobaciones al smoke antes de implementar (TDD).
 | ScreenPanel | hecho | Overlay con SubViewport; pantallas 3D en hito 5 |
 | Entity / EventDirector | base | Sin IA ni eventos reales; hitos 10/13 |
 | PowerSystem | hecho | 3 × 1200 W, 5 circuitos, estabilidad, apagón y rearme; PowerGrid eliminado |
-| Alpha Root Base | hecho | 22 salas + props; 11.7k tris / 78 draws; recorridos y rampas verificados |
+| Base v1 (`BaseLayout`/`BaseBuilder`) | prototipo v1 | Se sustituye en Hito 7 por la base amplia en voladizo |
 | HUD | hecho | Stamina, batería, foco, hold, inventario, estado y red |
 | PerfOverlay | hecho | F3 |
-| SignalSystem / SignalConsole | hecho | 8 señales, catálogo JSON, cadena y venta; terminal reducida a Reproducción |
-| DailyCycle / CycleConsole | hecho | 75 min/día, tarea, tienda, dron, multa y bonus; snapshot en memoria |
-| Estación física (fases A, B y D) | hecho | Descargas, Coordinates y Procesado como consolas físicas; Procesado con FASE→LOCK→CONFIRMAR; terminal de una pestaña; 281 checks |
-| Sala de señales, mandos y disco (5.6) | hecho | Dial por arrastre angular con cámara bloqueada, disco con placa y dos ranuras, Procesado con progreso, ventanal de 10 m y 9 detalles; 334 checks, 244 draws / 52266 tris y captura Forward+ |
-| Servidores, consola y guardado | pendiente | Hitos 8 y 15 |
+| SignalSystem / SignalConsole | parcial | 8 señales, catálogo JSON, cadena y venta; falta Playback físico + Impresora Matricial y quitar overlay |
+| DailyCycle / CycleConsole | hecho | 75 min/día, tarea, tienda, entregas, multa y bonus; snapshot en memoria |
+| Estación física (Coords, Descargas, Procesado) | hecho | Consolas físicas con dial angular y disco físico; pendiente Playback + Impresora Matricial (Hito 7) |
+| Snowcat, mapa alpino, servidores y guardado | pendiente | Hitos 8, 9 y 15 |
 
 ## 12. Cómo añadir un sistema
 
