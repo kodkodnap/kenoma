@@ -9,6 +9,11 @@ const SIGNAL_Y := BaseLayout.SIGNAL_Y
 const WALL_THICKNESS := 0.25
 const FLOOR_THICKNESS := 0.2
 
+const KIT_WALL := preload("res://assets/models/kit/wall_brutalist_4m.glb")
+const KIT_PIER := preload("res://assets/models/kit/cantilever_pier_v.glb")
+const KIT_WINDOW := preload("res://assets/models/kit/window_bay_sloped_3m.glb")
+const KIT_FASCIA := preload("res://assets/models/kit/fascia_parapet_4m.glb")
+
 const ZONE_NAMES := {
 	"signal": "SALA DE CONTROL DE SEÑALES",
 	"drone_terrace": "TERRAZA DEL DRON",
@@ -43,6 +48,7 @@ var _tree_trunk_transforms: Array[Transform3D] = []
 var _tree_bough_transforms: Array[Transform3D] = []
 var _tree_snow_transforms: Array[Transform3D] = []
 var _collision: StaticBody3D
+var _kit_root: Node3D
 
 
 func _ready() -> void:
@@ -421,6 +427,9 @@ func _build_cantilever_structure() -> void:
 	_box("wall", Vector3(-8.5, soffit_y, -29.15), Vector3(21.7, 1.05, 0.55))
 	_box("wall", Vector3(-19.15, soffit_y, -20.5), Vector3(0.55, 1.05, 17.6))
 	_box("wall", Vector3(2.15, soffit_y, -20.5), Vector3(0.55, 1.05, 17.6))
+	# Cenefa modular con bisel y juntas: 3 piezas escaladas cubren el frente de 21.7 m.
+	for fx in [-15.75, -8.5, -1.25]:
+		_kit(KIT_FASCIA, Vector3(fx, soffit_y - 0.525, -29.0), Vector3(1.8, 1.0, 1.0))
 	_box("dark_metal", Vector3(-8.5, SIGNAL_Y - 0.02, -29.38), Vector3(21.9, 0.14, 0.18), Basis.IDENTITY, false)
 	_box("dark_metal", Vector3(-19.38, SIGNAL_Y - 0.02, -20.5), Vector3(0.18, 0.14, 17.8), Basis.IDENTITY, false)
 	_box("dark_metal", Vector3(2.38, SIGNAL_Y - 0.02, -20.5), Vector3(0.18, 0.14, 17.8), Basis.IDENTITY, false)
@@ -432,35 +441,17 @@ func _build_cantilever_structure() -> void:
 	for vx in [-16.8, -11.2, -5.8, -0.2]:
 		_box("dark_metal", Vector3(vx, soffit_y - 0.22, -20.5), Vector3(0.65, 0.52, 16.8))
 
-	# Tres pórticos delanteros macizos en V invertida con zapatas de hormigón y cartelas metálicas.
+	# Tres pórticos delanteros en V del kit: la zapata y los brazos son visibles,
+	# la colisión sigue siendo un volumen simple para no cambiar la física.
 	for px in [-16.8, -8.5, -0.2]:
 		var ground_y := TerrainMap.height_at(px, -25.8)
 		var foot_base := ground_y - 0.9
 		var top_y := soffit_y - 0.15
-		# Pedestal de hormigón macizo hundido en la ladera.
-		_box("wall", Vector3(px, foot_base + 0.95, -25.8), Vector3(2.45, 2.0, 2.55))
-		_box("metal", Vector3(px, foot_base + 1.98, -25.8), Vector3(2.15, 0.14, 2.25))
-
-		# Pilar principal inclinado hacia la arista delantera del voladizo.
-		var front_bot := Vector3(px, foot_base + 1.8, -26.35)
-		var front_top := Vector3(px, top_y, -28.45)
-		var front_vec := front_top - front_bot
-		var front_pitch := atan2(front_vec.z, front_vec.y)
-		_box("dark_metal", (front_bot + front_top) * 0.5,
-			Vector3(0.95, front_vec.length() + 0.3, 0.78), Basis(Vector3.RIGHT, front_pitch))
-
-		# Tornapunta trasera formando pórtico triangular rígido.
-		var rear_bot := Vector3(px, foot_base + 1.8, -25.25)
-		var rear_top := Vector3(px, top_y, -24.45)
-		var rear_vec := rear_top - rear_bot
-		var rear_pitch := atan2(rear_vec.z, rear_vec.y)
-		_box("dark_metal", (rear_bot + rear_top) * 0.5,
-			Vector3(0.68, rear_vec.length() + 0.2, 0.62), Basis(Vector3.RIGHT, rear_pitch))
-
-		# Cartela superior de hormigón + traviesa horizontal intermedia de acero.
-		_box("wall", Vector3(px, top_y - 0.25, -27.8), Vector3(1.3, 0.85, 2.2))
-		var brace_y := lerpf(foot_base + 1.9, top_y, 0.45)
-		_box("metal", Vector3(px, brace_y, -26.2), Vector3(0.55, 0.38, 2.65))
+		var foot_y := foot_base + 1.95
+		var pier_h := maxf(2.0, top_y - foot_y)
+		_collision_box(Vector3(px, foot_base + 0.95, -25.8), Vector3(2.45, 2.0, 2.55))
+		_collision_box(Vector3(px, foot_y + pier_h * 0.5, -25.8), Vector3(2.3, pier_h, 2.7))
+		_kit(KIT_PIER, Vector3(px, foot_y, -25.8), Vector3(1.0, pier_h / 6.2, 1.0))
 
 	# Pilares traseros robustos de apoyo cerca del arranque del voladizo.
 	for px in [-16.8, -1.4]:
@@ -774,9 +765,9 @@ func _build_signal_room() -> void:
 	var window := _signal_detail("SignalWindow", Vector3(-8.5, y + 2.4, -29.0))
 	window.set_meta("width", BaseLayout.SIGNAL_WINDOW_WIDTH)
 
-	for mx in [-14.5, -11.5, -8.5, -5.5, -2.5]:
-		_box("dark_metal", Vector3(mx, y + 2.4, -28.92), Vector3(0.16, 2.8, 0.24), Basis.IDENTITY, false)
-	_box("dark_metal", Vector3(-8.5, y + 3.15, -28.92), Vector3(18.0, 0.10, 0.20), Basis.IDENTITY, false)
+	# Tres módulos del kit (6 m cada uno) con parteluces, jambas y vidrio inclinado.
+	for wx in [-14.5, -8.5, -2.5]:
+		_kit(KIT_WINDOW, Vector3(wx, y + 1.0, -28.95), Vector3(2.0, 1.0, 1.0))
 	# Zócalos perimetrales de Sala de Señales (sin cruzar el paso sur ni puerta este).
 	_box("dark_metal", Vector3(-18.85, y + 0.08, -20.5), Vector3(0.06, 0.16, 16.8), Basis.IDENTITY, false)
 	_box("dark_metal", Vector3(1.85, y + 0.08, -22.9), Vector3(0.06, 0.16, 12.0), Basis.IDENTITY, false)
@@ -1331,6 +1322,27 @@ func _build_array_mesh(verts: PackedVector3Array, norms: PackedVector3Array) -> 
 	var mesh := ArrayMesh.new()
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	return mesh
+
+
+## Piezas del kit: capa visual sobre la geometría placeholder, sin colisión propia.
+func _kit(scene: PackedScene, pos: Vector3, scale := Vector3.ONE) -> void:
+	if _kit_root == null:
+		_kit_root = Node3D.new()
+		_kit_root.name = "SignalWingKit"
+		add_child(_kit_root)
+	var inst := scene.instantiate()
+	inst.position = pos
+	inst.scale = scale
+	_kit_root.add_child(inst)
+
+
+func _collision_box(center: Vector3, size: Vector3, basis := Basis.IDENTITY) -> void:
+	var shape := BoxShape3D.new()
+	shape.size = size
+	var collision := CollisionShape3D.new()
+	collision.shape = shape
+	collision.transform = Transform3D(basis, center)
+	_collision.add_child(collision)
 
 
 func _box(material_key: String, center: Vector3, size: Vector3,
