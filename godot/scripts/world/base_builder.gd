@@ -13,6 +13,10 @@ const KIT_WALL := preload("res://assets/models/kit/wall_brutalist_4m.glb")
 const KIT_PIER := preload("res://assets/models/kit/cantilever_pier_v.glb")
 const KIT_WINDOW := preload("res://assets/models/kit/window_bay_sloped_3m.glb")
 const KIT_FASCIA := preload("res://assets/models/kit/fascia_parapet_4m.glb")
+const KIT_TRAY := preload("res://assets/models/kit/ceiling_beam_tray.glb")
+const KIT_CABLES := preload("res://assets/models/kit/cable_catenary_run.glb")
+const KIT_DOOR := preload("res://assets/models/kit/door_bulkhead_heavy.glb")
+const KIT_LAMP := preload("res://assets/models/kit/pendant_industrial_lamp.glb")
 
 const ZONE_NAMES := {
 	"signal": "SALA DE CONTROL DE SEÑALES",
@@ -782,6 +786,14 @@ func _build_signal_room() -> void:
 		_box("light", Vector3(cx, y + 3.68, -23.0), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
 		_box("light", Vector3(cx, y + 3.68, -17.5), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
 
+	# Kit P2: bandeja, cables colgantes y luminaria bajo los focos de la sala.
+	for tx in [-13.5, -8.5, -3.5]:
+		_kit(KIT_TRAY, Vector3(tx, y + 3.85, -20.5), Vector3(1.4, 1.0, 1.0))
+	for cx in [-11.0, -6.0]:
+		_kit(KIT_CABLES, Vector3(cx, y + 3.22, -20.5), Vector3(1.4, 1.0, 1.0))
+	_kit(KIT_LAMP, Vector3(-8.5, y + 3.35, -20.0))
+	_kit(KIT_DOOR, Vector3(2.0, y, -15.5), Vector3.ONE, PI * 0.5)
+
 	_spot_light("SignalTableSpot", Vector3(-8.5, y + 3.55, -20.0), Vector3(-8.5, y, -20.0),
 		10.5, 56.0, 3.1, WARM_LIGHT, true)
 	_spot_light("SignalConsoleSpot", Vector3(-8.5, y + 3.45, -25.8), Vector3(-8.5, y + 1.0, -28.0),
@@ -1325,7 +1337,7 @@ func _build_array_mesh(verts: PackedVector3Array, norms: PackedVector3Array) -> 
 
 
 ## Piezas del kit: capa visual sobre la geometría placeholder, sin colisión propia.
-func _kit(scene: PackedScene, pos: Vector3, scale := Vector3.ONE) -> void:
+func _kit(scene: PackedScene, pos: Vector3, scale := Vector3.ONE, yaw := 0.0) -> void:
 	if _kit_root == null:
 		_kit_root = Node3D.new()
 		_kit_root.name = "SignalWingKit"
@@ -1333,6 +1345,7 @@ func _kit(scene: PackedScene, pos: Vector3, scale := Vector3.ONE) -> void:
 	var inst := scene.instantiate()
 	inst.position = pos
 	inst.scale = scale
+	inst.rotation.y = yaw
 	_kit_root.add_child(inst)
 
 
