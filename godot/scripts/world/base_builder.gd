@@ -17,6 +17,7 @@ const KIT_TRAY := preload("res://assets/models/kit/ceiling_beam_tray.glb")
 const KIT_CABLES := preload("res://assets/models/kit/cable_catenary_run.glb")
 const KIT_DOOR := preload("res://assets/models/kit/door_bulkhead_heavy.glb")
 const KIT_LAMP := preload("res://assets/models/kit/pendant_industrial_lamp.glb")
+const KIT_DETAIL := preload("res://assets/models/kit/signal_room_detail.glb")
 
 const ZONE_NAMES := {
 	"signal": "SALA DE CONTROL DE SEÑALES",
@@ -92,7 +93,7 @@ func _make_materials() -> void:
 		198304, 0.80, 0.04, 1.60, 0.94, 0.6, 0.30)
 	_materials["dark_metal"] = _pbr_material(Color(0.09, 0.10, 0.11), 0.70, 0.42,
 		198305, 0.90, 0.04, 1.70, 0.94, 0.6, 0.30)
-	_materials["screen"] = _material(Color(0.03, 0.12, 0.10), 0.0, 0.35, Color(0.24, 0.58, 0.42), 0.60)
+	_materials["screen"] = _material(Color(0.03, 0.10, 0.09), 0.0, 0.35, Color(0.10, 0.32, 0.24), 0.30)
 	_materials["light"] = _material(Color(1.0, 0.78, 0.52), 0.0, 0.4, Color(1.0, 0.62, 0.30), 1.6)
 	_materials["snow"] = _pbr_material(Color(0.66, 0.74, 0.86), 0.0, 0.86,
 		198306, 0.70, 0.16, 0.80, 0.96, 1.1, 0.30)
@@ -795,7 +796,7 @@ func _build_signal_room() -> void:
 	_kit(KIT_DOOR, Vector3(2.0, y, -15.5), Vector3.ONE, PI * 0.5)
 
 	_spot_light("SignalTableSpot", Vector3(-8.5, y + 3.55, -20.0), Vector3(-8.5, y, -20.0),
-		10.5, 56.0, 3.1, WARM_LIGHT, true)
+		10.5, 56.0, 2.0, WARM_LIGHT, true)
 	_spot_light("SignalConsoleSpot", Vector3(-8.5, y + 3.45, -25.8), Vector3(-8.5, y + 1.0, -28.0),
 		13.0, 68.0, 2.2, WARM_LIGHT, false)
 
@@ -835,7 +836,7 @@ func _build_signal_room() -> void:
 	_box("paper", Vector3(-8.6, y + 0.85, -19.95), Vector3(1.5, 0.02, 1.0), Basis(Vector3.UP, 0.12), false)
 	_box("dark_metal", Vector3(-9.9, y + 1.08, -19.55), Vector3(0.18, 0.48, 0.18), Basis.IDENTITY, false)
 	_box("light", Vector3(-9.9, y + 1.34, -19.55), Vector3(0.34, 0.18, 0.34), Basis.IDENTITY, false)
-	_zone_light(Vector3(-9.9, y + 1.45, -19.55), 8.5, 1.6, WARM_LIGHT)
+	_zone_light(Vector3(-9.9, y + 1.45, -19.55), 8.5, 0.7, WARM_LIGHT)
 	for cx in [-9.6, -7.4]:
 		_box("wood", Vector3(cx, y + 0.45, -18.4), Vector3(0.7, 0.9, 0.7))
 
@@ -864,6 +865,8 @@ func _build_signal_room() -> void:
 	_box("paper", Vector3(-13.1, y + 1.9, -12.17), Vector3(0.65, 0.75, 0.02), Basis.IDENTITY, false)
 	_box("dark_metal", Vector3(-1.8, y + 1.1, -12.45), Vector3(4.0, 2.2, 0.75))
 	_signal_detail("RadarPared", Vector3(-18.7, y + 2.0, -14.2))
+	# Chasis de consolas, impresora y detalle de mesa del kit; el offset X compensa el export desde Blender.
+	_kit(KIT_DETAIL, Vector3(-24.0, 0.0, 0.0))
 
 
 func _signal_detail(detail_name: String, pos: Vector3) -> Marker3D:
