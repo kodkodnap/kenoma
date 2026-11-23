@@ -8,11 +8,12 @@
 [ext_resource type="PackedScene" path="res://scenes/base/alpha_root_base.tscn" id="7_base"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_alpine"]
-sky_top_color = Color(0.035, 0.060, 0.130, 1)
-sky_horizon_color = Color(0.32, 0.22, 0.27, 1)
-ground_bottom_color = Color(0.06, 0.07, 0.12, 1)
-ground_horizon_color = Color(0.17, 0.16, 0.23, 1)
-sky_curve = 0.35
+sky_top_color = Color(0.045, 0.080, 0.155, 1)
+sky_horizon_color = Color(0.34, 0.42, 0.58, 1)
+ground_bottom_color = Color(0.09, 0.12, 0.20, 1)
+ground_horizon_color = Color(0.24, 0.30, 0.43, 1)
+sky_curve = 0.15
+ground_curve = 0.08
 
 [sub_resource type="Sky" id="Sky_kenoma"]
 sky_material = SubResource("Sky_alpine")
@@ -21,22 +22,22 @@ sky_material = SubResource("Sky_alpine")
 background_mode = 2
 sky = SubResource("Sky_kenoma")
 ambient_light_source = 3
-ambient_light_color = Color(0.30, 0.32, 0.48, 1)
-ambient_light_sky_contribution = 0.55
-ambient_light_energy = 0.40
+ambient_light_color = Color(0.34, 0.40, 0.56, 1)
+ambient_light_sky_contribution = 0.60
+ambient_light_energy = 0.52
 tonemap_mode = 2
-fog_enabled = true
-fog_light_color = Color(0.22, 0.24, 0.36, 1)
-fog_density = 0.0014
+fog_enabled = false
+fog_light_color = Color(0.30, 0.36, 0.50, 1)
+fog_density = 0.0020
 volumetric_fog_enabled = true
-volumetric_fog_density = 0.0075
-volumetric_fog_albedo = Color(0.45, 0.52, 0.68, 1)
+volumetric_fog_density = 0.0090
+volumetric_fog_albedo = Color(0.50, 0.58, 0.72, 1)
 volumetric_fog_emission = Color(0.02, 0.03, 0.05, 1)
 volumetric_fog_emission_energy = 0.35
 volumetric_fog_anisotropy = 0.45
 volumetric_fog_length = 96.0
 volumetric_fog_ambient_inject = 0.35
-volumetric_fog_sky_affect = 0.25
+volumetric_fog_sky_affect = 0.28
 
 [node name="Main" type="Node3D" unique_id=510003987]
 script = ExtResource("3_main")
@@ -46,8 +47,8 @@ environment = SubResource("Env_night")
 
 [node name="Moon" type="DirectionalLight3D" parent="." unique_id=1492931274]
 transform = Transform3D(-0.5345, -0.3719, 0.7594, 0, 0.898, 0.44, -0.8452, 0.2352, -0.4796, 0, 0, 0)
-light_color = Color(0.62, 0.70, 0.92, 1)
-light_energy = 0.95
+light_color = Color(0.70, 0.78, 0.94, 1)
+light_energy = 0.78
 shadow_enabled = true
 shadow_bias = 0.05
 directional_shadow_max_distance = 240.0

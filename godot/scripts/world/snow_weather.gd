@@ -2,7 +2,7 @@ class_name SnowWeather
 extends GPUParticles3D
 ## Nieve alpina en 3D (1 draw call) que sigue a la cámara activa y se oculta en interiores.
 
-const PARTICLE_COUNT := 900
+const PARTICLE_COUNT := 1000
 const EMITTER_HEIGHT_OFFSET := 8.5
 
 const SNOW_SHADER_CODE := """
@@ -54,7 +54,7 @@ void fragment() {
 	float r = length(UV - vec2(0.5)) * 2.0;
 	float radial = smoothstep(1.0, 0.12, r);
 	ALBEDO = vec3(0.76, 0.85, 0.96);
-	ALPHA = radial * radial * 0.72 * v_alpha;
+	ALPHA = radial * radial * 0.80 * v_alpha;
 }
 """
 
@@ -88,7 +88,7 @@ func _ready() -> void:
 	flake_mat.shader = shader
 
 	var quad := QuadMesh.new()
-	quad.size = Vector2(0.085, 0.085)
+	quad.size = Vector2(0.10, 0.10)
 	quad.material = flake_mat
 	draw_pass_1 = quad
 
