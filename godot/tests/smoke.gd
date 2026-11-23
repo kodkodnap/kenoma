@@ -393,19 +393,27 @@ func _run() -> void:
 		_check(base.get_node_or_null("RoofRamp") is StaticBody3D,
 			"rampa al tejado presente", failures)
 
-		# Ventanal panorámico en voladizo elevado (+1.6 m sobre el garaje) y detalle de señales.
+		# Ventanal panorámico en voladizo elevado (+1.6 m sobre el garaje), cristal sólido y detalle de señales.
 		var signal_window := base.get_node_or_null("SignalWindow") as Node3D
 		_check(signal_window != null
 				and float(signal_window.get_meta("width", 0.0)) >= 15.0
 				and absf(signal_window.global_position.z - (-29.0)) < 0.5
 				and signal_window.global_position.y > 7.5,
 			"ventanal panorámico elevado de al menos 15 m en z=-29", failures)
+		var glass_ray := PhysicsRayQueryParameters3D.create(
+			Vector3(-8.5, 8.4, -27.5), Vector3(-8.5, 8.4, -30.5), 1)
+		glass_ray.collide_with_bodies = true
+		glass_ray.collide_with_areas = false
+		var glass_hit := player.get_world_3d().direct_space_state.intersect_ray(glass_ray)
+		var glass_hit_pos: Vector3 = glass_hit.get("position", Vector3.ZERO)
+		_check(not glass_hit.is_empty() and absf(glass_hit_pos.z - (-29.0)) < 0.15,
+			"el cristal del ventanal bloquea el paso con colisión física", failures)
 		_check(get_nodes_in_group("signal_room_detail").size() >= 6,
 			"detalle de la sala de señales con al menos 6 nodos", failures)
 		_check(get_nodes_in_group("signal_panel").size() == 4,
 			"4 paneles junto al ventanal", failures)
 
-		# Terreno terraformado del valle: malla, colisión, relieve frontal, pico del radar y árboles cónicos.
+		# Terreno terraformado del valle: malla, colisión, relieve frontal, rocas facetadas y pinos.
 		var terrain := base.get_node_or_null("Terrain") as TerrainBuilder
 		var terrain_col := terrain.get_node_or_null("TerrainCollision") as StaticBody3D if terrain != null else null
 		_check(terrain != null and terrain_col != null and terrain_col.get_child_count() > 0,
@@ -424,13 +432,21 @@ func _run() -> void:
 				max_valley_y = maxf(max_valley_y, vy)
 		_check((max_valley_y - min_valley_y) > 8.0,
 			"el valle frontal tiene relieve orgánico (rango=%.1f m)" % (max_valley_y - min_valley_y), failures)
+		var rock_outcrops := base.get_node_or_null("RockOutcrops") as MultiMeshInstance3D
+		_check(rock_outcrops != null and rock_outcrops.multimesh != null
+				and rock_outcrops.multimesh.instance_count >= 40,
+			"afloramientos de granito facetado presentes (%d)" % (
+				rock_outcrops.multimesh.instance_count if rock_outcrops != null and rock_outcrops.multimesh != null else 0), failures)
 		var tree_trunks := base.get_node_or_null("TreeTrunks") as MultiMeshInstance3D
 		var tree_boughs := base.get_node_or_null("TreeBoughs") as MultiMeshInstance3D
+		var tree_snow := base.get_node_or_null("TreeSnowCaps") as MultiMeshInstance3D
 		_check(tree_trunks != null and tree_trunks.multimesh != null
 				and tree_trunks.multimesh.instance_count >= 400
 				and tree_boughs != null and tree_boughs.multimesh != null
-				and tree_boughs.multimesh.instance_count >= 1200,
-			"bosque alpino de abetos cónicos con al menos 400 árboles", failures)
+				and tree_boughs.multimesh.instance_count >= 1200
+				and tree_snow != null and tree_snow.multimesh != null
+				and tree_snow.multimesh.instance_count >= 800,
+			"bosque alpino de abetos esculpidos con nieve y al menos 400 árboles", failures)
 
 		var window_budget := _count_budget(main)
 		_check(int(window_budget.get("draws", 0)) < 250,
@@ -494,6 +510,45 @@ func _run() -> void:
 			"presupuesto: menos de 150k triángulos (%d)" % int(budget.get("triangles", 0)), failures)
 		_check(int(budget.get("draws", 0)) < 250,
 			"presupuesto: menos de 250 draw calls (%d)" % int(budget.get("draws", 0)), failures)
+
+		# Clima alpino, viento ambiental y niebla volumétrica ligera.
+		var wind := main.get_node_or_null("AmbientWind") as AmbientWind
+		var snow := main.get_node_or_null("SnowWeather") as SnowWeather
+		var world_env := main.get_node_or_null("WorldEnvironment") as WorldEnvironment
+		_check(BaseLayout.is_indoors(Vector3(-8.5, 7.6, -20.0))
+				and not BaseLayout.is_indoors(Vector3(10.5, 6.0, -19.2))
+				and not BaseLayout.is_indoors(Vector3(0.0, 2.0, -60.0)),
+			"BaseLayout.is_indoors distingue interior de terraza y exterior", failures)
+		_check(wind != null and wind.get_node_or_null("WindStream") is AudioStreamPlayer,
+			"AmbientWind presente con AudioStreamGenerator", failures)
+		if wind != null:
+			_reset_player(player, Vector3(-8.5, 6.05, -20.0))
+			await process_frame
+			wind._process(0.5)
+			var indoors_muffle := wind.current_muffle()
+			var detected_indoors := wind.is_camera_indoors()
+			_reset_player(player, Vector3(0.0, 2.0, -65.0))
+			await process_frame
+			wind._process(0.5)
+			_check(detected_indoors and not wind.is_camera_indoors()
+					and indoors_muffle > 0.65 and wind.current_muffle() < 0.35,
+				"AmbientWind atenúa dentro de la base (%.2f) y abre fuera (%.2f)" % [
+					indoors_muffle, wind.current_muffle()], failures)
+			_reset_player(player, Vector3(-8.5, 6.05, -16.8))
+			await process_frame
+		_check(snow != null and snow.emitting and snow.amount >= 500
+				and snow.draw_pass_1 != null and not snow.local_coords,
+			"SnowWeather GPUParticles3D activa en mundo abierto", failures)
+		if snow != null:
+			snow._process(0.016)
+			_check(snow.global_position.distance_to(
+					player.camera.global_position + Vector3(0.0, SnowWeather.EMITTER_HEIGHT_OFFSET, 0.0)) < 0.5,
+				"SnowWeather sigue a la cámara activa", failures)
+		_check(world_env != null and world_env.environment != null
+				and world_env.environment.volumetric_fog_enabled
+				and world_env.environment.volumetric_fog_density > 0.0
+				and world_env.environment.volumetric_fog_density <= 0.02,
+			"niebla volumétrica ligera activada en WorldEnvironment", failures)
 
 	# Hito 4: energía, transformadores, breakers y apagón.
 	_check(hud.power_label is Label, "HUD tiene panel de red", failures)
@@ -1401,6 +1456,11 @@ func _count_budget(root_node: Node) -> Dictionary:
 			if mesh != null:
 				triangles += _mesh_triangles(mesh)
 				draws += 1
+		elif node is GPUParticles3D:
+			var particles := node as GPUParticles3D
+			if particles.draw_pass_1 != null:
+				triangles += _mesh_triangles(particles.draw_pass_1) * particles.amount
+			draws += 1
 		elif node is Label3D:
 			draws += 1
 	return {"triangles": triangles, "draws": draws}

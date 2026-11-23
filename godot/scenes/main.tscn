@@ -28,6 +28,15 @@ tonemap_mode = 2
 fog_enabled = true
 fog_light_color = Color(0.22, 0.24, 0.36, 1)
 fog_density = 0.0014
+volumetric_fog_enabled = true
+volumetric_fog_density = 0.0075
+volumetric_fog_albedo = Color(0.45, 0.52, 0.68, 1)
+volumetric_fog_emission = Color(0.02, 0.03, 0.05, 1)
+volumetric_fog_emission_energy = 0.35
+volumetric_fog_anisotropy = 0.45
+volumetric_fog_length = 96.0
+volumetric_fog_ambient_inject = 0.35
+volumetric_fog_sky_affect = 0.25
 
 [node name="Main" type="Node3D" unique_id=510003987]
 script = ExtResource("3_main")

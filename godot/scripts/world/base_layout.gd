@@ -215,6 +215,36 @@ static func platforms() -> Array:
 	return PLATFORMS.duplicate(true)
 
 
+## Indica si una posición en coordenadas mundo está dentro de un volumen cerrado de la base.
+## Usado por viento ambiental, nieve y futuros efectos de clima sin acoplarse a un único Player.
+static func is_indoors(pos: Vector3) -> bool:
+	var x := pos.x
+	var y := pos.y
+	var z := pos.z
+	# Ala elevada de Sala de Control de Señales (y = 6.0..10.4) y rampa puente desde pasillo.
+	if x >= -19.0 and x <= 2.0 and z >= -29.0 and z <= -12.0 and y >= 5.9 and y <= 10.35:
+		return true
+	if x >= -9.5 and x <= -5.5 and z >= -15.5 and z <= -12.0 and y >= 4.35 and y <= 6.05:
+		return true
+	# Cuerpo principal superior (pasillo, servidores, descanso, baño: y = 4.4..8.8).
+	if x >= -19.0 and x <= 19.0 and z >= -12.0 and z <= 7.5 and y >= 4.35 and y <= 8.75:
+		return true
+	# Garaje + almacén en planta baja (y = 0.0..4.4) y vestíbulo.
+	if x >= 2.0 and x <= 19.0 and z >= -26.5 and z <= 7.5 and y >= -0.05 and y <= 4.35:
+		return true
+	if x >= 19.0 and x <= 31.0 and z >= -26.5 and z <= -12.0 and y >= -0.05 and y <= 4.35:
+		return true
+	# Sótano técnico (y = -4.4..0.0) y núcleo de escalera (-4.4..8.8).
+	if x >= 2.0 and x <= 19.0 and z >= -12.0 and z <= 7.5 and y >= -4.5 and y <= 0.05:
+		return true
+	if x >= 19.0 and x <= 36.0 and z >= -12.0 and z <= 7.5 and y >= -4.5 and y <= 8.75:
+		return true
+	# Caseta de salida a la azotea (y = 8.8..12.0).
+	if x >= 19.0 and x <= 36.0 and z >= 2.0 and z <= 7.5 and y >= 8.75 and y <= 12.0:
+		return true
+	return false
+
+
 ## Reúne los muros de todas las habitaciones y cajas extra, fusionando tramos colineales
 ## en cada línea (eje, coordenada fija, altura, y) para evitar muros dobles o puertas tapadas.
 static func collect_walls() -> Array:

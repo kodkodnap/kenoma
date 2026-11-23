@@ -38,6 +38,7 @@ var room_count: int = 0
 var _materials: Dictionary = {}
 var _box_batches: Dictionary = {}
 var _dish_transforms: Array[Transform3D] = []
+var _rock_transforms: Array[Transform3D] = []
 var _tree_trunk_transforms: Array[Transform3D] = []
 var _tree_bough_transforms: Array[Transform3D] = []
 var _tree_snow_transforms: Array[Transform3D] = []
@@ -70,26 +71,81 @@ func _ready() -> void:
 
 
 func _make_materials() -> void:
-	_materials["wall"] = _material(Color(0.30, 0.32, 0.34), 0.0, 0.88)
-	_materials["floor"] = _material(Color(0.16, 0.17, 0.19), 0.0, 0.92)
-	_materials["ceiling"] = _material(Color(0.11, 0.12, 0.14), 0.0, 0.96)
-	_materials["metal"] = _material(Color(0.28, 0.31, 0.33), 0.55, 0.52)
-	_materials["dark_metal"] = _material(Color(0.10, 0.12, 0.14), 0.72, 0.45)
+	_materials["wall"] = _pbr_material(Color(0.24, 0.26, 0.28), 0.0, 0.90,
+		198301, 0.14, 0.55, 0.28, 0.78)
+	_materials["floor"] = _pbr_material(Color(0.14, 0.15, 0.17), 0.0, 0.92,
+		198302, 0.16, 0.35, 0.34, 0.82)
+	_materials["ceiling"] = _pbr_material(Color(0.10, 0.11, 0.13), 0.0, 0.95,
+		198303, 0.12, 0.25, 0.30, 0.84)
+	_materials["metal"] = _pbr_material(Color(0.25, 0.28, 0.31), 0.58, 0.48,
+		198304, 0.24, 0.25, 0.65, 0.86)
+	_materials["dark_metal"] = _pbr_material(Color(0.08, 0.10, 0.12), 0.72, 0.44,
+		198305, 0.22, 0.25, 0.60, 0.85)
 	_materials["screen"] = _material(Color(0.03, 0.12, 0.10), 0.0, 0.35, Color(0.22, 0.65, 0.40), 0.75)
 	_materials["light"] = _material(Color(1.0, 0.88, 0.66), 0.0, 0.4, Color(1.0, 0.74, 0.38), 2.8)
-	_materials["snow"] = _material(Color(0.47, 0.55, 0.68), 0.0, 0.96)
-	_materials["rock"] = _material(Color(0.15, 0.17, 0.21), 0.0, 0.95)
-	_materials["pine"] = _material(Color(0.07, 0.12, 0.10), 0.0, 0.94)
-	_materials["roof"] = _material(Color(0.18, 0.20, 0.22), 0.0, 0.92)
-	_materials["wood"] = _material(Color(0.40, 0.26, 0.15), 0.0, 0.86)
+	_materials["snow"] = _pbr_material(Color(0.46, 0.54, 0.68), 0.0, 0.90,
+		198306, 0.12, 0.45, 0.35, 0.86)
+	_materials["rock"] = _pbr_material(Color(0.14, 0.16, 0.19), 0.0, 0.95,
+		198307, 0.12, 0.90, 0.26, 0.72)
+	_materials["pine"] = _pbr_material(Color(0.055, 0.105, 0.080), 0.0, 0.94,
+		198308, 0.32, 0.75, 0.65, 0.74)
+	_materials["roof"] = _pbr_material(Color(0.14, 0.16, 0.18), 0.0, 0.93,
+		198309, 0.18, 0.60, 0.36, 0.80)
+	_materials["wood"] = _pbr_material(Color(0.41, 0.27, 0.16), 0.0, 0.84,
+		198310, 0.28, 0.42, 0.55, 0.78)
+	_materials["porcelain"] = _pbr_material(Color(0.54, 0.57, 0.60), 0.05, 0.48,
+		198311, 0.09, 0.18, 0.45, 0.90)
 	_materials["rug"] = _material(Color(0.45, 0.18, 0.14), 0.0, 0.96)
 	_materials["snowcat"] = _material(Color(0.66, 0.55, 0.30), 0.25, 0.62)
 	_materials["led_green"] = _material(Color(0.08, 0.8, 0.25), 0.0, 0.4, Color(0.1, 1.0, 0.3), 2.0)
 	_materials["led_red"] = _material(Color(0.85, 0.08, 0.08), 0.0, 0.4, Color(1.0, 0.12, 0.1), 2.8)
 	_materials["warning"] = _material(Color(0.78, 0.56, 0.10), 0.0, 0.68, Color(0.85, 0.48, 0.06), 0.5)
-	_materials["paper"] = _material(Color(0.76, 0.73, 0.65), 0.0, 0.88)
+	_materials["paper"] = _material(Color(0.70, 0.67, 0.59), 0.0, 0.88)
 	_materials["glass"] = MachineMaterials.glass()
 	_materials["cold"] = _material(Color(0.10, 0.18, 0.28), 0.0, 0.9, Color(0.12, 0.24, 0.38), 0.75)
+
+
+func _pbr_material(color: Color, metallic: float, roughness: float,
+		noise_seed: int, freq: float, normal_strength: float,
+		triplanar_scale: float, min_albedo_lum: float) -> StandardMaterial3D:
+	var n := FastNoiseLite.new()
+	n.seed = noise_seed
+	n.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	n.fractal_type = FastNoiseLite.FRACTAL_FBM
+	n.fractal_octaves = 4
+	n.frequency = freq
+
+	var grad := Gradient.new()
+	grad.set_color(0, Color(min_albedo_lum, min_albedo_lum, min_albedo_lum))
+	grad.set_color(1, Color(1.0, 1.0, 1.0))
+
+	var albedo_tex := NoiseTexture2D.new()
+	albedo_tex.width = 256
+	albedo_tex.height = 256
+	albedo_tex.seamless = true
+	albedo_tex.color_ramp = grad
+	albedo_tex.noise = n
+
+	var normal_tex := NoiseTexture2D.new()
+	normal_tex.width = 256
+	normal_tex.height = 256
+	normal_tex.seamless = true
+	normal_tex.as_normal_map = true
+	normal_tex.bump_strength = 4.2
+	normal_tex.noise = n
+
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.albedo_texture = albedo_tex
+	mat.metallic = metallic
+	mat.roughness = roughness
+	mat.normal_enabled = true
+	mat.normal_scale = normal_strength
+	mat.normal_texture = normal_tex
+	mat.uv1_triplanar = true
+	mat.uv1_world_triplanar = true
+	mat.uv1_scale = Vector3(triplanar_scale, triplanar_scale, triplanar_scale)
+	return mat
 
 
 func _material(color: Color, metallic: float, roughness: float,
@@ -139,8 +195,8 @@ func _build_rooms() -> void:
 				light_range = 19.0
 			&"upper_hall":
 				light_color = DIM_HALL_LIGHT
-				light_energy = 0.9
-				light_range = 16.0
+				light_energy = 1.35
+				light_range = 17.0
 			&"server_room":
 				light_color = COOL_LIGHT
 				light_energy = 1.15
@@ -161,8 +217,8 @@ func _build_rooms() -> void:
 			_zone_light(Vector3(-2.0, SIGNAL_Y + 3.6, -24.0), 13.0, 1.5, WARM_LIGHT)
 			_zone_light(Vector3(-15.0, SIGNAL_Y + 3.6, -16.0), 12.0, 1.2, WARM_LIGHT)
 		elif id == &"upper_hall":
-			_zone_light(Vector3(-13.5, 8.1, -9.5), 11.0, 1.0, DIM_HALL_LIGHT)
-			_zone_light(Vector3(13.5, 8.1, -9.5), 10.0, 0.8, COOL_LIGHT)
+			_zone_light(Vector3(-13.5, 8.1, -9.5), 13.0, 1.25, DIM_HALL_LIGHT)
+			_zone_light(Vector3(13.5, 8.1, -9.5), 12.0, 1.15, COOL_LIGHT)
 		elif id == &"stairwell":
 			_zone_light(Vector3(27.5, 3.4, -3.0), 16.0, 1.25, NEUTRAL_LIGHT)
 			_zone_light(Vector3(27.5, 7.8, -2.0), 16.0, 1.3, NEUTRAL_LIGHT)
@@ -271,27 +327,28 @@ func _door_frame(axis: String, fixed: float, from: float, to: float,
 			Vector3(WALL_THICKNESS + 0.06, 0.1, to - from), Basis.IDENTITY, false)
 
 
-## Hueco de ventana: marco metálico y cristal semitransparente sin colisión.
+## Hueco de ventana: marco metálico grueso, vierteaguas y cristal sólido con colisión.
 func _window_frame(axis: String, fixed: float, from: float, to: float,
 		y: float, bottom: float, height: float) -> void:
 	var center := (from + to) * 0.5
 	var mid_y := y + bottom + height * 0.5
 	var span := to - from
-	var depth := WALL_THICKNESS + 0.08
+	var depth := WALL_THICKNESS + 0.10
+	var sill_depth := WALL_THICKNESS + 0.24
 	if axis == "x":
-		_box("dark_metal", Vector3(from, mid_y, fixed), Vector3(0.12, height, depth), Basis.IDENTITY, false)
-		_box("dark_metal", Vector3(to, mid_y, fixed), Vector3(0.12, height, depth), Basis.IDENTITY, false)
-		_box("dark_metal", Vector3(center, y + bottom + 0.05, fixed), Vector3(span, 0.1, depth), Basis.IDENTITY, false)
-		_box("dark_metal", Vector3(center, y + bottom + height - 0.05, fixed), Vector3(span, 0.1, depth), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(from, mid_y, fixed), Vector3(0.16, height, depth), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(to, mid_y, fixed), Vector3(0.16, height, depth), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(center, y + bottom + 0.06, fixed), Vector3(span, 0.12, sill_depth), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(center, y + bottom + height - 0.06, fixed), Vector3(span, 0.12, depth), Basis.IDENTITY, false)
 		_box("glass", Vector3(center, mid_y, fixed),
-			Vector3(span - 0.12, height - 0.1, 0.03), Basis.IDENTITY, false)
+			Vector3(span - 0.12, height - 0.1, 0.06), Basis.IDENTITY, true)
 	else:
-		_box("dark_metal", Vector3(fixed, mid_y, from), Vector3(depth, height, 0.12), Basis.IDENTITY, false)
-		_box("dark_metal", Vector3(fixed, mid_y, to), Vector3(depth, height, 0.12), Basis.IDENTITY, false)
-		_box("dark_metal", Vector3(fixed, y + bottom + 0.05, center), Vector3(depth, 0.1, span), Basis.IDENTITY, false)
-		_box("dark_metal", Vector3(fixed, y + bottom + height - 0.05, center), Vector3(depth, 0.1, span), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(fixed, mid_y, from), Vector3(depth, height, 0.16), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(fixed, mid_y, to), Vector3(depth, height, 0.16), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(fixed, y + bottom + 0.06, center), Vector3(sill_depth, 0.12, span), Basis.IDENTITY, false)
+		_box("dark_metal", Vector3(fixed, y + bottom + height - 0.06, center), Vector3(depth, 0.12, span), Basis.IDENTITY, false)
 		_box("glass", Vector3(fixed, mid_y, center),
-			Vector3(0.03, height - 0.1, span - 0.12), Basis.IDENTITY, false)
+			Vector3(0.06, height - 0.1, span - 0.12), Basis.IDENTITY, true)
 
 
 func _build_platforms() -> void:
@@ -339,53 +396,83 @@ func _build_platforms() -> void:
 	_box("roof", Vector3(27.5, 12.1, 4.75), Vector3(17.3, 0.22, 5.8))
 
 
-## Estructura exterior del voladizo elevado (vigas y pilares anclados al terreno real).
+## Estructura exterior brutalista del voladizo elevado: forjado grueso, vigas cajón,
+## pórticos inclinados en V y pilastras estructurales ancladas al terreno real.
 func _build_cantilever_structure() -> void:
-	var soffit_y := SIGNAL_Y - 0.35
-	# Cenefa gruesa de hormigón bajo el borde del voladizo (y = 5.4..6.0).
-	_box("wall", Vector3(-8.5, soffit_y, -29.1), Vector3(21.4, 0.62, 0.45))
-	_box("wall", Vector3(-19.1, soffit_y, -20.5), Vector3(0.45, 0.62, 17.4))
-	_box("wall", Vector3(2.1, soffit_y, -20.5), Vector3(0.45, 0.62, 17.4))
+	var soffit_y := SIGNAL_Y - 0.55
+	# Cenefa gruesa de hormigón bajo el borde del voladizo (y = 4.95..6.05) + vierteaguas metálico.
+	_box("wall", Vector3(-8.5, soffit_y, -29.15), Vector3(21.7, 1.05, 0.55))
+	_box("wall", Vector3(-19.15, soffit_y, -20.5), Vector3(0.55, 1.05, 17.6))
+	_box("wall", Vector3(2.15, soffit_y, -20.5), Vector3(0.55, 1.05, 17.6))
+	_box("dark_metal", Vector3(-8.5, SIGNAL_Y - 0.02, -29.38), Vector3(21.9, 0.14, 0.18), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-19.38, SIGNAL_Y - 0.02, -20.5), Vector3(0.18, 0.14, 17.8), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(2.38, SIGNAL_Y - 0.02, -20.5), Vector3(0.18, 0.14, 17.8), Basis.IDENTITY, false)
 
-	# Vigas transversales bajo la losa del voladizo.
-	for vx in [-16.8, -8.5, -0.2]:
-		_box("dark_metal", Vector3(vx, soffit_y - 0.15, -20.5), Vector3(0.55, 0.42, 16.5))
+	# Sub-forjado macizo + vigas cajón longitudinales y transversales bajo la losa del voladizo.
+	_box("ceiling", Vector3(-8.5, SIGNAL_Y - 0.35, -20.5), Vector3(20.6, 0.45, 16.8), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-8.5, soffit_y - 0.25, -26.8), Vector3(20.6, 0.55, 0.78), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-8.5, soffit_y - 0.22, -20.5), Vector3(20.6, 0.48, 0.65), Basis.IDENTITY, false)
+	for vx in [-16.8, -11.2, -5.8, -0.2]:
+		_box("dark_metal", Vector3(vx, soffit_y - 0.22, -20.5), Vector3(0.65, 0.52, 16.8))
 
-	# Tres pilares delanteros con zapata asentada sobre la ladera real y puntal conectado exactamente.
+	# Tres pórticos delanteros macizos en V invertida con zapatas de hormigón y cartelas metálicas.
 	for px in [-16.8, -8.5, -0.2]:
-		var ground_y := TerrainMap.height_at(px, -26.8)
-		var foot_base := ground_y - 0.6
-		var top_y := soffit_y - 0.1
-		var pillar_h := maxf(2.0, top_y - (foot_base + 1.1))
-		_box("wall", Vector3(px, foot_base + 0.65, -26.8), Vector3(1.85, 1.3, 1.85))
-		_box("dark_metal", Vector3(px, foot_base + 1.1 + pillar_h * 0.5, -26.8),
-			Vector3(0.78, pillar_h, 0.78))
-		var strut_bot := Vector3(px, foot_base + 1.0, -26.95)
-		var strut_top := Vector3(px, top_y, -28.45)
-		var strut_vec := strut_top - strut_bot
-		var strut_pitch := atan2(strut_vec.z, strut_vec.y)
-		_box("dark_metal", (strut_bot + strut_top) * 0.5,
-			Vector3(0.46, strut_vec.length(), 0.46), Basis(Vector3.RIGHT, strut_pitch))
+		var ground_y := TerrainMap.height_at(px, -25.8)
+		var foot_base := ground_y - 0.9
+		var top_y := soffit_y - 0.15
+		# Pedestal de hormigón macizo hundido en la ladera.
+		_box("wall", Vector3(px, foot_base + 0.95, -25.8), Vector3(2.45, 2.0, 2.55))
+		_box("metal", Vector3(px, foot_base + 1.98, -25.8), Vector3(2.15, 0.14, 2.25))
 
-	# Pilares traseros de apoyo cerca del arranque del voladizo.
+		# Pilar principal inclinado hacia la arista delantera del voladizo.
+		var front_bot := Vector3(px, foot_base + 1.8, -26.35)
+		var front_top := Vector3(px, top_y, -28.45)
+		var front_vec := front_top - front_bot
+		var front_pitch := atan2(front_vec.z, front_vec.y)
+		_box("dark_metal", (front_bot + front_top) * 0.5,
+			Vector3(0.95, front_vec.length() + 0.3, 0.78), Basis(Vector3.RIGHT, front_pitch))
+
+		# Tornapunta trasera formando pórtico triangular rígido.
+		var rear_bot := Vector3(px, foot_base + 1.8, -25.25)
+		var rear_top := Vector3(px, top_y, -24.45)
+		var rear_vec := rear_top - rear_bot
+		var rear_pitch := atan2(rear_vec.z, rear_vec.y)
+		_box("dark_metal", (rear_bot + rear_top) * 0.5,
+			Vector3(0.68, rear_vec.length() + 0.2, 0.62), Basis(Vector3.RIGHT, rear_pitch))
+
+		# Cartela superior de hormigón + traviesa horizontal intermedia de acero.
+		_box("wall", Vector3(px, top_y - 0.25, -27.8), Vector3(1.3, 0.85, 2.2))
+		var brace_y := lerpf(foot_base + 1.9, top_y, 0.45)
+		_box("metal", Vector3(px, brace_y, -26.2), Vector3(0.55, 0.38, 2.65))
+
+	# Pilares traseros robustos de apoyo cerca del arranque del voladizo.
 	for px in [-16.8, -1.4]:
 		var ground_y := TerrainMap.height_at(px, -14.2)
-		var foot_base := ground_y - 0.6
+		var foot_base := ground_y - 0.7
 		var top_y := soffit_y - 0.1
-		var pillar_h := maxf(2.0, top_y - (foot_base + 0.9))
-		_box("wall", Vector3(px, foot_base + 0.55, -14.2), Vector3(1.6, 1.1, 1.6))
-		_box("dark_metal", Vector3(px, foot_base + 0.9 + pillar_h * 0.5, -14.2),
-			Vector3(0.66, pillar_h, 0.66))
+		var pillar_h := maxf(2.0, top_y - (foot_base + 1.0))
+		_box("wall", Vector3(px, foot_base + 0.65, -14.2), Vector3(1.9, 1.4, 1.9))
+		_box("dark_metal", Vector3(px, foot_base + 1.0 + pillar_h * 0.5, -14.2),
+			Vector3(0.84, pillar_h, 0.84))
 
-	# Cimentación cerrada bajo Server/Living/Bath (-3.8..4.4) para evitar muros flotantes en ladera.
-	_box("wall", Vector3(-8.5, 0.3, 7.5), Vector3(21.2, 8.2, 0.35))
-	_box("wall", Vector3(-8.5, 0.3, -7.0), Vector3(21.2, 8.2, 0.35))
-	_box("wall", Vector3(-19.0, 0.3, 0.25), Vector3(0.35, 8.2, 14.5))
+	# Cimentación cerrada bajo Server/Living/Bath (-3.8..4.4) + pilastras estructurales exteriores.
+	_box("wall", Vector3(-8.5, 0.3, 7.5), Vector3(21.2, 8.2, 0.42))
+	_box("wall", Vector3(-8.5, 0.3, -7.0), Vector3(21.2, 8.2, 0.42))
+	_box("wall", Vector3(-19.0, 0.3, 0.25), Vector3(0.42, 8.2, 14.5))
+	for pil in [
+		Vector3(-19.05, 8.1, -29.05), Vector3(2.05, 8.1, -29.05),
+		Vector3(-19.05, 4.4, -12.0), Vector3(-19.05, 4.4, 7.5),
+		Vector3(2.0, 2.2, -26.5), Vector3(19.0, 2.2, -26.5),
+		Vector3(31.0, 2.2, -26.5), Vector3(31.0, 2.2, -12.0),
+		Vector3(36.0, 4.4, -12.0), Vector3(36.0, 4.4, 7.5),
+	]:
+		var pil_h := 4.4 if pil.y > 7.0 else 8.8
+		_box("wall", Vector3(pil.x, pil.y, pil.z), Vector3(0.48, pil_h, 0.48), Basis.IDENTITY, false)
 
 	# Focos cálidos bajo el voladizo iluminando el claro frontal.
 	for lx in [-13.0, -4.0]:
-		_box("light", Vector3(lx, soffit_y - 0.25, -26.0), Vector3(0.95, 0.1, 0.34), Basis.IDENTITY, false)
-		_zone_light(Vector3(lx, soffit_y - 0.55, -26.0), 15.0, 1.35, WARM_LIGHT)
+		_box("light", Vector3(lx, soffit_y - 0.52, -26.0), Vector3(1.05, 0.12, 0.36), Basis.IDENTITY, false)
+		_zone_light(Vector3(lx, soffit_y - 0.85, -26.0), 15.0, 1.45, WARM_LIGHT)
 
 
 func _build_stairs() -> void:
@@ -510,6 +597,12 @@ func _build_roof() -> void:
 	pad.add_to_group("drone_pad")
 	add_child(pad)
 
+	# Pretiles y remate de nieve/chapa en cornisas de azoteas (y = 10.4 y y = 8.8).
+	_box("dark_metal", Vector3(-8.5, signal_roof_y + 0.08, -29.08), Vector3(21.5, 0.26, 0.34), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-19.08, signal_roof_y + 0.08, -20.5), Vector3(0.34, 0.26, 17.3), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(2.08, signal_roof_y + 0.08, -20.5), Vector3(0.34, 0.26, 17.3), Basis.IDENTITY, false)
+	_box("snow", Vector3(-8.5, signal_roof_y + 0.06, -20.5), Vector3(20.0, 0.12, 16.0), Basis.IDENTITY, false)
+
 	# Parabólica icónica sobre la cubierta elevada de Sala de Señales (y = 10.4) + respiraderos.
 	_box("metal", Vector3(-7.5, signal_roof_y + 0.2, -18.5), Vector3(2.0, 0.45, 2.0))
 	_box("dark_metal", Vector3(-7.5, signal_roof_y + 1.45, -18.5), Vector3(0.6, 2.3, 0.6))
@@ -520,7 +613,6 @@ func _build_roof() -> void:
 	_box("dark_metal", Vector3(5.0, 9.3, 1.0), Vector3(2.8, 1.0, 2.8))
 	_box("metal", Vector3(13.0, 11.8, -4.0), Vector3(0.32, 6.0, 0.32))
 	_box("led_red", Vector3(13.0, 14.9, -4.0), Vector3(0.28, 0.28, 0.28), Basis.IDENTITY, false)
-	_note("AZOTEA / PARABÓLICA PRINCIPAL", Vector3(-7.5, signal_roof_y + 3.4, -18.5))
 
 
 func _build_props() -> void:
@@ -534,7 +626,7 @@ func _build_props() -> void:
 	_box("wood", Vector3(3.1, 0.5, -16.0), Vector3(1.4, 1.0, 5.2))
 	_box("dark_metal", Vector3(2.25, 1.85, -16.0), Vector3(0.1, 1.2, 4.4))
 	_box("metal", Vector3(3.3, 1.05, -9.5), Vector3(1.6, 2.1, 2.8))
-	_note("GARAJE SNOWCAT", Vector3(10.5, 3.4, -26.2))
+	_note("GARAJE SNOWCAT", Vector3(10.5, 3.65, -26.25), 0.0)
 
 	# --- PLANTA BAJA: VESTÍBULO DE ENTRADA ---
 	_box("light", Vector3(25.0, 3.55, -26.75), Vector3(1.0, 0.16, 0.16), Basis.IDENTITY, false)
@@ -549,7 +641,7 @@ func _build_props() -> void:
 	add_child(lockers)
 	_box("dark_metal", Vector3(19.25, 1.9, -13.8), Vector3(0.1, 1.4, 2.6))
 	_note("DIRECTORIO\nPLANTA 0: GARAJE / ALMACÉN\nPLANTA 1: SERVIDORES / DESCANSO\nPUENTE: CONTROL DE SEÑALES\nSÓTANO: BREAKER",
-		Vector3(19.4, 2.1, -13.8))
+		Vector3(19.34, 2.0, -13.8), PI * 0.5)
 
 	# --- PLANTA BAJA: ALMACÉN DE SUMINISTROS ---
 	for i in 4:
@@ -557,13 +649,12 @@ func _build_props() -> void:
 	for i in 3:
 		_box("wood", Vector3(9.5 + float(i) * 1.6, 0.55, -5.6), Vector3(1.1, 1.1, 1.1))
 	_box("wood", Vector3(10.3, 1.65, -5.6), Vector3(1.0, 1.1, 1.0))
-	_note("ALMACÉN DE SUMINISTROS", Vector3(10.5, 2.8, -6.7))
 
 	# --- PLANTA ALTA: PASILLO PRINCIPAL (38 m x 5 m) ---
 	for bx in [-14.0, -4.5, 5.0, 14.5]:
 		_box("dark_metal", Vector3(bx, 8.52, -9.5), Vector3(9.0, 0.14, 0.75), Basis.IDENTITY, false)
 	_box("metal", Vector3(-18.2, 5.5, -9.5), Vector3(0.9, 2.2, 3.4))
-	_note("← SERVIDORES | ↑ PUENTE SEÑALES | DESCANSO / BAÑO →", Vector3(0.0, 7.0, -7.2))
+	_note("← SERVIDORES | ↑ PUENTE SEÑALES | DESCANSO / BAÑO →", Vector3(0.0, 7.1, -7.18), PI)
 
 	# --- PLANTA ALTA: SALA DE SERVIDORES (CERRADA, 30 RACKS EN PASILLOS AMPLIOS) ---
 	for row in 6:
@@ -579,7 +670,6 @@ func _build_props() -> void:
 			marker.add_to_group("server_placeholder")
 			add_child(marker)
 	_box("metal", Vector3(-10.5, 5.4, 6.7), Vector3(4.8, 2.0, 1.0))
-	_note("CLÚSTER DE SERVIDORES\n30 NODOS", Vector3(-10.5, 7.2, -6.7))
 
 	# --- PLANTA ALTA: ZONA DE DESCANSO & COCINA (REFUGIO CÁLIDO) ---
 	_box("rug", Vector3(4.5, 4.42, 0.0), Vector3(6.0, 0.03, 4.8), Basis.IDENTITY, false)
@@ -598,12 +688,11 @@ func _build_props() -> void:
 	_box("wood", Vector3(8.5, 4.9, 6.2), Vector3(6.0, 1.0, 1.3))
 	_box("wood", Vector3(10.8, 4.9, 2.0), Vector3(1.3, 1.0, 6.6))
 	_box("metal", Vector3(0.2, 5.45, 6.2), Vector3(1.3, 2.1, 1.2))
-	_note("DESCANSO / COCINA", Vector3(5.0, 7.1, 7.0))
 
 	# --- PLANTA ALTA: BAÑO ---
-	_box("paper", Vector3(17.6, 4.85, 5.8), Vector3(1.3, 0.9, 1.3))
-	_box("paper", Vector3(13.6, 4.9, 6.1), Vector3(1.6, 1.0, 1.1))
-	_box("paper", Vector3(17.1, 4.75, -1.8), Vector3(2.6, 0.7, 2.8))
+	_box("porcelain", Vector3(17.6, 4.85, 5.8), Vector3(1.3, 0.9, 1.3))
+	_box("porcelain", Vector3(13.6, 4.9, 6.1), Vector3(1.6, 1.0, 1.1))
+	_box("porcelain", Vector3(17.1, 4.75, -1.8), Vector3(2.6, 0.7, 2.8))
 	_box("glass", Vector3(15.7, 5.6, -1.8), Vector3(0.05, 2.3, 2.8), Basis.IDENTITY, false)
 
 	# --- SÓTANO: CUARTO DE ENERGÍA Y BREAKER ---
@@ -616,7 +705,7 @@ func _build_props() -> void:
 	breaker.position = Vector3(10.5, -3.9, -11.45)
 	breaker.add_to_group("breaker")
 	add_child(breaker)
-	_note("BREAKER PRINCIPAL\nNO REARMAR CON CARGA", Vector3(10.5, -1.3, -11.4))
+	_note("BREAKER PRINCIPAL\nNO REARMAR CON CARGA", Vector3(10.5, -1.3, -11.35), 0.0)
 
 	for gz in [-4.5, 2.5]:
 		_box("dark_metal", Vector3(5.8, -3.4, gz), Vector3(3.6, 2.1, 2.0))
@@ -711,7 +800,7 @@ func _build_signal_room() -> void:
 	_box("paper", Vector3(0.9, y + 1.02, -17.5), Vector3(0.8, 0.4, 0.65))
 	_box("paper", Vector3(0.5, y + 0.82, -17.5), Vector3(0.34, 0.03, 0.52), Basis(Vector3.BACK, 0.35), false)
 	_box("led_green", Vector3(0.52, y + 1.18, -17.2), Vector3(0.06, 0.06, 0.04), Basis.IDENTITY, false)
-	_note("IMPRESORA MATRICIAL", Vector3(0.85, y + 1.65, -17.5))
+	_note("IMPRESORA MATRICIAL", Vector3(0.9, y + 1.5, -17.5), -PI * 0.5)
 
 	# Tablones de notas y armarios en los laterales del muro sur.
 	_box("wood", Vector3(-13.8, y + 2.0, -12.22), Vector3(2.8, 1.4, 0.08), Basis.IDENTITY, false)
@@ -747,7 +836,7 @@ func _build_exterior() -> void:
 	_box("wall", Vector3(2.0, -2.3, -2.25), Vector3(0.45, 4.8, 19.5))
 	_box("wall", Vector3(19.0, -2.3, 7.5), Vector3(34.0, 4.8, 0.45))
 
-	# Afloramientos rocosos empotrados alrededor de la estación y gargantas del valle.
+	# Afloramientos rocosos de granito facetado (sin cubos) alrededor de la base, cauce y pistas.
 	var rock_rng := RandomNumberGenerator.new()
 	rock_rng.seed = 198308
 	var rock_anchors := [
@@ -755,15 +844,41 @@ func _build_exterior() -> void:
 		Vector2(-14.0, 13.0), Vector2(22.0, 12.5), Vector2(39.0, -3.0), Vector2(-26.0, -24.0),
 		Vector2(18.0, -52.0), Vector2(-12.0, -68.0), Vector2(40.0, -88.0), Vector2(-38.0, -110.0),
 		Vector2(6.0, -142.0), Vector2(-42.0, -175.0), Vector2(35.0, -185.0), Vector2(-80.0, -135.0),
+		Vector2(-52.0, -48.0), Vector2(58.0, -58.0), Vector2(-95.0, -82.0), Vector2(88.0, -112.0),
+		Vector2(-125.0, -165.0), Vector2(115.0, -155.0), Vector2(-65.0, -215.0), Vector2(72.0, -228.0),
 	]
 	for ra_variant in rock_anchors:
 		var ra: Vector2 = ra_variant
 		var ry := TerrainMap.height_at(ra.x, ra.y)
-		var rw := rock_rng.randf_range(3.5, 9.5)
-		var rh := rock_rng.randf_range(2.6, 5.8)
-		var rd := rock_rng.randf_range(3.5, 8.5)
-		var yaw := rock_rng.randf_range(-0.6, 0.6)
-		_box("rock", Vector3(ra.x, ry + rh * 0.12, ra.y), Vector3(rw, rh, rd), Basis(Vector3.UP, yaw))
+		var rw := rock_rng.randf_range(2.6, 7.2)
+		var rh := rock_rng.randf_range(1.9, 4.4)
+		var rd := rock_rng.randf_range(2.6, 6.8)
+		var yaw := rock_rng.randf_range(0.0, TAU)
+		var tilt := rock_rng.randf_range(-0.18, 0.18)
+		var rock_basis := Basis(Vector3.UP, yaw) * Basis(Vector3.RIGHT, tilt)
+		var center := Vector3(ra.x, ry + rh * 0.20, ra.y)
+		_rock_transforms.append(Transform3D(rock_basis.scaled(Vector3(rw, rh, rd)), center))
+		var col_shape := BoxShape3D.new()
+		col_shape.size = Vector3(rw * 1.45, rh * 1.35, rd * 1.45)
+		var rock_col := CollisionShape3D.new()
+		rock_col.shape = col_shape
+		rock_col.transform = Transform3D(rock_basis, center)
+		_collision.add_child(rock_col)
+
+	# Escarpes y cantos menores dispersos en lomas y ribera helada.
+	for i in 24:
+		var rx := rock_rng.randf_range(-240.0, 240.0)
+		var rz := rock_rng.randf_range(-260.0, 80.0)
+		if TerrainMap.road_factor(rx, rz) > 0.06:
+			continue
+		if rx > -26.0 and rx < 44.0 and rz > -40.0 and rz < 18.0:
+			continue
+		var ry := TerrainMap.height_at(rx, rz)
+		var s_xz := rock_rng.randf_range(1.6, 4.6)
+		var s_y := rock_rng.randf_range(1.0, 3.0)
+		var rb := Basis(Vector3.UP, rock_rng.randf_range(0.0, TAU))
+		_rock_transforms.append(Transform3D(rb.scaled(Vector3(s_xz, s_y, s_xz * 0.85)),
+			Vector3(rx, ry + s_y * 0.15, rz)))
 
 	# Postes de luz de madera siguiendo la pista del Snowcat (hincados 1.2 m en el suelo).
 	var pole_points := [
@@ -780,15 +895,19 @@ func _build_exterior() -> void:
 		_box("wood", Vector3(pt.x, py + 6.3, pt.y), Vector3(1.8, 0.2, 0.2))
 		_box("dark_metal", Vector3(pt.x, py + 6.05, pt.y), Vector3(0.32, 0.45, 0.32), Basis.IDENTITY, false)
 
-	# Bosque alpino denso (~540 abetos cónicos altos de 11-24 m) anclado a la cota real.
+	# Bosque alpino agrupado en rodales (~520 pinos recortados con ramas irregulares y nieve).
+	var grove_noise := FastNoiseLite.new()
+	grove_noise.seed = 198344
+	grove_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	grove_noise.frequency = 0.011
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 198304
 	var placed := 0
 	var attempts := 0
-	while placed < 540 and attempts < 2800:
+	while placed < 520 and attempts < 4500:
 		attempts += 1
 		var angle := rng.randf_range(0.0, TAU)
-		var radius := lerpf(46.0, 440.0, pow(rng.randf(), 0.72))
+		var radius := lerpf(42.0, 450.0, pow(rng.randf(), 0.74))
 		var tx := cos(angle) * radius
 		var tz := -35.0 + sin(angle) * radius
 		if TerrainMap.road_factor(tx, tz) > 0.05:
@@ -797,33 +916,40 @@ func _build_exterior() -> void:
 			continue
 		if Vector2(tx, tz).distance_to(TerrainMap.PEAK_CENTER) < 35.0:
 			continue
+		# Agrupación orgánica en rodales de bosque separados por claros de nieve.
+		var grove_density := 0.5 + 0.5 * grove_noise.get_noise_2d(tx, tz)
+		if rng.randf() > lerpf(0.22, 0.96, grove_density):
+			continue
 		var ty := TerrainMap.height_at(tx, tz)
-		if ty > 46.0 or ty < -9.5:
+		if ty > 48.0 or ty < -9.5:
 			continue
-		if TerrainMap.normal_at(tx, tz).y < 0.74:
+		if TerrainMap.normal_at(tx, tz).y < 0.72:
 			continue
-		var h := rng.randf_range(11.5, 24.5)
-		var w := h * rng.randf_range(0.16, 0.22)
+		var h := rng.randf_range(10.5, 27.0)
+		var w := h * rng.randf_range(0.18, 0.25)
 		var tree_yaw := rng.randf_range(0.0, TAU)
-		var trunk_h := h * 0.42 + 0.9
+		var lean_x := rng.randf_range(-0.045, 0.045)
+		var lean_z := rng.randf_range(-0.045, 0.045)
+		var tree_basis := Basis(Vector3.UP, tree_yaw) * Basis(Vector3.RIGHT, lean_x) * Basis(Vector3.FORWARD, lean_z)
+		var trunk_h := h * 0.44 + 0.95
 		_tree_trunk_transforms.append(Transform3D(
-			Basis(Vector3.UP, tree_yaw).scaled(Vector3(w * 0.22, trunk_h, w * 0.22)),
-			Vector3(tx, ty + trunk_h * 0.5 - 0.9, tz)
+			tree_basis.scaled(Vector3(w * 0.21, trunk_h, w * 0.21)),
+			Vector3(tx, ty + trunk_h * 0.5 - 0.95, tz)
 		))
 		for tier in 3:
 			var t_ratio := float(tier) / 2.0
-			var tier_h := h * lerpf(0.38, 0.26, t_ratio)
-			var tier_r := w * lerpf(1.15, 0.55, t_ratio)
-			var tier_y := ty + h * lerpf(0.42, 0.80, t_ratio)
+			var tier_h := h * lerpf(0.40, 0.28, t_ratio)
+			var tier_r := w * lerpf(1.22, 0.56, t_ratio)
+			var tier_y := ty + h * lerpf(0.40, 0.79, t_ratio)
+			var tier_basis := tree_basis * Basis(Vector3.UP, float(tier) * 0.58)
 			_tree_bough_transforms.append(Transform3D(
-				Basis(Vector3.UP, tree_yaw + float(tier) * 0.8).scaled(Vector3(tier_r, tier_h, tier_r)),
+				tier_basis.scaled(Vector3(tier_r, tier_h, tier_r)),
 				Vector3(tx, tier_y, tz)
 			))
 			if tier >= 1:
 				_tree_snow_transforms.append(Transform3D(
-					Basis(Vector3.UP, tree_yaw + float(tier) * 0.8).scaled(
-						Vector3(tier_r * 0.86, tier_h * 0.56, tier_r * 0.86)),
-					Vector3(tx, tier_y + tier_h * 0.22, tz)
+					tier_basis.scaled(Vector3(tier_r * 0.98, tier_h * 0.98, tier_r * 0.98)),
+					Vector3(tx, tier_y + tier_h * 0.03, tz)
 				))
 		placed += 1
 
@@ -831,8 +957,8 @@ func _build_exterior() -> void:
 	var peak_xz := TerrainMap.PEAK_CENTER
 	var peak_y := TerrainMap.height_at(peak_xz.x, peak_xz.y)
 	var peak_pos := Vector3(peak_xz.x, peak_y, peak_xz.y)
-	_box("wall", peak_pos + Vector3(0.0, 1.25, 0.0), Vector3(5.2, 4.5, 5.2), Basis.IDENTITY, false)
-	_box("paper", peak_pos + Vector3(0.0, 5.2, 0.0), Vector3(4.2, 3.6, 4.2), Basis.IDENTITY, false)
+	_box("wall", peak_pos + Vector3(0.0, 1.25, 0.0), Vector3(5.4, 4.5, 5.4), Basis.IDENTITY, false)
+	_box("porcelain", peak_pos + Vector3(0.0, 5.2, 0.0), Vector3(4.2, 3.6, 4.2), Basis.IDENTITY, false)
 	_box("led_red", peak_pos + Vector3(0.0, 7.6, 0.0), Vector3(1.05, 1.05, 1.05), Basis.IDENTITY, false)
 	var peak_beacon := OmniLight3D.new()
 	peak_beacon.position = peak_pos + Vector3(0.0, 8.0, 0.0)
@@ -857,8 +983,6 @@ func _build_exterior() -> void:
 		_box("metal", Vector3(px, py + 1.65, pz), Vector3(0.28, 3.3, 0.28))
 		_dish_transforms.append(Transform3D(Basis(Vector3(1.0, 0.0, 0.0), -0.55),
 			Vector3(px, py + 3.25, pz)))
-		if i < 3:
-			_note("SAT-%02d" % (i + 1), Vector3(px, py + 4.8, pz))
 
 	# 3 transformadores exteriores al noreste del vestíbulo.
 	for i in 3:
@@ -876,7 +1000,6 @@ func _build_exterior() -> void:
 			_box("metal", Vector3(tx - 0.8 + float(fin) * 0.55, ty + 1.4, tz + 0.85),
 				Vector3(0.35, 1.8, 0.1))
 		_box("warning", Vector3(tx, ty + 2.2, tz + 0.82), Vector3(0.8, 0.4, 0.08))
-		_note("TRAFO %s" % ["A", "B", "C"][i], Vector3(tx, ty + 3.2, tz))
 
 	# 3 radares de coordenadas anclados al terreno.
 	var radar_positions := [Vector2(-260.0, -260.0), Vector2(260.0, -260.0), Vector2(0.0, 300.0)]
@@ -891,7 +1014,6 @@ func _build_exterior() -> void:
 		_box("metal", Vector3(rp.x, rp.y + 0.2, rp.z), Vector3(2.0, 0.4, 2.0))
 		_box("metal", Vector3(rp.x, rp.y + 3.0, rp.z), Vector3(0.5, 6.0, 0.5))
 		_box("dark_metal", Vector3(rp.x, rp.y + 6.0, rp.z), Vector3(2.6, 0.2, 2.6))
-		_note("RADAR %d" % (i + 1), Vector3(rp.x, rp.y + 7.2, rp.z))
 
 	# 4 turbinas eólicas en lomas altas.
 	var turbine_positions := [Vector2(-560.0, -560.0), Vector2(560.0, -560.0),
@@ -937,7 +1059,6 @@ func _build_exterior() -> void:
 	tower_light.omni_range = 12.0
 	tower_light.shadow_enabled = false
 	add_child(tower_light)
-	_note("TORRE DE RADIO", Vector3(tower_pos.x, tower_pos.y + 31.5, tower_pos.z))
 
 	# Iluminación exterior del claro y transformadores.
 	_zone_light(Vector3(42.0, 4.0, -14.5), 15.0, 1.5, WARM_LIGHT)
@@ -972,9 +1093,10 @@ func _flush_batches() -> void:
 			else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
 		add_child(instance)
 
-	_flush_cone_batch("TreeTrunks", _tree_trunk_transforms, 0.42, 0.85, 6, "wood", true)
-	_flush_cone_batch("TreeBoughs", _tree_bough_transforms, 0.04, 1.0, 7, "pine", true)
-	_flush_cone_batch("TreeSnowCaps", _tree_snow_transforms, 0.04, 1.0, 7, "snow", false)
+	_flush_custom_batch("RockOutcrops", _make_faceted_rock_mesh(), _rock_transforms, "rock", true)
+	_flush_trunk_batch("TreeTrunks", _tree_trunk_transforms)
+	_flush_custom_batch("TreeBoughs", _make_pine_bough_mesh(), _tree_bough_transforms, "pine", true)
+	_flush_custom_batch("TreeSnowCaps", _make_pine_snow_mesh(), _tree_snow_transforms, "snow", false)
 
 	if not _dish_transforms.is_empty():
 		var dish_mesh := CylinderMesh.new()
@@ -997,18 +1119,24 @@ func _flush_batches() -> void:
 		add_child(dish_instance)
 
 
-func _flush_cone_batch(batch_name: String, transforms: Array[Transform3D],
-		top_r: float, bot_r: float, segments: int, mat_key: String, cast_shadow: bool) -> void:
+func _flush_trunk_batch(batch_name: String, transforms: Array[Transform3D]) -> void:
 	if transforms.is_empty():
 		return
 	var mesh := CylinderMesh.new()
-	mesh.top_radius = top_r
-	mesh.bottom_radius = bot_r
+	mesh.top_radius = 0.38
+	mesh.bottom_radius = 0.88
 	mesh.height = 1.0
-	mesh.radial_segments = segments
+	mesh.radial_segments = 6
 	mesh.rings = 0
 	mesh.cap_top = false
 	mesh.cap_bottom = false
+	_flush_custom_batch(batch_name, mesh, transforms, "wood", true)
+
+
+func _flush_custom_batch(batch_name: String, mesh: Mesh, transforms: Array[Transform3D],
+		mat_key: String, cast_shadow: bool) -> void:
+	if transforms.is_empty():
+		return
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_3D
 	mm.mesh = mesh
@@ -1023,6 +1151,125 @@ func _flush_cone_batch(batch_name: String, transforms: Array[Transform3D],
 	inst.cast_shadow = (GeometryInstance3D.SHADOW_CASTING_SETTING_ON if cast_shadow
 		else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
 	add_child(inst)
+
+
+func _make_faceted_rock_mesh() -> ArrayMesh:
+	var rings := 4
+	var sectors := 7
+	var grid: Array = []
+	for r in rings + 1:
+		var v_lat := float(r) / float(rings)
+		var phi := v_lat * PI
+		var row: Array[Vector3] = []
+		for s in sectors:
+			var theta := TAU * float(s) / float(sectors)
+			var dir := Vector3(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta))
+			var disp := 0.82 + 0.22 * sin(dir.x * 4.3 + 0.6) * cos(dir.z * 3.7) \
+				+ 0.16 * sin(dir.y * 5.1 + dir.x * 2.4)
+			var p := dir * disp
+			if p.y < 0.0:
+				p.y *= 0.65
+			row.append(p)
+		grid.append(row)
+
+	var verts := PackedVector3Array()
+	var norms := PackedVector3Array()
+	for r in rings:
+		var row_a: Array = grid[r]
+		var row_b: Array = grid[r + 1]
+		for s in sectors:
+			var sn := (s + 1) % sectors
+			var p00: Vector3 = row_a[s]
+			var p10: Vector3 = row_a[sn]
+			var p01: Vector3 = row_b[s]
+			var p11: Vector3 = row_b[sn]
+			if r > 0:
+				_append_outward_tri(verts, norms, p00, p10, p11)
+			if r < rings - 1:
+				_append_outward_tri(verts, norms, p00, p11, p01)
+	return _build_array_mesh(verts, norms)
+
+
+func _make_pine_bough_mesh() -> ArrayMesh:
+	var verts := PackedVector3Array()
+	var norms := PackedVector3Array()
+	var apex := Vector3(0.0, 0.50, 0.0)
+	var center_bot := Vector3(0.0, -0.18, 0.0)
+	var points := 12
+	var rim: Array[Vector3] = []
+	for i in points:
+		var angle := TAU * float(i) / float(points) + float(i % 2) * 0.06
+		var is_tip := (i % 2 == 0)
+		var r := 1.05 if is_tip else 0.44
+		var y := -0.52 if is_tip else -0.24
+		rim.append(Vector3(cos(angle) * r, y, sin(angle) * r))
+	for i in points:
+		var a: Vector3 = rim[i]
+		var b: Vector3 = rim[(i + 1) % points]
+		_append_tri_cw(verts, norms, apex, a, b)
+		_append_tri_cw(verts, norms, center_bot, b, a)
+	return _build_array_mesh(verts, norms)
+
+
+func _make_pine_snow_mesh() -> ArrayMesh:
+	var verts := PackedVector3Array()
+	var norms := PackedVector3Array()
+	var apex := Vector3(0.0, 0.54, 0.0)
+	var points := 12
+	var rim: Array[Vector3] = []
+	for i in points:
+		var angle := TAU * float(i) / float(points) + float(i % 2) * 0.06
+		var is_tip := (i % 2 == 0)
+		var r := 0.96 if is_tip else 0.36
+		var y := -0.40 if is_tip else -0.18
+		rim.append(Vector3(cos(angle) * r, y, sin(angle) * r))
+	for i in points:
+		var a: Vector3 = rim[i]
+		var b: Vector3 = rim[(i + 1) % points]
+		_append_tri_cw(verts, norms, apex, a, b)
+	return _build_array_mesh(verts, norms)
+
+
+func _append_outward_tri(verts: PackedVector3Array, norms: PackedVector3Array,
+		a: Vector3, b: Vector3, c: Vector3) -> void:
+	var n := (c - a).cross(b - a).normalized()
+	if n.length_squared() < 0.0001:
+		return
+	var centroid := (a + b + c) * 0.333333
+	if n.dot(centroid) < 0.0:
+		var tmp := b
+		b = c
+		c = tmp
+		n = -n
+	verts.append(a)
+	verts.append(b)
+	verts.append(c)
+	norms.append(n)
+	norms.append(n)
+	norms.append(n)
+
+
+func _append_tri_cw(verts: PackedVector3Array, norms: PackedVector3Array,
+		a: Vector3, b: Vector3, c: Vector3) -> void:
+	var n := (c - a).cross(b - a).normalized()
+	if n.length_squared() < 0.0001:
+		return
+	verts.append(a)
+	verts.append(b)
+	verts.append(c)
+	norms.append(n)
+	norms.append(n)
+	norms.append(n)
+
+
+func _build_array_mesh(verts: PackedVector3Array, norms: PackedVector3Array) -> ArrayMesh:
+	var arrays := []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = verts
+	arrays[Mesh.ARRAY_NORMAL] = norms
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return mesh
 
 
 func _box(material_key: String, center: Vector3, size: Vector3,
@@ -1041,7 +1288,7 @@ func _box(material_key: String, center: Vector3, size: Vector3,
 		_collision.add_child(collision)
 
 
-func _zone(id: StringName, label: String, pos: Vector3, range_value: float,
+func _zone(id: StringName, _label: String, pos: Vector3, range_value: float,
 		light_color := NEUTRAL_LIGHT, light_energy := 1.5) -> void:
 	if zones.has(id):
 		return
@@ -1050,16 +1297,6 @@ func _zone(id: StringName, label: String, pos: Vector3, range_value: float,
 	marker.position = pos
 	marker.add_to_group("base_zone")
 	add_child(marker)
-	var label3d := Label3D.new()
-	label3d.text = label
-	label3d.font_size = 28
-	label3d.pixel_size = 0.005
-	label3d.modulate = Color(0.86, 0.90, 0.96)
-	label3d.outline_size = 7
-	label3d.outline_modulate = Color(0.0, 0.0, 0.0, 0.85)
-	label3d.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label3d.position = Vector3(0.0, 2.9, 0.0)
-	marker.add_child(label3d)
 	var light := OmniLight3D.new()
 	light.name = "Light"
 	light.position = Vector3(0.0, 3.2, 0.0)
@@ -1082,14 +1319,16 @@ func _zone_light(pos: Vector3, range_value: float, energy := 1.4,
 	add_child(light)
 
 
-func _note(text: String, pos: Vector3) -> void:
+func _note(text: String, pos: Vector3, yaw := 0.0) -> void:
 	var label := Label3D.new()
 	label.text = text
-	label.font_size = 24
-	label.pixel_size = 0.006
+	label.font_size = 28
+	label.pixel_size = 0.005
 	label.modulate = Color(0.92, 0.88, 0.76)
-	label.outline_size = 5
-	label.outline_modulate = Color(0.0, 0.0, 0.0, 0.8)
-	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	label.outline_size = 6
+	label.outline_modulate = Color(0.0, 0.0, 0.0, 0.88)
+	label.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	label.double_sided = true
+	label.rotation = Vector3(0.0, yaw, 0.0)
 	label.position = pos
 	add_child(label)

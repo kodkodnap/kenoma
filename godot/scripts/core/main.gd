@@ -21,6 +21,8 @@ var cycle: DailyCycle = DailyCycle.new()
 var signal_console: SignalConsole
 var cycle_console: CycleConsole
 var terminal_sell_dock: DiskDock
+var ambient_wind: AmbientWind
+var snow_weather: SnowWeather
 
 
 func _ready() -> void:
@@ -65,6 +67,14 @@ func _ready() -> void:
 	var director := EventDirector.new()
 	director.name = "EventDirector"
 	add_child(director)
+
+	ambient_wind = AmbientWind.new()
+	ambient_wind.name = "AmbientWind"
+	add_child(ambient_wind)
+
+	snow_weather = SnowWeather.new()
+	snow_weather.name = "SnowWeather"
+	add_child(snow_weather)
 
 
 ## Cada copia exportada deja su disco físico sobre la mesa de discos de Signal Processing.

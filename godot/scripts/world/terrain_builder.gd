@@ -1,15 +1,107 @@
 class_name TerrainBuilder
 extends Node3D
 ## Construye la malla esculpida del valle de Kenoma en 3 anillos (4 m / 12 m / 32 m)
-## con relieve alpino, detalle normal triplanar y colisión exacta dentro del presupuesto Forward+.
+## con shader triplanar PBR de nieve esculpida, granito estratificado, hielo y pistas.
 
-const SNOW_LIGHT := Color(0.56, 0.64, 0.77)
-const SNOW_DEEP := Color(0.35, 0.44, 0.58)
-const ROAD_COLOR := Color(0.22, 0.27, 0.34)
-const ROCK_COLOR := Color(0.14, 0.16, 0.20)
-const ICE_COLOR := Color(0.18, 0.30, 0.44)
+const TERRAIN_SHADER_CODE := """
+shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_burley, specular_schlick_ggx;
 
-var _terrain_material: StandardMaterial3D
+uniform sampler2D snow_noise : filter_linear_mipmap, repeat_enable;
+uniform sampler2D rock_noise : filter_linear_mipmap, repeat_enable;
+
+varying vec3 v_world_pos;
+varying vec3 v_world_norm;
+varying vec4 v_mask;
+
+float sample_triplanar(sampler2D tex, vec3 p, vec3 w, float scale) {
+	float nx = texture(tex, p.zy * scale).r;
+	float ny = texture(tex, p.xz * scale).r;
+	float nz = texture(tex, p.xy * scale).r;
+	return nx * w.x + ny * w.y + nz * w.z;
+}
+
+void vertex() {
+	v_world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
+	v_world_norm = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
+	v_mask = COLOR;
+}
+
+void fragment() {
+	vec3 nw = normalize(v_world_norm);
+	vec3 tw = pow(abs(nw), vec3(4.0));
+	tw /= max(tw.x + tw.y + tw.z, 0.0001);
+
+	// Detalle de ventisqueros (sastrugi) y grano fino en nieve.
+	vec2 wind_uv = vec2(
+		v_world_pos.x * 0.022 + v_world_pos.z * 0.011,
+		v_world_pos.z * 0.048 - v_world_pos.x * 0.016
+	);
+	float sastrugi = texture(snow_noise, wind_uv).r;
+	float snow_fine = texture(snow_noise, v_world_pos.xz * 0.18).r;
+	float snow_dx = texture(snow_noise, wind_uv + vec2(0.015, 0.0)).r - sastrugi;
+	float snow_dz = texture(snow_noise, wind_uv + vec2(0.0, 0.015)).r - sastrugi;
+
+	// Granito estratificado en paredes y crestas empinadas.
+	float r_tri = sample_triplanar(rock_noise, v_world_pos, tw, 0.032);
+	float r_fine = sample_triplanar(rock_noise, v_world_pos, tw, 0.135);
+	float strata = 0.5 + 0.5 * sin(v_world_pos.y * 1.15 + r_tri * 3.6);
+	float rock_dx = texture(rock_noise, (v_world_pos.xz + vec2(0.35, 0.0)) * 0.05).r
+		- texture(rock_noise, v_world_pos.xz * 0.05).r;
+	float rock_dz = texture(rock_noise, (v_world_pos.xz + vec2(0.0, 0.35)) * 0.05).r
+		- texture(rock_noise, v_world_pos.xz * 0.05).r;
+
+	float alt_t = clamp((v_world_pos.y + 8.0) / 85.0, 0.0, 1.0);
+	vec3 snow_deep = vec3(0.30, 0.39, 0.53);
+	vec3 snow_lit = vec3(0.56, 0.65, 0.78);
+	vec3 snow_col = mix(snow_deep, snow_lit, clamp(alt_t * 0.65 + sastrugi * 0.45, 0.0, 1.0));
+	snow_col *= 0.90 + 0.18 * snow_fine;
+
+	vec3 rock_dark = vec3(0.10, 0.12, 0.15);
+	vec3 rock_slate = vec3(0.19, 0.21, 0.25);
+	vec3 rock_col = mix(rock_dark, rock_slate, clamp(r_tri * 0.65 + strata * 0.35, 0.0, 1.0));
+	rock_col *= 0.82 + 0.32 * r_fine;
+
+	float cliff_t = smoothstep(0.86, 0.63, nw.y + (r_tri - 0.5) * 0.14);
+	vec3 col = mix(snow_col, rock_col, cliff_t);
+	float rough = mix(mix(0.76, 0.88, snow_fine), 0.95, cliff_t);
+
+	// Cauce helado en el valle medio.
+	float ice_t = clamp(v_mask.g, 0.0, 1.0);
+	if (ice_t > 0.01) {
+		float crack = smoothstep(0.42, 0.58, r_fine);
+		vec3 ice_col = mix(vec3(0.14, 0.26, 0.39), vec3(0.28, 0.42, 0.56), crack * 0.5);
+		col = mix(col, ice_col, ice_t * 0.88);
+		rough = mix(rough, 0.24, ice_t * 0.85);
+	}
+
+	// Pista compactada del Snowcat con roderas y gravilla helada.
+	float road_t = clamp(v_mask.r, 0.0, 1.0);
+	if (road_t > 0.01) {
+		float track_noise = 0.5 + 0.5 * sin(v_world_pos.x * 1.9 + v_world_pos.z * 0.9 + snow_fine * 2.0);
+		vec3 road_col = mix(vec3(0.17, 0.21, 0.27), vec3(0.26, 0.31, 0.38), track_noise * 0.5 + snow_fine * 0.35);
+		col = mix(col, road_col, road_t * 0.88);
+		rough = mix(rough, 0.86, road_t * 0.75);
+	}
+
+	// Perturbación de normal en espacio mundo sin depender de UVs/tangentes.
+	float bump_strength = mix(1.35, 2.2, cliff_t);
+	vec3 n_pert = normalize(nw + vec3(
+		mix(snow_dx, rock_dx, cliff_t) * bump_strength,
+		0.0,
+		mix(snow_dz, rock_dz, cliff_t) * bump_strength
+	));
+	NORMAL = normalize((VIEW_MATRIX * vec4(n_pert, 0.0)).xyz);
+
+	ALBEDO = col;
+	ROUGHNESS = rough;
+	METALLIC = 0.0;
+	SPECULAR = mix(0.35, 0.65, ice_t);
+	AO = clamp(0.75 + 0.25 * v_mask.b, 0.65, 1.0);
+}
+"""
+
+var _terrain_material: ShaderMaterial
 var _collision: StaticBody3D
 
 
@@ -36,30 +128,39 @@ func _ready() -> void:
 		_collision.add_child(col)
 
 
-func _make_material() -> StandardMaterial3D:
-	var grain_noise := FastNoiseLite.new()
-	grain_noise.seed = 198311
-	grain_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
-	grain_noise.fractal_octaves = 4
-	grain_noise.frequency = 0.075
+func _make_material() -> ShaderMaterial:
+	var snow_n := FastNoiseLite.new()
+	snow_n.seed = 198311
+	snow_n.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	snow_n.fractal_type = FastNoiseLite.FRACTAL_FBM
+	snow_n.fractal_octaves = 4
+	snow_n.frequency = 0.045
 
-	var normal_tex := NoiseTexture2D.new()
-	normal_tex.width = 256
-	normal_tex.height = 256
-	normal_tex.seamless = true
-	normal_tex.as_normal_map = true
-	normal_tex.bump_strength = 4.5
-	normal_tex.noise = grain_noise
+	var snow_tex := NoiseTexture2D.new()
+	snow_tex.width = 512
+	snow_tex.height = 512
+	snow_tex.seamless = true
+	snow_tex.noise = snow_n
 
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = true
-	mat.roughness = 0.90
-	mat.metallic = 0.0
-	mat.normal_enabled = true
-	mat.normal_scale = 0.55
-	mat.normal_texture = normal_tex
-	mat.uv1_triplanar = true
-	mat.uv1_scale = Vector3(0.055, 0.055, 0.055)
+	var rock_n := FastNoiseLite.new()
+	rock_n.seed = 198329
+	rock_n.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	rock_n.fractal_type = FastNoiseLite.FRACTAL_RIDGED
+	rock_n.fractal_octaves = 4
+	rock_n.frequency = 0.075
+
+	var rock_tex := NoiseTexture2D.new()
+	rock_tex.width = 512
+	rock_tex.height = 512
+	rock_tex.seamless = true
+	rock_tex.noise = rock_n
+
+	var shader := Shader.new()
+	shader.code = TERRAIN_SHADER_CODE
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	mat.set_shader_parameter("snow_noise", snow_tex)
+	mat.set_shader_parameter("rock_noise", rock_tex)
 	return mat
 
 
@@ -131,7 +232,7 @@ func _build_quad_mesh(x0: float, x1: float, z0: float, z1: float, step: float,
 			var n := TerrainMap.normal_at(x, z)
 			positions[idx] = Vector3(x, y, z)
 			normals[idx] = n
-			colors[idx] = _vertex_color(x, y, z, n)
+			colors[idx] = _vertex_mask(x, y, z, n)
 
 	var indices := PackedInt32Array()
 	for rz in rows:
@@ -174,17 +275,11 @@ func _build_quad_mesh(x0: float, x1: float, z0: float, z1: float, step: float,
 	return mesh
 
 
-func _vertex_color(x: float, y: float, z: float, n: Vector3) -> Color:
-	var snow := SNOW_DEEP.lerp(SNOW_LIGHT, clampf((y + 6.0) / 70.0, 0.0, 1.0))
-	var slope := clampf((0.88 - n.y) / 0.22, 0.0, 1.0)
-	var col := snow.lerp(ROCK_COLOR, slope)
-
-	var creek_z := -156.0 + sin(x * 0.017) * 28.0 - cos(x * 0.008) * 16.0
-	if absf(x) < 500.0 and absf(z - creek_z) < 9.5 and y < -2.2:
-		var ice_t := clampf((9.5 - absf(z - creek_z)) / 9.5, 0.0, 1.0)
-		col = col.lerp(ICE_COLOR, ice_t * 0.80)
-
+func _vertex_mask(x: float, y: float, z: float, n: Vector3) -> Color:
 	var road := TerrainMap.road_factor(x, z)
-	if road > 0.01:
-		col = col.lerp(ROAD_COLOR, road * 0.86)
-	return col
+	var ice := 0.0
+	var creek_z := -156.0 + sin(x * 0.017) * 28.0 - cos(x * 0.008) * 16.0
+	if absf(x) < 500.0 and absf(z - creek_z) < 10.5 and y < -2.0:
+		ice = clampf((10.5 - absf(z - creek_z)) / 10.5, 0.0, 1.0)
+	var cavity := clampf(n.y * 0.7 + clampf((y + 10.0) / 80.0, 0.0, 0.3), 0.0, 1.0)
+	return Color(road, ice, cavity, 1.0)

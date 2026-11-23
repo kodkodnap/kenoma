@@ -12,6 +12,7 @@ const GATE_POS := Vector2(-190.0, -720.0)
 
 static var _noise_ridge: FastNoiseLite
 static var _noise_hills: FastNoiseLite
+static var _noise_gully: FastNoiseLite
 static var _noise_drift: FastNoiseLite
 static var _cached_pads: Array = []
 
@@ -35,12 +36,19 @@ static func _ensure_noise() -> void:
 	_noise_hills.fractal_octaves = 4
 	_noise_hills.frequency = 0.0052
 
+	_noise_gully = FastNoiseLite.new()
+	_noise_gully.seed = 19831203
+	_noise_gully.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	_noise_gully.fractal_type = FastNoiseLite.FRACTAL_RIDGED
+	_noise_gully.fractal_octaves = 3
+	_noise_gully.frequency = 0.0145
+
 	_noise_drift = FastNoiseLite.new()
 	_noise_drift.seed = 19830907
 	_noise_drift.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
 	_noise_drift.fractal_type = FastNoiseLite.FRACTAL_FBM
 	_noise_drift.fractal_octaves = 3
-	_noise_drift.frequency = 0.026
+	_noise_drift.frequency = 0.028
 
 
 ## Altura del terreno en coordenadas mundo (x, z). Determinista para co-op y props.
@@ -49,21 +57,23 @@ static func height_at(x: float, z: float) -> float:
 	var p := Vector2(x, z)
 	var dist_base := p.distance_to(Vector2(6.0, -14.0))
 
-	# 1. Ruido continuo de colinas y ventisqueros desde pocos metros fuera de la base.
+	# 1. Ruido continuo de colinas, cárcavas y ventisqueros desde pocos metros fuera de la base.
 	var ridge_val := clampf(_noise_ridge.get_noise_2d(x, z), 0.0, 1.0)
 	var hills_val := _noise_hills.get_noise_2d(x, z)
+	var gully_val := clampf(_noise_gully.get_noise_2d(x, z), 0.0, 1.0)
 	var drift_val := _noise_drift.get_noise_2d(x, z)
 
-	var near_relief := _smoothstep(24.0, 120.0, dist_base)
-	var mid_relief := _smoothstep(65.0, 260.0, dist_base)
+	var near_relief := _smoothstep(24.0, 110.0, dist_base)
+	var mid_relief := _smoothstep(55.0, 240.0, dist_base)
 
-	var valley := drift_val * lerpf(0.6, 2.8, near_relief)
-	valley += hills_val * lerpf(3.2, 26.0, near_relief)
-	valley += pow(ridge_val, 1.45) * 42.0 * mid_relief
+	var valley := drift_val * lerpf(0.7, 3.2, near_relief)
+	valley += hills_val * lerpf(3.4, 26.0, near_relief)
+	valley += pow(gully_val, 1.35) * lerpf(1.2, 11.5, near_relief)
+	valley += pow(ridge_val, 1.45) * 44.0 * mid_relief
 
 	# Depresión suave del claro inmediato al norte frente al voladizo para abrir vista al valle.
-	var clearing_t := 1.0 - _smoothstep(45.0, 155.0, p.distance_to(Vector2(0.0, -78.0)))
-	valley -= clearing_t * 3.8
+	var clearing_t := 1.0 - _smoothstep(42.0, 138.0, p.distance_to(Vector2(0.0, -74.0)))
+	valley -= clearing_t * 3.4
 
 	# 2. Cordón alpino en anfiteatro (crestas grandes visibles desde la estación, 60..220 m).
 	var rim_t := clampf((dist_base - 250.0) / 560.0, 0.0, 1.45)
