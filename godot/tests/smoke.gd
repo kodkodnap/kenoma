@@ -562,6 +562,10 @@ func _run() -> void:
 				and world_env.environment.volumetric_fog_density > 0.0
 				and world_env.environment.volumetric_fog_density <= 0.02,
 			"niebla volumétrica ligera activada en WorldEnvironment", failures)
+		_check(world_env != null and world_env.environment != null
+				and world_env.environment.ssao_enabled
+				and world_env.environment.glow_enabled,
+			"SSAO y Glow activados en WorldEnvironment", failures)
 
 	# Hito 4: energía, transformadores, breakers y apagón.
 	_check(hud.power_label is Label, "HUD tiene panel de red", failures)
@@ -685,16 +689,24 @@ func _run() -> void:
 		_check(zone_light != null and zone_light.visible,
 			"las luces de zona están encendidas", failures)
 
+		var extra_light := get_nodes_in_group("base_light")[0] as Light3D if not get_nodes_in_group("base_light").is_empty() else null
+		_check(extra_light != null and extra_light.visible,
+			"las luces focales de la base arrancan encendidas", failures)
+
 		power.trigger_blackout()
 		await physics_frame
 		_check(zone_light != null and not zone_light.visible,
 			"el apagón deja la base a oscuras", failures)
+		_check(extra_light != null and not extra_light.visible,
+			"el apagón apaga también focos y pozos de luz", failures)
 		_check(panel.restart_enabled(), "el botón rojo se habilita en apagón", failures)
 		_check(not panel.press_restart(), "la primera pulsación del botón arma", failures)
 		_check(power.is_restart_armed(), "el botón rojo arma el breaker", failures)
 		_check(panel.press_restart() and not power.is_blackout(),
 			"dos pulsaciones rearman la base", failures)
-		_check(zone_light != null and zone_light.visible, "las luces vuelven al rearmar", failures)
+		_check(zone_light != null and zone_light.visible
+				and extra_light != null and extra_light.visible,
+			"las luces vuelven al rearmar", failures)
 
 	# Hito 5: estación de señales.
 	_check(signals != null, "SignalSystem presente", failures)

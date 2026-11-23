@@ -126,6 +126,10 @@ func _apply_base_lights() -> void:
 		var light := marker.get_node_or_null("Light") as Light3D
 		if light != null:
 			light.visible = on
+	for node in get_tree().get_nodes_in_group("base_light"):
+		var extra_light := node as Light3D
+		if extra_light != null:
+			extra_light.visible = on
 
 
 func _on_power_changed(_on: bool) -> void:

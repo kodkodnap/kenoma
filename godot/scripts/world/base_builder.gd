@@ -67,6 +67,7 @@ func _ready() -> void:
 	_build_signal_room()
 	_build_exterior()
 	_flush_batches()
+	_build_wear_decals()
 	_build_lights()
 
 
@@ -193,46 +194,52 @@ func _build_rooms() -> void:
 		match id:
 			&"signal":
 				light_color = WARM_LIGHT
-				light_energy = 2.0
-				light_range = 22.0
+				light_energy = 0.78
+				light_range = 20.0
 			&"living":
 				light_color = WARM_LIGHT
-				light_energy = 1.9
-				light_range = 16.0
+				light_energy = 0.92
+				light_range = 15.0
 			&"garage":
 				light_color = WARM_LIGHT
-				light_energy = 1.85
-				light_range = 19.0
+				light_energy = 0.85
+				light_range = 18.0
 			&"upper_hall":
 				light_color = DIM_HALL_LIGHT
-				light_energy = 1.8
-				light_range = 19.0
+				light_energy = 0.95
+				light_range = 17.0
 			&"server_room":
+				light_color = COOL_LIGHT
+				light_energy = 0.95
+				light_range = 16.0
+			&"power_room":
 				light_color = COOL_LIGHT
 				light_energy = 1.15
 				light_range = 17.0
-			&"power_room":
-				light_color = COOL_LIGHT
-				light_energy = 1.3
-				light_range = 18.0
 			&"drone_terrace":
 				light_color = WARM_LIGHT
-				light_energy = 1.2
+				light_energy = 1.05
 				light_range = 16.0
 		_zone(id, String(room["label"]), Vector3(cx, y + 0.15, cz), light_range, light_color, light_energy)
 
-		# Luces complementarias en estancias grandes.
+		# Pozos de luz cálida y contraste con penumbra en estancias grandes.
 		if id == &"signal":
-			_zone_light(Vector3(-15.0, SIGNAL_Y + 3.6, -24.0), 13.0, 1.5, WARM_LIGHT)
-			_zone_light(Vector3(-2.0, SIGNAL_Y + 3.6, -24.0), 13.0, 1.5, WARM_LIGHT)
-			_zone_light(Vector3(-15.0, SIGNAL_Y + 3.6, -16.0), 12.0, 1.2, WARM_LIGHT)
+			_zone_light(Vector3(-15.0, SIGNAL_Y + 3.6, -24.0), 12.0, 0.65, WARM_LIGHT)
+			_zone_light(Vector3(-2.0, SIGNAL_Y + 3.6, -24.0), 12.0, 0.65, WARM_LIGHT)
+			_zone_light(Vector3(-15.0, SIGNAL_Y + 3.6, -16.0), 11.0, 0.55, WARM_LIGHT)
+		elif id == &"living":
+			_spot_light("LivingTableSpot", Vector3(4.5, 8.25, 0.0), Vector3(4.5, 4.4, 0.0),
+				9.0, 56.0, 2.7, WARM_LIGHT, false)
+		elif id == &"garage":
+			_spot_light("GarageSnowcatSpot", Vector3(10.5, 4.10, -16.8), Vector3(10.5, 0.0, -16.8),
+				12.0, 62.0, 3.2, WARM_LIGHT, true)
 		elif id == &"upper_hall":
-			_zone_light(Vector3(-13.5, 8.1, -9.5), 13.0, 1.25, DIM_HALL_LIGHT)
-			_zone_light(Vector3(13.5, 8.1, -9.5), 12.0, 1.15, COOL_LIGHT)
+			_zone_light(Vector3(-13.5, 8.1, -9.5), 11.0, 0.70, DIM_HALL_LIGHT)
+			_zone_light(Vector3(13.5, 8.1, -9.5), 11.0, 0.65, COOL_LIGHT)
 		elif id == &"stairwell":
-			_zone_light(Vector3(27.5, 3.4, -3.0), 16.0, 1.25, NEUTRAL_LIGHT)
-			_zone_light(Vector3(27.5, 7.8, -2.0), 16.0, 1.3, NEUTRAL_LIGHT)
-			_zone_light(Vector3(27.5, -1.2, -2.0), 16.0, 1.05, COOL_LIGHT)
+			_zone_light(Vector3(27.5, 3.4, -3.0), 15.0, 1.05, NEUTRAL_LIGHT)
+			_zone_light(Vector3(27.5, 7.8, -2.0), 15.0, 1.15, NEUTRAL_LIGHT)
+			_zone_light(Vector3(27.5, -1.2, -2.0), 15.0, 0.90, COOL_LIGHT)
 
 
 func _build_special_zones() -> void:
@@ -479,10 +486,11 @@ func _build_cantilever_structure() -> void:
 		var pil_h := 4.4 if pil.y > 7.0 else 8.8
 		_box("wall", Vector3(pil.x, pil.y, pil.z), Vector3(0.48, pil_h, 0.48), Basis.IDENTITY, false)
 
-	# Focos cálidos bajo el voladizo iluminando el claro frontal.
+	# Focos cálidos direccionales bajo el voladizo bañando pórticos en V y claro frontal.
 	for lx in [-13.0, -4.0]:
 		_box("light", Vector3(lx, soffit_y - 0.52, -26.0), Vector3(1.05, 0.12, 0.36), Basis.IDENTITY, false)
-		_zone_light(Vector3(lx, soffit_y - 0.85, -26.0), 15.0, 1.45, WARM_LIGHT)
+		_spot_light("CantileverSpot", Vector3(lx, soffit_y - 0.65, -26.0),
+			Vector3(lx, 0.0, -26.8), 16.0, 58.0, 2.8, WARM_LIGHT, false)
 
 
 func _build_stairs() -> void:
@@ -663,6 +671,19 @@ func _build_props() -> void:
 	# --- PLANTA ALTA: PASILLO PRINCIPAL (38 m x 5 m) ---
 	for bx in [-14.0, -4.5, 5.0, 14.5]:
 		_box("dark_metal", Vector3(bx, 8.52, -9.5), Vector3(9.0, 0.14, 0.75), Basis.IDENTITY, false)
+		_box("light", Vector3(bx, 8.43, -9.5), Vector3(1.6, 0.05, 0.24), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(0.0, 8.20, -11.82), Vector3(37.6, 0.12, 0.14), Basis.IDENTITY, false)
+	# Zócalos en pasillo (respetando huecos de puertas y puente de señales).
+	for seg in [[-18.9, -9.6], [-5.4, 6.5], [9.5, 18.9]]:
+		var sx0 := float(seg[0])
+		var sx1 := float(seg[1])
+		_box("dark_metal", Vector3((sx0 + sx1) * 0.5, 4.48, -11.85),
+			Vector3(sx1 - sx0, 0.16, 0.05), Basis.IDENTITY, false)
+	for seg in [[-18.9, -13.9], [-11.1, 3.6], [6.4, 14.3], [16.7, 18.9]]:
+		var sx0 := float(seg[0])
+		var sx1 := float(seg[1])
+		_box("dark_metal", Vector3((sx0 + sx1) * 0.5, 4.48, -7.15),
+			Vector3(sx1 - sx0, 0.16, 0.05), Basis.IDENTITY, false)
 	_box("metal", Vector3(-18.2, 5.5, -9.5), Vector3(0.9, 2.2, 3.4))
 	_note("← SERVIDORES | ↑ PUENTE SEÑALES | DESCANSO / BAÑO →", Vector3(0.0, 7.1, -7.18), PI)
 
@@ -753,8 +774,15 @@ func _build_signal_room() -> void:
 	var window := _signal_detail("SignalWindow", Vector3(-8.5, y + 2.4, -29.0))
 	window.set_meta("width", BaseLayout.SIGNAL_WINDOW_WIDTH)
 
-	for mx in [-14.0, -3.0]:
-		_box("dark_metal", Vector3(mx, y + 2.4, -28.92), Vector3(0.18, 2.8, 0.24), Basis.IDENTITY, false)
+	for mx in [-14.5, -11.5, -8.5, -5.5, -2.5]:
+		_box("dark_metal", Vector3(mx, y + 2.4, -28.92), Vector3(0.16, 2.8, 0.24), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-8.5, y + 3.15, -28.92), Vector3(18.0, 0.10, 0.20), Basis.IDENTITY, false)
+	# Zócalos perimetrales de Sala de Señales (sin cruzar el paso sur ni puerta este).
+	_box("dark_metal", Vector3(-18.85, y + 0.08, -20.5), Vector3(0.06, 0.16, 16.8), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(1.85, y + 0.08, -22.9), Vector3(0.06, 0.16, 12.0), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(1.85, y + 0.08, -13.1), Vector3(0.06, 0.16, 2.0), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-14.25, y + 0.08, -12.15), Vector3(9.3, 0.16, 0.06), Basis.IDENTITY, false)
+	_box("dark_metal", Vector3(-1.75, y + 0.08, -12.15), Vector3(7.3, 0.16, 0.06), Basis.IDENTITY, false)
 
 	for bz in [-25.0, -21.0, -17.0]:
 		_box("wall", Vector3(-8.5, y + 4.03, bz), Vector3(20.6, 0.34, 0.48), Basis.IDENTITY, false)
@@ -762,6 +790,11 @@ func _build_signal_room() -> void:
 		_box("dark_metal", Vector3(cx, y + 3.79, -20.5), Vector3(0.85, 0.14, 15.6), Basis.IDENTITY, false)
 		_box("light", Vector3(cx, y + 3.68, -23.0), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
 		_box("light", Vector3(cx, y + 3.68, -17.5), Vector3(0.22, 0.08, 2.8), Basis.IDENTITY, false)
+
+	_spot_light("SignalTableSpot", Vector3(-8.5, y + 3.55, -20.0), Vector3(-8.5, y, -20.0),
+		10.5, 56.0, 3.1, WARM_LIGHT, true)
+	_spot_light("SignalConsoleSpot", Vector3(-8.5, y + 3.45, -25.8), Vector3(-8.5, y + 1.0, -28.0),
+		13.0, 68.0, 2.2, WARM_LIGHT, false)
 
 	# Bancada de 4 máquinas físicas frente al ventanal panorámico (y = 6.0 -> marcadores en 7.25).
 	_add_panel(-15.5, y, -27.2, 0)
@@ -915,7 +948,7 @@ func _build_exterior() -> void:
 		_box("wood", Vector3(pt.x, py + 6.3, pt.y), Vector3(1.8, 0.2, 0.2))
 		_box("dark_metal", Vector3(pt.x, py + 6.05, pt.y), Vector3(0.32, 0.45, 0.32), Basis.IDENTITY, false)
 
-	# Bosque alpino agrupado en rodales (~520 pinos recortados con ramas irregulares y nieve).
+	# Bosque alpino agrupado en rodales (~500 pinos: 3 niveles cerca, 2 niveles lejos para liberar presupuesto).
 	var grove_noise := FastNoiseLite.new()
 	grove_noise.seed = 198344
 	grove_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
@@ -924,7 +957,7 @@ func _build_exterior() -> void:
 	rng.seed = 198304
 	var placed := 0
 	var attempts := 0
-	while placed < 520 and attempts < 4500:
+	while placed < 500 and attempts < 4500:
 		attempts += 1
 		var angle := rng.randf_range(0.0, TAU)
 		var radius := lerpf(42.0, 450.0, pow(rng.randf(), 0.74))
@@ -956,12 +989,17 @@ func _build_exterior() -> void:
 			tree_basis.scaled(Vector3(w * 0.21, trunk_h, w * 0.21)),
 			Vector3(tx, ty + trunk_h * 0.5 - 0.95, tz)
 		))
-		for tier in 3:
+		var is_near := radius < 355.0
+		var tier_indices := [0, 1, 2] if is_near else [0, 2]
+		for tier_var in tier_indices:
+			var tier: int = tier_var
 			var t_ratio := float(tier) / 2.0
 			var tier_h := h * lerpf(0.40, 0.28, t_ratio)
 			var tier_r := w * lerpf(1.22, 0.56, t_ratio)
+			if not is_near and tier == 0:
+				tier_h *= 1.18
 			var tier_y := ty + h * lerpf(0.40, 0.79, t_ratio)
-			var tier_basis := tree_basis * Basis(Vector3.UP, float(tier) * 0.58)
+			var tier_basis := tree_basis * Basis(Vector3.UP, float(tier) * 0.63)
 			_tree_bough_transforms.append(Transform3D(
 				tier_basis.scaled(Vector3(tier_r, tier_h, tier_r)),
 				Vector3(tx, tier_y, tz)
@@ -1170,12 +1208,15 @@ func _flush_custom_batch(batch_name: String, mesh: Mesh, transforms: Array[Trans
 	inst.material_override = _materials[mat_key]
 	inst.cast_shadow = (GeometryInstance3D.SHADOW_CASTING_SETTING_ON if cast_shadow
 		else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+	if batch_name == "RockOutcrops" or batch_name == "TreeSnowCaps":
+		inst.visibility_range_end = 560.0
+		inst.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 	add_child(inst)
 
 
 func _make_faceted_rock_mesh() -> ArrayMesh:
-	var rings := 4
-	var sectors := 7
+	var rings := 3
+	var sectors := 6
 	var grid: Array = []
 	for r in rings + 1:
 		var v_lat := float(r) / float(rings)
@@ -1184,7 +1225,7 @@ func _make_faceted_rock_mesh() -> ArrayMesh:
 		for s in sectors:
 			var theta := TAU * float(s) / float(sectors)
 			var dir := Vector3(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta))
-			var disp := 0.82 + 0.22 * sin(dir.x * 4.3 + 0.6) * cos(dir.z * 3.7) \
+			var disp := 0.82 + 0.24 * sin(dir.x * 4.3 + 0.6) * cos(dir.z * 3.7) \
 				+ 0.16 * sin(dir.y * 5.1 + dir.x * 2.4)
 			var p := dir * disp
 			if p.y < 0.0:
@@ -1215,13 +1256,13 @@ func _make_pine_bough_mesh() -> ArrayMesh:
 	var norms := PackedVector3Array()
 	var apex := Vector3(0.0, 0.50, 0.0)
 	var center_bot := Vector3(0.0, -0.18, 0.0)
-	var points := 12
+	var points := 10
 	var rim: Array[Vector3] = []
 	for i in points:
-		var angle := TAU * float(i) / float(points) + float(i % 2) * 0.06
+		var angle := TAU * float(i) / float(points) + float(i % 2) * 0.08
 		var is_tip := (i % 2 == 0)
-		var r := 1.05 if is_tip else 0.44
-		var y := -0.52 if is_tip else -0.24
+		var r := 1.08 if is_tip else 0.42
+		var y := -0.52 if is_tip else -0.22
 		rim.append(Vector3(cos(angle) * r, y, sin(angle) * r))
 	for i in points:
 		var a: Vector3 = rim[i]
@@ -1235,10 +1276,10 @@ func _make_pine_snow_mesh() -> ArrayMesh:
 	var verts := PackedVector3Array()
 	var norms := PackedVector3Array()
 	var apex := Vector3(0.0, 0.54, 0.0)
-	var points := 12
+	var points := 10
 	var rim: Array[Vector3] = []
 	for i in points:
-		var angle := TAU * float(i) / float(points) + float(i % 2) * 0.06
+		var angle := TAU * float(i) / float(points) + float(i % 2) * 0.08
 		var is_tip := (i % 2 == 0)
 		var r := 0.96 if is_tip else 0.36
 		var y := -0.40 if is_tip else -0.18
@@ -1336,7 +1377,77 @@ func _zone_light(pos: Vector3, range_value: float, energy := 1.4,
 	light.light_energy = energy
 	light.omni_range = clampf(range_value, 6.0, 30.0)
 	light.shadow_enabled = false
+	light.add_to_group("base_light")
 	add_child(light)
+
+
+func _spot_light(spot_name: String, pos: Vector3, target: Vector3, range_value: float,
+		angle_deg: float, energy: float, color: Color, shadows := false) -> void:
+	var spot := SpotLight3D.new()
+	spot.name = spot_name
+	spot.light_color = color
+	spot.light_energy = energy
+	spot.spot_range = range_value
+	spot.spot_angle = angle_deg
+	spot.spot_attenuation = 1.15
+	spot.shadow_enabled = shadows
+	spot.shadow_blur = 1.6
+	spot.add_to_group("base_light")
+	var dir := target - pos
+	if dir.length_squared() > 0.001:
+		var n_dir := dir.normalized()
+		var up := Vector3.UP if absf(n_dir.dot(Vector3.UP)) < 0.95 else Vector3.FORWARD
+		spot.transform = Transform3D(Basis.looking_at(n_dir, up), pos)
+	else:
+		spot.position = pos
+	add_child(spot)
+
+
+func _build_wear_decals() -> void:
+	var grime_tex := _make_grime_texture()
+	var specs := [
+		{"pos": Vector3(10.5, 0.01, -24.8), "size": Vector3(5.6, 0.6, 4.2), "col": Color(0.08, 0.09, 0.11), "mix": 0.65},
+		{"pos": Vector3(10.5, 0.01, -16.8), "size": Vector3(4.2, 0.6, 6.2), "col": Color(0.07, 0.07, 0.08), "mix": 0.60},
+		{"pos": Vector3(25.0, 0.01, -24.8), "size": Vector3(3.4, 0.6, 3.2), "col": Color(0.10, 0.11, 0.14), "mix": 0.55},
+		{"pos": Vector3(-8.5, SIGNAL_Y + 0.01, -26.2), "size": Vector3(14.0, 0.6, 2.8), "col": Color(0.05, 0.05, 0.06), "mix": 0.42},
+		{"pos": Vector3(0.6, SIGNAL_Y + 0.01, -17.5), "size": Vector3(2.4, 0.6, 2.4), "col": Color(0.08, 0.07, 0.06), "mix": 0.45},
+		{"pos": Vector3(-13.5, 4.41, -9.5), "size": Vector3(8.0, 0.6, 3.8), "col": Color(0.06, 0.07, 0.08), "mix": 0.48},
+		{"pos": Vector3(5.0, 4.41, -9.5), "size": Vector3(8.5, 0.6, 3.8), "col": Color(0.06, 0.07, 0.08), "mix": 0.45},
+		{"pos": Vector3(5.8, -4.39, -4.5), "size": Vector3(4.8, 0.6, 3.4), "col": Color(0.04, 0.04, 0.05), "mix": 0.72},
+		{"pos": Vector3(5.8, -4.39, 2.5), "size": Vector3(4.8, 0.6, 3.4), "col": Color(0.04, 0.04, 0.05), "mix": 0.72},
+		{"pos": Vector3(10.5, 4.46, -19.2), "size": Vector3(8.6, 0.6, 8.6), "col": Color(0.09, 0.10, 0.12), "mix": 0.50},
+	]
+	for i in specs.size():
+		var spec: Dictionary = specs[i]
+		var decal := Decal.new()
+		decal.name = "WearDecal%02d" % i
+		decal.position = spec["pos"]
+		decal.size = spec["size"]
+		decal.texture_albedo = grime_tex
+		decal.modulate = spec["col"]
+		decal.albedo_mix = float(spec["mix"])
+		decal.upper_fade = 0.28
+		decal.lower_fade = 0.28
+		add_child(decal)
+
+
+func _make_grime_texture() -> ImageTexture:
+	var res := 64
+	var img := Image.create(res, res, false, Image.FORMAT_RGBA8)
+	var n := FastNoiseLite.new()
+	n.seed = 198399
+	n.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	n.fractal_type = FastNoiseLite.FRACTAL_FBM
+	n.frequency = 0.09
+	for y in res:
+		for x in res:
+			var u := (float(x) + 0.5) / float(res) * 2.0 - 1.0
+			var v := (float(y) + 0.5) / float(res) * 2.0 - 1.0
+			var radial := clampf(1.0 - sqrt(u * u + v * v), 0.0, 1.0)
+			var blotch := clampf(0.5 + 0.5 * n.get_noise_2d(float(x), float(y)), 0.0, 1.0)
+			var alpha := radial * radial * (0.35 + 0.65 * blotch)
+			img.set_pixel(x, y, Color(1.0, 1.0, 1.0, alpha))
+	return ImageTexture.create_from_image(img)
 
 
 func _note(text: String, pos: Vector3, yaw := 0.0) -> void:
