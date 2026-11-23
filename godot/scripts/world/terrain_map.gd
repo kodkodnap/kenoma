@@ -217,7 +217,9 @@ static func structure_pads() -> Array:
 		pads.append({"pos": rp, "radius": 9.5, "y": _raw_pad_elevation(rp.x, rp.y) + 8.0})
 	for tp in [Vector2(-560.0, -560.0), Vector2(560.0, -560.0),
 			Vector2(-560.0, 560.0), Vector2(560.0, 560.0)]:
-		pads.append({"pos": tp, "radius": 13.0, "y": _raw_pad_elevation(tp.x, tp.y) + 28.0})
+		# Radio > media celda del anillo Outer (16 m): si no, los vértices vecinos quedan
+		# en la montaña y forman una tienda que entierra la turbina.
+		pads.append({"pos": tp, "radius": 20.0, "y": _raw_pad_elevation(tp.x, tp.y) + 28.0})
 	pads.append({"pos": RADIO_TOWER_POS, "radius": 11.0, "y": 44.0})
 	_cached_pads = pads
 	return _cached_pads

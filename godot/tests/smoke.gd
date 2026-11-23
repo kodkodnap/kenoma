@@ -373,6 +373,19 @@ func _run() -> void:
 			"3 radares de coordenadas", failures)
 		_check(get_nodes_in_group("wind_turbine").size() == 4,
 			"4 turbinas eólicas", failures)
+		var turbines_enterradas := 0
+		for turbina_variant in get_nodes_in_group("wind_turbine"):
+			var turbina := turbina_variant as Node3D
+			var tp := turbina.global_position
+			var ray := PhysicsRayQueryParameters3D.create(
+				Vector3(tp.x, 1000.0, tp.z), Vector3(tp.x, -1000.0, tp.z))
+			var hit := root.world_3d.direct_space_state.intersect_ray(ray)
+			var collider := hit.get("collider") as Node
+			if collider != null and collider.name == "TerrainCollision" \
+					and absf(float(hit["position"].y) - tp.y) > 3.0:
+				turbines_enterradas += 1
+		_check(turbines_enterradas == 0,
+			"las turbinas se asientan sobre la superficie del terreno", failures)
 		_check(get_nodes_in_group("radio_tower").size() == 1,
 			"torre de radio presente", failures)
 		_check(get_nodes_in_group("breaker").size() == 1, "breaker presente", failures)
