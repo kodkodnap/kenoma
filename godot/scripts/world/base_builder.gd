@@ -71,31 +71,31 @@ func _ready() -> void:
 
 
 func _make_materials() -> void:
-	_materials["wall"] = _pbr_material(Color(0.24, 0.26, 0.28), 0.0, 0.90,
-		198301, 0.14, 0.55, 0.28, 0.78)
-	_materials["floor"] = _pbr_material(Color(0.14, 0.15, 0.17), 0.0, 0.92,
-		198302, 0.16, 0.35, 0.34, 0.82)
-	_materials["ceiling"] = _pbr_material(Color(0.10, 0.11, 0.13), 0.0, 0.95,
-		198303, 0.12, 0.25, 0.30, 0.84)
-	_materials["metal"] = _pbr_material(Color(0.25, 0.28, 0.31), 0.58, 0.48,
-		198304, 0.24, 0.25, 0.65, 0.86)
-	_materials["dark_metal"] = _pbr_material(Color(0.08, 0.10, 0.12), 0.72, 0.44,
-		198305, 0.22, 0.25, 0.60, 0.85)
-	_materials["screen"] = _material(Color(0.03, 0.12, 0.10), 0.0, 0.35, Color(0.22, 0.65, 0.40), 0.75)
-	_materials["light"] = _material(Color(1.0, 0.88, 0.66), 0.0, 0.4, Color(1.0, 0.74, 0.38), 2.8)
-	_materials["snow"] = _pbr_material(Color(0.46, 0.54, 0.68), 0.0, 0.90,
-		198306, 0.12, 0.45, 0.35, 0.86)
-	_materials["rock"] = _pbr_material(Color(0.14, 0.16, 0.19), 0.0, 0.95,
-		198307, 0.12, 0.90, 0.26, 0.72)
-	_materials["pine"] = _pbr_material(Color(0.055, 0.105, 0.080), 0.0, 0.94,
-		198308, 0.32, 0.75, 0.65, 0.74)
-	_materials["roof"] = _pbr_material(Color(0.14, 0.16, 0.18), 0.0, 0.93,
-		198309, 0.18, 0.60, 0.36, 0.80)
-	_materials["wood"] = _pbr_material(Color(0.41, 0.27, 0.16), 0.0, 0.84,
-		198310, 0.28, 0.42, 0.55, 0.78)
-	_materials["porcelain"] = _pbr_material(Color(0.54, 0.57, 0.60), 0.05, 0.48,
-		198311, 0.09, 0.18, 0.45, 0.90)
-	_materials["rug"] = _material(Color(0.45, 0.18, 0.14), 0.0, 0.96)
+	_materials["wall"] = _pbr_material(Color(0.34, 0.34, 0.33), 0.0, 0.86,
+		198301, 0.45, 0.10, 0.85, 0.92, 1.0, 0.35)
+	_materials["floor"] = _pbr_material(Color(0.26, 0.25, 0.23), 0.0, 0.88,
+		198302, 0.55, 0.08, 0.95, 0.93, 0.9, 0.35)
+	_materials["ceiling"] = _pbr_material(Color(0.30, 0.28, 0.25), 0.0, 0.92,
+		198303, 0.60, 0.03, 1.10, 0.95, 0.5, 0.25)
+	_materials["metal"] = _pbr_material(Color(0.26, 0.29, 0.32), 0.55, 0.45,
+		198304, 0.80, 0.04, 1.60, 0.94, 0.6, 0.30)
+	_materials["dark_metal"] = _pbr_material(Color(0.09, 0.10, 0.11), 0.70, 0.42,
+		198305, 0.90, 0.04, 1.70, 0.94, 0.6, 0.30)
+	_materials["screen"] = _material(Color(0.03, 0.12, 0.10), 0.0, 0.35, Color(0.24, 0.58, 0.42), 0.60)
+	_materials["light"] = _material(Color(1.0, 0.78, 0.52), 0.0, 0.4, Color(1.0, 0.62, 0.30), 1.6)
+	_materials["snow"] = _pbr_material(Color(0.66, 0.74, 0.86), 0.0, 0.86,
+		198306, 0.70, 0.16, 0.80, 0.96, 1.1, 0.30)
+	_materials["rock"] = _pbr_material(Color(0.28, 0.30, 0.34), 0.0, 0.92,
+		198307, 0.50, 0.32, 0.55, 0.82, 2.0, 0.55)
+	_materials["pine"] = _pbr_material(Color(0.06, 0.12, 0.09), 0.0, 0.90,
+		198308, 0.90, 0.20, 1.30, 0.85, 1.0, 0.40)
+	_materials["roof"] = _pbr_material(Color(0.24, 0.26, 0.28), 0.0, 0.90,
+		198309, 0.65, 0.12, 0.90, 0.90, 1.0, 0.35)
+	_materials["wood"] = _pbr_material(Color(0.30, 0.20, 0.13), 0.0, 0.78,
+		198310, 0.90, 0.06, 1.80, 0.90, 0.8, 0.30)
+	_materials["porcelain"] = _pbr_material(Color(0.62, 0.64, 0.66), 0.05, 0.40,
+		198311, 0.50, 0.02, 1.60, 0.96, 0.4, 0.20)
+	_materials["rug"] = _material(Color(0.16, 0.19, 0.23), 0.0, 0.96)
 	_materials["snowcat"] = _material(Color(0.66, 0.55, 0.30), 0.25, 0.62)
 	_materials["led_green"] = _material(Color(0.08, 0.8, 0.25), 0.0, 0.4, Color(0.1, 1.0, 0.3), 2.0)
 	_materials["led_red"] = _material(Color(0.85, 0.08, 0.08), 0.0, 0.4, Color(1.0, 0.12, 0.1), 2.8)
@@ -107,16 +107,26 @@ func _make_materials() -> void:
 
 func _pbr_material(color: Color, metallic: float, roughness: float,
 		noise_seed: int, freq: float, normal_strength: float,
-		triplanar_scale: float, min_albedo_lum: float) -> StandardMaterial3D:
-	var n := FastNoiseLite.new()
-	n.seed = noise_seed
-	n.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
-	n.fractal_type = FastNoiseLite.FRACTAL_FBM
-	n.fractal_octaves = 4
-	n.frequency = freq
+		triplanar_scale: float, min_albedo_lum: float,
+		bump_strength := 1.0, albedo_contrast := 0.35) -> StandardMaterial3D:
+	var albedo_noise := FastNoiseLite.new()
+	albedo_noise.seed = noise_seed
+	albedo_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	albedo_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
+	albedo_noise.fractal_octaves = 3
+	albedo_noise.frequency = freq
 
+	# La mancha de color y el relieve usan ruidos distintos: compartirlos daba cráteres.
+	var bump_noise := FastNoiseLite.new()
+	bump_noise.seed = noise_seed + 1777
+	bump_noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	bump_noise.fractal_type = FastNoiseLite.FRACTAL_FBM
+	bump_noise.fractal_octaves = 2
+	bump_noise.frequency = freq * 1.6
+
+	var lum_low := lerpf(1.0, min_albedo_lum, albedo_contrast)
 	var grad := Gradient.new()
-	grad.set_color(0, Color(min_albedo_lum, min_albedo_lum, min_albedo_lum))
+	grad.set_color(0, Color(lum_low, lum_low, lum_low))
 	grad.set_color(1, Color(1.0, 1.0, 1.0))
 
 	var albedo_tex := NoiseTexture2D.new()
@@ -124,15 +134,15 @@ func _pbr_material(color: Color, metallic: float, roughness: float,
 	albedo_tex.height = 256
 	albedo_tex.seamless = true
 	albedo_tex.color_ramp = grad
-	albedo_tex.noise = n
+	albedo_tex.noise = albedo_noise
 
 	var normal_tex := NoiseTexture2D.new()
 	normal_tex.width = 256
 	normal_tex.height = 256
 	normal_tex.seamless = true
 	normal_tex.as_normal_map = true
-	normal_tex.bump_strength = 4.2
-	normal_tex.noise = n
+	normal_tex.bump_strength = bump_strength
+	normal_tex.noise = bump_noise
 
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = color
@@ -195,8 +205,8 @@ func _build_rooms() -> void:
 				light_range = 19.0
 			&"upper_hall":
 				light_color = DIM_HALL_LIGHT
-				light_energy = 1.35
-				light_range = 17.0
+				light_energy = 1.8
+				light_range = 19.0
 			&"server_room":
 				light_color = COOL_LIGHT
 				light_energy = 1.15
@@ -758,6 +768,16 @@ func _build_signal_room() -> void:
 	_add_panel(-10.8, y, -27.9, 1)
 	_add_panel(-5.8, y, -27.9, 2)
 	_add_panel(-1.2, y, -27.2, 3)
+
+	# Bancada corrida frente al ventanal: pantallas y teclados por estación.
+	for px in [-15.4, -12.4, -9.4, -3.4, -0.4]:
+		_box("dark_metal", Vector3(px, y + 0.72, -27.85), Vector3(2.5, 1.44, 0.82))
+		_box("screen", Vector3(px - 0.35, y + 1.22, -27.40), Vector3(1.15, 0.52, 0.04), Basis.IDENTITY, false)
+		_box("metal", Vector3(px + 0.65, y + 0.98, -27.39), Vector3(0.30, 0.12, 0.05), Basis.IDENTITY, false)
+
+	# Bandejas de cables sobre la bancada (misma malla que las vigas, sin draws nuevos).
+	for tz in [-25.5, -21.5, -17.5]:
+		_box("dark_metal", Vector3(-8.5, y + 3.62, tz), Vector3(18.0, 0.10, 0.35), Basis.IDENTITY, false)
 
 	_box("dark_metal", Vector3(-5.8, y + 0.6, -27.9), Vector3(2.4, 1.2, 0.78))
 	_box("screen", Vector3(-6.1, y + 1.05, -27.49), Vector3(1.2, 0.58, 0.04), Basis.IDENTITY, false)
@@ -1322,8 +1342,8 @@ func _zone_light(pos: Vector3, range_value: float, energy := 1.4,
 func _note(text: String, pos: Vector3, yaw := 0.0) -> void:
 	var label := Label3D.new()
 	label.text = text
-	label.font_size = 28
-	label.pixel_size = 0.005
+	label.font_size = 34
+	label.pixel_size = 0.0055
 	label.modulate = Color(0.92, 0.88, 0.76)
 	label.outline_size = 6
 	label.outline_modulate = Color(0.0, 0.0, 0.0, 0.88)
