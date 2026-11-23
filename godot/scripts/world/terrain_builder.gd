@@ -32,60 +32,64 @@ void fragment() {
 	vec3 tw = pow(abs(nw), vec3(4.0));
 	tw /= max(tw.x + tw.y + tw.z, 0.0001);
 
-	// Detalle de ventisqueros (sastrugi) y grano fino en nieve.
+	// El sastrugi solo tiñe el color; el grano fino (isótropo) da el relieve de la nieve.
 	vec2 wind_uv = vec2(
 		v_world_pos.x * 0.022 + v_world_pos.z * 0.011,
 		v_world_pos.z * 0.048 - v_world_pos.x * 0.016
 	);
 	float sastrugi = texture(snow_noise, wind_uv).r;
-	float snow_fine = texture(snow_noise, v_world_pos.xz * 0.18).r;
-	float snow_dx = texture(snow_noise, wind_uv + vec2(0.015, 0.0)).r - sastrugi;
-	float snow_dz = texture(snow_noise, wind_uv + vec2(0.0, 0.015)).r - sastrugi;
+	float snow_fine = texture(snow_noise, v_world_pos.xz * 0.16).r;
+	float snow_dx = texture(snow_noise, (v_world_pos.xz + vec2(0.10, 0.0)) * 0.16).r - snow_fine;
+	float snow_dz = texture(snow_noise, (v_world_pos.xz + vec2(0.0, 0.10)) * 0.16).r - snow_fine;
 
-	// Granito estratificado en paredes y crestas empinadas.
+	// Granito estratificado: bandas horizontales con juntas finas en paredes y crestas.
 	float r_tri = sample_triplanar(rock_noise, v_world_pos, tw, 0.032);
 	float r_fine = sample_triplanar(rock_noise, v_world_pos, tw, 0.135);
-	float strata = 0.5 + 0.5 * sin(v_world_pos.y * 1.15 + r_tri * 3.6);
-	float rock_dx = texture(rock_noise, (v_world_pos.xz + vec2(0.35, 0.0)) * 0.05).r
+	float strata_wave = sin(v_world_pos.y * 0.8 + r_tri * 4.0 + v_world_pos.x * 0.02);
+	float strata = smoothstep(-0.25, 0.55, strata_wave);
+	float seam = smoothstep(0.90, 0.99, strata_wave);
+	float rock_dx = texture(rock_noise, (v_world_pos.xz + vec2(0.25, 0.0)) * 0.05).r
 		- texture(rock_noise, v_world_pos.xz * 0.05).r;
-	float rock_dz = texture(rock_noise, (v_world_pos.xz + vec2(0.0, 0.35)) * 0.05).r
+	float rock_dz = texture(rock_noise, (v_world_pos.xz + vec2(0.0, 0.25)) * 0.05).r
 		- texture(rock_noise, v_world_pos.xz * 0.05).r;
 
 	float alt_t = clamp((v_world_pos.y + 8.0) / 85.0, 0.0, 1.0);
 	vec3 snow_deep = vec3(0.30, 0.39, 0.53);
-	vec3 snow_lit = vec3(0.56, 0.65, 0.78);
-	vec3 snow_col = mix(snow_deep, snow_lit, clamp(alt_t * 0.65 + sastrugi * 0.45, 0.0, 1.0));
-	snow_col *= 0.90 + 0.18 * snow_fine;
+	vec3 snow_lit = vec3(0.60, 0.69, 0.81);
+	vec3 snow_col = mix(snow_deep, snow_lit, clamp(alt_t * 0.70 + sastrugi * 0.28, 0.0, 1.0));
+	snow_col *= 0.94 + 0.10 * snow_fine;
 
-	vec3 rock_dark = vec3(0.10, 0.12, 0.15);
-	vec3 rock_slate = vec3(0.19, 0.21, 0.25);
-	vec3 rock_col = mix(rock_dark, rock_slate, clamp(r_tri * 0.65 + strata * 0.35, 0.0, 1.0));
-	rock_col *= 0.82 + 0.32 * r_fine;
+	vec3 rock_dark = vec3(0.09, 0.11, 0.14);
+	vec3 rock_slate = vec3(0.24, 0.26, 0.30);
+	vec3 rock_col = mix(rock_dark, rock_slate, clamp(r_tri * 0.45 + strata * 0.55, 0.0, 1.0));
+	rock_col *= (1.0 - seam * 0.16) * (0.86 + 0.24 * r_fine);
 
 	float cliff_t = smoothstep(0.86, 0.63, nw.y + (r_tri - 0.5) * 0.14);
 	vec3 col = mix(snow_col, rock_col, cliff_t);
-	float rough = mix(mix(0.76, 0.88, snow_fine), 0.95, cliff_t);
+	float rough = mix(mix(0.80, 0.90, snow_fine), 0.94, cliff_t);
 
-	// Cauce helado en el valle medio.
+	// Cauce helado: hielo azul veteado, liso y especular.
 	float ice_t = clamp(v_mask.g, 0.0, 1.0);
 	if (ice_t > 0.01) {
-		float crack = smoothstep(0.42, 0.58, r_fine);
-		vec3 ice_col = mix(vec3(0.14, 0.26, 0.39), vec3(0.28, 0.42, 0.56), crack * 0.5);
-		col = mix(col, ice_col, ice_t * 0.88);
-		rough = mix(rough, 0.24, ice_t * 0.85);
+		float vein = 0.5 + 0.5 * sin(v_world_pos.x * 0.35 + v_world_pos.z * 0.12 + r_fine * 4.0);
+		float crack = smoothstep(0.55, 0.85, r_fine * 0.6 + vein * 0.4);
+		vec3 ice_col = mix(vec3(0.20, 0.42, 0.50), vec3(0.42, 0.66, 0.72), crack * 0.60);
+		col = mix(col, ice_col, ice_t * 0.95);
+		rough = mix(rough, 0.18, ice_t * 0.92);
 	}
 
-	// Pista compactada del Snowcat con roderas y gravilla helada.
+	// Pista compactada del Snowcat: roderas paralelas y gravilla helada.
 	float road_t = clamp(v_mask.r, 0.0, 1.0);
 	if (road_t > 0.01) {
-		float track_noise = 0.5 + 0.5 * sin(v_world_pos.x * 1.9 + v_world_pos.z * 0.9 + snow_fine * 2.0);
-		vec3 road_col = mix(vec3(0.17, 0.21, 0.27), vec3(0.26, 0.31, 0.38), track_noise * 0.5 + snow_fine * 0.35);
-		col = mix(col, road_col, road_t * 0.88);
-		rough = mix(rough, 0.86, road_t * 0.75);
+		float ruts = 0.5 + 0.5 * cos(v_world_pos.x * 1.6 + v_world_pos.z * 0.6);
+		float gravel = smoothstep(0.62, 0.82, snow_fine);
+		vec3 road_col = mix(vec3(0.20, 0.20, 0.22), vec3(0.34, 0.33, 0.34), ruts * 0.45 + gravel * 0.4);
+		col = mix(col, road_col, road_t * 0.92);
+		rough = mix(rough, 0.88, road_t * 0.8);
 	}
 
-	// Perturbación de normal en espacio mundo sin depender de UVs/tangentes.
-	float bump_strength = mix(1.35, 2.2, cliff_t);
+	// Perturbación de normal: grano fino en nieve, vetas en roca; sin cráteres.
+	float bump_strength = mix(0.95, 1.5, cliff_t);
 	vec3 n_pert = normalize(nw + vec3(
 		mix(snow_dx, rock_dx, cliff_t) * bump_strength,
 		0.0,
